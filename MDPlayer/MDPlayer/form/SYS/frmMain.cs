@@ -14,6 +14,7 @@ using MDSound;
 //using MDPlayer.Properties;
 using MDPlayer.Driver.ZGM.ZgmChip;
 using MDSound.np.chip;
+using System.Xml;
 
 namespace MDPlayer.form
 {
@@ -5564,6 +5565,34 @@ namespace MDPlayer.form
                 return buf;
             }
 
+            if (ext == ".xml")
+            {
+                format = EnmFileFormat.XML;
+                var xmlDoc = new XmlDocument();
+                xmlDoc.Load(filename);
+                var topTag = xmlDoc.FirstChild.Name;
+                switch (topTag)
+                {
+                    case "hoot":
+                        byte[] pathBin = System.Text.Encoding.Unicode.GetBytes(filename);
+                        byte[] binLength = BitConverter.GetBytes(pathBin.Length);
+                        buf = pathBin.Concat(buf).ToArray();
+                        buf = binLength.Concat(buf).ToArray();
+                        var hootElm = xmlDoc.SelectSingleNode("hoot");
+                        //format = MDPlayer.EnmFileFormat.HOOT;
+                        var driverType = hootElm.SelectSingleNode("driver").Attributes["type"].Value;
+
+                        switch (driverType)
+                        {
+                            case "generic_z80":
+                                format = EnmFileFormat.HOOT_GENERIC_Z80;
+                                break;
+                        }
+                        break;
+                }
+
+                return buf;
+            }
 
             //.VGMの場合はヘッダの確認とGzipで解凍後のファイルのヘッダの確認
             uint vgm = (UInt32)buf[0] + (UInt32)buf[1] * 0x100 + (UInt32)buf[2] * 0x10000 + (UInt32)buf[3] * 0x1000000;

@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Xml;
 
 namespace MDPlayer
 {
@@ -341,6 +342,9 @@ namespace MDPlayer
                 case EnmFileFormat.AIFF:
                     AddFileAIFF(mc, entry);
                     break;
+                case EnmFileFormat.XML:
+                    AddFileXML(mc, entry);
+                    break;
             }
         }
 
@@ -421,6 +425,9 @@ namespace MDPlayer
                     break;
                 case EnmFileFormat.SID:
                     AddFileSID(ref index, mc, entry);
+                    break;
+                case EnmFileFormat.XML:
+                    AddFileXML(ref index, mc, entry);
                     break;
             }
         }
@@ -1454,6 +1461,89 @@ namespace MDPlayer
                 if (entry == null) musics = Audio.getMusic(mc.fileName, buf);
                 else musics = Audio.getMusic(mc.fileName, buf, mc.arcFileName, entry);
 
+                if (mc.songNo != -1)
+                {
+                    PlayList.music music = null;
+                    if (musics.Count > 0)
+                    {
+                        music = musics[0];
+                        music.songNo = mc.songNo;
+                        music.title = mc.title;
+                        music.titleJ = mc.titleJ;
+
+                        musics.Clear();
+                        musics.Add(music);
+                    }
+                    else
+                    {
+                        musics.Clear();
+                    }
+                }
+
+                List<DataGridViewRow> rows = makeRow(musics);
+                dgvList.Rows.InsertRange(index, rows.ToArray());
+                lstMusic.InsertRange(index, musics);
+                index += rows.Count;
+            }
+            catch (Exception ex)
+            {
+                log.ForcedWrite(ex);
+            }
+        }
+
+        private void AddFileXML(music mc, object entry = null)
+        {
+            try
+            {
+                byte[] buf = null;
+                if (entry == null)
+                {
+                    buf = File.ReadAllBytes(mc.fileName);
+                }
+                List<PlayList.music> musics;
+            if (entry == null) musics = Audio.getMusic(mc.fileName, buf);
+            else musics = Audio.getMusic(mc.fileName, buf, mc.arcFileName, entry);
+            if (mc.songNo != -1)
+            {
+                PlayList.music music = null;
+                if (musics.Count > 0)
+                {
+                    music = musics[0];
+                    music.songNo = mc.songNo;
+                    music.title = mc.title;
+                    music.titleJ = mc.titleJ;
+
+                    musics.Clear();
+                    musics.Add(music);
+                }
+                else
+                {
+                    musics.Clear();
+                }
+            }
+
+            List<DataGridViewRow> rows = makeRow(musics);
+            foreach (DataGridViewRow row in rows) dgvList.Rows.Add(row);
+            foreach (PlayList.music music in musics) lstMusic.Add(music);
+            }
+            catch (Exception ex)
+            {
+                log.ForcedWrite(ex);
+            }
+        }
+
+        private void AddFileXML(ref int index, music mc, object entry = null)
+        {
+            try
+            {
+                byte[] buf = null;
+                if (entry == null)
+                {
+                    buf = File.ReadAllBytes(mc.fileName);
+                }
+                List<PlayList.music> musics;
+                if (entry == null) musics = Audio.getMusic(mc.fileName, buf);
+                else musics = Audio.getMusic(mc.fileName, buf, mc.arcFileName, entry);
                 if (mc.songNo != -1)
                 {
                     PlayList.music music = null;

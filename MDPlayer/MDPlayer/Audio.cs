@@ -10,6 +10,10 @@ using musicDriverInterface;
 using MDSound.np.chip;
 using NAudio.Wave;
 using MDPlayer.Driver.SID;
+using System.Xml;
+using System.Net;
+using System.Text.RegularExpressions;
+using MDPlayer.Driver.HOOT;
 
 namespace MDPlayer
 {
@@ -628,6 +632,107 @@ namespace MDPlayer
             {
                 music.format = EnmFileFormat.AIFF;
                 music.title = string.Format("({0})", System.IO.Path.GetFileName(file));
+            }
+            else if (file.ToLower().LastIndexOf(".xml") != -1)
+            {
+                var xmlDoc = new XmlDocument();
+                xmlDoc.Load(file);
+                var topTag = xmlDoc.FirstChild.Name;
+                switch (topTag)
+                {
+                    case "hoot":
+                        var hootElm = xmlDoc.SelectSingleNode("hoot");
+                        var name = WebUtility.HtmlDecode(hootElm.SelectSingleNode("name").InnerText);
+                        var format = MDPlayer.EnmFileFormat.HOOT;
+                        var driverType = hootElm.SelectSingleNode("driver").Attributes["type"].Value;
+
+                        switch (driverType)
+                        {
+                            case "generic_z80":
+                                format = EnmFileFormat.HOOT_GENERIC_Z80;
+                                break;
+                        }
+
+                        var songTitleList = hootElm.SelectSingleNode("titlelist");
+
+                        var songList = new List<Dictionary<string, dynamic>>();
+                        foreach (XmlElement songTitle in songTitleList){
+
+                            switch (songTitle.Name) {
+                                case "title":
+                                    {
+                                        var dic = new Dictionary<string, dynamic>();
+                                        dic["title"] = WebUtility.HtmlDecode(songTitle.InnerText);
+                                        dic["reqNum"] = Common.StrToInt(songTitle.Attributes["code"].Value);
+                                        songList.Add(dic);
+                                    }
+                                    break;
+                                case "range":
+                                    {
+                                        var min = Common.StrToInt(songTitle.Attributes["min"].Value);
+                                        var max = Common.StrToInt(songTitle.Attributes["max"].Value);
+                                        var title = WebUtility.HtmlDecode(songTitle.InnerText);
+                                        var m = Regex.Match(title, @"%(0?)(\d*)([dx])");
+                                        int padCount = 0;
+                                        string padStr = " ";
+                                        string titleLeft = "";
+                                        string titleRight = "";
+                                        if (m.Success)
+                                        {
+                                            if (m.Groups[2].Value != "") {
+                                                padCount = Convert.ToInt32(m.Groups[2].Value);
+                                            }
+                                        }
+                                        if (m.Success)
+                                        {
+                                            titleLeft = title.Substring(0, m.Index);
+                                            titleRight = title.Substring(m.Index + m.Length, title.Length - (m.Index + m.Length));
+                                            if (m.Groups[1].Value != "")
+                                            {
+                                                padStr = m.Groups[1].Value;
+                                            }
+                                        }
+                                        for (var i = min; i<=max; i++) {
+                                            var dic = new Dictionary<string, dynamic>();
+                                            if (m.Success) {
+                                                var s = string.Format("{0:"+m.Groups[3] + "}", i);
+                                                s = s.PadLeft(padCount, padStr[0]);
+                                                title = titleLeft + s + titleRight;
+                                            }
+                                            dic["title"] = title;
+                                            dic["reqNum"] = i;
+                                            songList.Add(dic);
+                                        }
+
+                                    }
+                                    break;
+                            }
+                        }
+
+                        foreach (var songDict in songList)
+                        {
+                            music = new PlayList.music();
+                            music.format = format;
+                            music.fileName = file;
+                            music.arcFileName = zipFile;
+                            music.arcType = EnmArcType.unknown;
+                            music.title  = songDict["title"];
+                            music.titleJ = songDict["title"];
+                            music.game = name;
+                            music.gameJ = name;
+                            music.composer  = "";
+                            music.composerJ = "";
+                            music.vgmby = "";
+                            music.converted = "";
+                            music.notes = "";
+                            music.songNo = songDict["reqNum"];
+
+                            musics.Add(music);
+                        }
+
+                        return musics;
+                }
+
             }
             else
             {
@@ -1943,6 +2048,19 @@ namespace MDPlayer
                 return true;
             }
 
+            if (PlayingFileFormat == EnmFileFormat.HOOT_GENERIC_Z80)
+            {
+                driverVirtual = new Driver.HOOT.generic_z80();
+                driverVirtual.setting = setting;
+
+                driverReal = null;
+                //if (setting.outputDevice.DeviceType != Common.DEV_Null)
+                //{
+                //    driverReal = new hes();
+                //    driverReal.setting = setting;
+                //}
+                return hoot_generic_z80_Play(setting);
+            }
             return false;
         }
 
@@ -6140,7 +6258,166 @@ namespace MDPlayer
 
         }
 
+        public static bool hoot_generic_z80_Play(Setting setting)
+        {
 
+            try
+            {
+
+                if (vgmBuf == null || setting == null) return false;
+
+                //Stop();
+
+
+                chipRegister.resetChips();
+                ResetFadeOutParam();
+                useChip.Clear();
+
+                startTrdVgmReal();
+
+                List<MDSound.MDSound.Chip> lstChips = new List<MDSound.MDSound.Chip>();
+                MDSound.MDSound.Chip chip;
+
+
+                hiyorimiNecessary = setting.HiyorimiMode;
+
+                chipLED = new ChipLEDs();
+                MasterVolume = setting.balance.MasterVolume;
+
+                chip = new MDSound.MDSound.Chip();
+                MDSound.ym2612 ym2612 = null;
+                MDSound.ym3438 ym3438 = null;
+                MDSound.ym2612mame ym2612mame = null;
+                if (setting.YM2612Type[0].UseEmu[0])
+                {
+                    if (ym2612 == null) ym2612 = new ym2612();
+                    chip.type = MDSound.MDSound.enmInstrumentType.YM2612;
+                    chip.Instrument = ym2612;
+                    chip.Update = ym2612.Update;
+                    chip.Start = ym2612.Start;
+                    chip.Stop = ym2612.Stop;
+                    chip.Reset = ym2612.Reset;
+                    chip.Option = new object[]
+                    {
+                        (int)(
+                            (setting.nukedOPN2.GensDACHPF ? 0x01: 0x00)
+                            |(setting.nukedOPN2.GensSSGEG ? 0x02: 0x00)
+                        )
+                    };
+                }
+                else if (setting.YM2612Type[0].UseEmu[1])
+                {
+                    if (ym3438 == null) ym3438 = new ym3438();
+                    chip.type = MDSound.MDSound.enmInstrumentType.YM3438;
+                    chip.Instrument = ym3438;
+                    chip.Update = ym3438.Update;
+                    chip.Start = ym3438.Start;
+                    chip.Stop = ym3438.Stop;
+                    chip.Reset = ym3438.Reset;
+                    switch (setting.nukedOPN2.EmuType)
+                    {
+                        case 0:
+                            ym3438.OPN2_SetChipType(ym3438_const.ym3438_type.discrete);
+                            break;
+                        case 1:
+                            ym3438.OPN2_SetChipType(ym3438_const.ym3438_type.asic);
+                            break;
+                        case 2:
+                            ym3438.OPN2_SetChipType(ym3438_const.ym3438_type.ym2612);
+                            break;
+                        case 3:
+                            ym3438.OPN2_SetChipType(ym3438_const.ym3438_type.ym2612_u);
+                            break;
+                        case 4:
+                            ym3438.OPN2_SetChipType(ym3438_const.ym3438_type.asic_lp);
+                            break;
+                    }
+                }
+                else if (setting.YM2612Type[0].UseEmu[2])
+                {
+                    if (ym2612mame == null) ym2612mame = new ym2612mame();
+                    chip.type = MDSound.MDSound.enmInstrumentType.YM2612mame;
+                    chip.Instrument = ym2612mame;
+                    chip.Update = ym2612mame.Update;
+                    chip.Start = ym2612mame.Start;
+                    chip.Stop = ym2612mame.Stop;
+                    chip.Reset = ym2612mame.Reset;
+                }
+
+                chip.SamplingRate = Driver.HOOT.generic_z80.samplingRateYM2612;
+                chip.Volume = setting.balance.YM2612Volume;
+                chip.Clock = Driver.HOOT.generic_z80.baseclockYM2612;
+                //clockYM2612 = (int)chip.Clock;
+                chipLED.PriOPN2 = 1;
+                lstChips.Add(chip);
+                useChip.Add(EnmChip.YM2612);
+
+                sn76489 sn76489 = new sn76489();
+                chip = new MDSound.MDSound.Chip();
+                chip.type = MDSound.MDSound.enmInstrumentType.SN76489;
+                chip.ID = (byte)0;
+                chip.Instrument = sn76489;
+                chip.Update = sn76489.Update;
+                chip.Start = sn76489.Start;
+                chip.Stop = sn76489.Stop;
+                chip.Reset = sn76489.Reset;
+                chip.SamplingRate = (UInt32)setting.outputDevice.SampleRate;
+                chip.Volume = setting.balance.SN76489Volume;
+                chip.Clock = Driver.HOOT.generic_z80.baseclockSN76489;
+                //clockSN76489 = (int)chip.Clock;
+                //chip.Option = null;
+                if ((setting.SN76489Type[0].UseEmu[1])
+                    || (setting.SN76489Type[1].UseEmu[1])) {
+                    chip.Option = new object[]{
+                                (byte)0x9,
+                                (byte)0,
+                                (byte)16,
+                                (byte)0
+                    };
+                }
+                chipLED.PriDCSG = 1;
+                lstChips.Add(chip);
+                useChip.Add(EnmChip.SN76489);
+
+                if (hiyorimiNecessary) hiyorimiNecessary = true;
+                else hiyorimiNecessary = false;
+
+                if (mds == null)
+                    mds = new MDSound.MDSound((UInt32)setting.outputDevice.SampleRate, samplingBuffer, lstChips.ToArray());
+                else
+                    mds.Init((UInt32)setting.outputDevice.SampleRate, samplingBuffer, lstChips.ToArray());
+
+                //SetYM2612Volume(true, setting.balance.YM2612Volume);
+                //SetSN76489Volume(true, setting.balance.SN76489Volume);
+
+                chipRegister.initChipRegister(lstChips.ToArray());
+
+                ((generic_z80)driverVirtual).reqNumber = (byte)SongNo;
+
+                if (!driverVirtual.init(vgmBuf, chipRegister, EnmModel.VirtualModel, new EnmChip[] { EnmChip.YM2612, EnmChip.SN76489 }
+                    , (uint)(setting.outputDevice.SampleRate * setting.LatencyEmulation / 1000)
+                    , (uint)(setting.outputDevice.SampleRate * setting.outputDevice.WaitTime / 1000))) return false;
+                if (driverReal != null)
+                {
+                    if (!driverReal.init(vgmBuf, chipRegister, EnmModel.RealModel, new EnmChip[] { EnmChip.YM2612, EnmChip.SN76489 }
+                        , (uint)(setting.outputDevice.SampleRate * setting.LatencySCCI / 1000)
+                        , (uint)(setting.outputDevice.SampleRate * setting.outputDevice.WaitTime / 1000))) return false;
+                }
+
+                //Play
+
+                Paused = false;
+                oneTimeReset = false;
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                log.ForcedWrite(ex);
+                return false;
+            }
+
+        }
 
         private static void ResetFadeOutParam()
         {

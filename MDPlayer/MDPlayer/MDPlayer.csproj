@@ -168,6 +168,7 @@
     <Compile Include="Driver\HES\km6280.cs" />
     <Compile Include="Driver\HES\kmevent.cs" />
     <Compile Include="Driver\HES\m_hes.cs" />
+    <Compile Include="Driver\HOOT\generic_z80.cs" />
     <Compile Include="Driver\MGSDRV\Cartridge.cs" />
     <Compile Include="Driver\MGSDRV\iMapper.cs" />
     <Compile Include="Driver\MGSDRV\Mapper.cs" />

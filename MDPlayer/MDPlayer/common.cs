@@ -300,6 +300,8 @@ namespace MDPlayer
             if (filename.ToLower().LastIndexOf(".wav") != -1) return EnmFileFormat.WAV;
             if (filename.ToLower().LastIndexOf(".mp3") != -1) return EnmFileFormat.MP3;
             if (filename.ToLower().LastIndexOf(".aiff") != -1) return EnmFileFormat.AIFF;
+            if (filename.ToLower().LastIndexOf(".hgz80") != -1) return EnmFileFormat.HOOT_GENERIC_Z80;
+            if (filename.ToLower().LastIndexOf(".xml") != -1) return EnmFileFormat.XML;
 
             return EnmFileFormat.unknown;
         }
@@ -547,6 +549,15 @@ namespace MDPlayer
             }
         }
 
+        public static int StrToInt(string str)
+        {
+            int v;
+            var r = int.TryParse(str, out v);
+            if (r == false) {
+                v = Convert.ToInt32(str, 16);
+            }
+            return v;
+        }
     }
 
     public enum EnmModel
@@ -726,7 +737,10 @@ namespace MDPlayer
         MP3 = 22,
         AIFF = 23,
         MGS = 24,
-        MDL=25
+        MDL=25,
+        HOOT_GENERIC_Z80 = 26,
+        XML = 27,
+        HOOT = 28
     }
 
     public enum EnmArcType : int
