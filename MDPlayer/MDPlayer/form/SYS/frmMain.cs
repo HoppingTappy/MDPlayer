@@ -1001,6 +1001,13 @@ namespace MDPlayer.form
                 return;
             }
 
+            var songNum = 0;
+
+            if (args.Length == 3)
+            {
+                songNum = Common.StrToInt(args[2]);
+            }
+
             log.ForcedWrite("frmMain_Shown:STEP 10");
             
             try
@@ -1015,7 +1022,7 @@ namespace MDPlayer.form
                     //frmPlayList.AddList(args[1]);
                 }
 
-                if (!loadAndPlay(0, 0, args[1], ""))
+                if (!loadAndPlay(0, songNum, args[1], ""))
                 {
                     frmPlayList.Stop();
                     OpeManager.RequestToAudio(new Request(enmRequest.Stop));
