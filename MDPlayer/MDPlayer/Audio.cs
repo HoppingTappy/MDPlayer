@@ -637,7 +637,7 @@ namespace MDPlayer
             {
                 var xmlDoc = new XmlDocument();
                 xmlDoc.Load(file);
-                var topTag = xmlDoc.FirstChild.Name;
+                var topTag = xmlDoc.DocumentElement.Name;
                 switch (topTag)
                 {
                     case "hoot":
