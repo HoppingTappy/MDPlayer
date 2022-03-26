@@ -637,11 +637,11 @@ namespace MDPlayer
             {
                 var xmlDoc = new XmlDocument();
                 xmlDoc.Load(file);
-                var topTag = xmlDoc.DocumentElement.Name;
-                switch (topTag)
+                var rootElm = xmlDoc.DocumentElement;
+                switch (rootElm.Name)
                 {
                     case "hoot":
-                        var hootElm = xmlDoc.SelectSingleNode("hoot");
+                        var hootElm = rootElm;
                         var name = WebUtility.HtmlDecode(hootElm.SelectSingleNode("name").InnerText);
                         var format = MDPlayer.EnmFileFormat.HOOT;
                         var driverType = hootElm.SelectSingleNode("driver").Attributes["type"].Value;
@@ -1058,6 +1058,112 @@ namespace MDPlayer
                 if (music.title == "" && music.titleJ == "")
                 {
                     music.title = string.Format("({0})", System.IO.Path.GetFileName(ms.fileName));
+                }
+
+            }
+            else if (ms.fileName.ToLower().LastIndexOf(".xml") != -1)
+            {
+                var xmlDoc = new XmlDocument();
+                xmlDoc.Load(ms.fileName);
+                var rootElm = xmlDoc.DocumentElement;
+                switch (rootElm.Name)
+                {
+                    case "hoot":
+                        var hootElm = rootElm;
+                        var name = WebUtility.HtmlDecode(hootElm.SelectSingleNode("name").InnerText);
+                        var format = MDPlayer.EnmFileFormat.HOOT;
+                        var driverType = hootElm.SelectSingleNode("driver").Attributes["type"].Value;
+
+                        switch (driverType)
+                        {
+                            case "generic_z80":
+                                format = EnmFileFormat.HOOT_GENERIC_Z80;
+                                break;
+                        }
+
+                        var songTitleList = hootElm.SelectSingleNode("titlelist");
+
+                        var songList = new List<Dictionary<string, dynamic>>();
+                        foreach (XmlElement songTitle in songTitleList)
+                        {
+
+                            switch (songTitle.Name)
+                            {
+                                case "title":
+                                    {
+                                        var dic = new Dictionary<string, dynamic>();
+                                        dic["title"] = WebUtility.HtmlDecode(songTitle.InnerText);
+                                        dic["reqNum"] = Common.StrToInt(songTitle.Attributes["code"].Value);
+                                        songList.Add(dic);
+                                    }
+                                    break;
+                                case "range":
+                                    {
+                                        var min = Common.StrToInt(songTitle.Attributes["min"].Value);
+                                        var max = Common.StrToInt(songTitle.Attributes["max"].Value);
+                                        var title = WebUtility.HtmlDecode(songTitle.InnerText);
+                                        var m = Regex.Match(title, @"%(0?)(\d*)([dx])");
+                                        int padCount = 0;
+                                        string padStr = " ";
+                                        string titleLeft = "";
+                                        string titleRight = "";
+                                        if (m.Success)
+                                        {
+                                            if (m.Groups[2].Value != "")
+                                            {
+                                                padCount = Convert.ToInt32(m.Groups[2].Value);
+                                            }
+                                        }
+                                        if (m.Success)
+                                        {
+                                            titleLeft = title.Substring(0, m.Index);
+                                            titleRight = title.Substring(m.Index + m.Length, title.Length - (m.Index + m.Length));
+                                            if (m.Groups[1].Value != "")
+                                            {
+                                                padStr = m.Groups[1].Value;
+                                            }
+                                        }
+                                        for (var i = min; i <= max; i++)
+                                        {
+                                            var dic = new Dictionary<string, dynamic>();
+                                            if (m.Success)
+                                            {
+                                                var s = string.Format("{0:" + m.Groups[3] + "}", i);
+                                                s = s.PadLeft(padCount, padStr[0]);
+                                                title = titleLeft + s + titleRight;
+                                            }
+                                            dic["title"] = title;
+                                            dic["reqNum"] = i;
+                                            songList.Add(dic);
+                                        }
+
+                                    }
+                                    break;
+                            }
+                        }
+
+                        foreach (var songDict in songList)
+                        {
+                            music = new PlayList.music();
+                            music.format = format;
+                            music.fileName = ms.fileName;
+                            music.arcFileName = zipFile;
+                            music.arcType = EnmArcType.unknown;
+                            music.title = songDict["title"];
+                            music.titleJ = songDict["title"];
+                            music.game = name;
+                            music.gameJ = name;
+                            music.composer = "";
+                            music.composerJ = "";
+                            music.vgmby = "";
+                            music.converted = "";
+                            music.notes = "";
+                            music.songNo = songDict["reqNum"];
+
+                            musics.Add(music);
+                        }
+
+                        return musics;
                 }
 
             }
