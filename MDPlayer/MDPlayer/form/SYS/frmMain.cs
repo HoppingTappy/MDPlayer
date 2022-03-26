@@ -5570,16 +5570,12 @@ namespace MDPlayer.form
                 format = EnmFileFormat.XML;
                 var xmlDoc = new XmlDocument();
                 xmlDoc.Load(filename);
-                var topTag = xmlDoc.FirstChild.Name;
-                switch (topTag)
+                var rootElm = xmlDoc.DocumentElement;
+                switch (rootElm.Name)
                 {
                     case "hoot":
-                        byte[] pathBin = System.Text.Encoding.Unicode.GetBytes(filename);
-                        byte[] binLength = BitConverter.GetBytes(pathBin.Length);
-                        buf = pathBin.Concat(buf).ToArray();
-                        buf = binLength.Concat(buf).ToArray();
-                        var hootElm = xmlDoc.SelectSingleNode("hoot");
-                        //format = MDPlayer.EnmFileFormat.HOOT;
+                        var hootElm = rootElm;
+                        format = MDPlayer.EnmFileFormat.HOOT;
                         var driverType = hootElm.SelectSingleNode("driver").Attributes["type"].Value;
 
                         switch (driverType)

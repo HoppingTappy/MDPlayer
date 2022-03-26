@@ -31,15 +31,7 @@ namespace MDPlayer.Driver.HOOT
             ym2612adr[0] = 0;
             ym2612adr[1] = 0;
 
-            var pathLength = Common.getLE32(vgmBuf, 0);
-            var pathBin = new byte[pathLength];
-            Array.Copy(vgmBuf, 4, pathBin, 0, pathLength);
-            var fileName = System.Text.Encoding.Unicode.GetString(pathBin);
-            var dirPath = Path.GetDirectoryName(fileName) + Path.DirectorySeparatorChar;
-            var xmlBinLength = vgmBuf.Length - 4 - pathLength;
-            var xmlBin = new byte[xmlBinLength];
-            Array.Copy(vgmBuf, 4 + pathLength, xmlBin, 0, xmlBinLength);
-            string xml = Encoding.GetEncoding("Shift_JIS").GetString(xmlBin);
+            string xml = Encoding.GetEncoding("Shift_JIS").GetString(vgmBuf);
             var xmlDoc = new XmlDocument();
             xmlDoc.LoadXml(xml);
 
@@ -50,6 +42,7 @@ namespace MDPlayer.Driver.HOOT
                 options[name] = (uint)Common.StrToInt(value);
             }
 
+            var dirPath = Common.playingFilePath + Path.DirectorySeparatorChar;
             var romName = xmlDoc.SelectSingleNode("hoot/romlist/rom").InnerText;
             var zipName = xmlDoc.SelectSingleNode("hoot/romlist").Attributes["archive"].Value;
             zipName = dirPath + zipName;
