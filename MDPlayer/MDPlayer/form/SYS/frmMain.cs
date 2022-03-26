@@ -168,7 +168,13 @@ namespace MDPlayer.form
                 Process prc = GetPreviousProcess();
                 if (prc != null)
                 {
-                    SendString(prc.MainWindowHandle, Environment.GetCommandLineArgs()[1]);
+                    var cmdArgs = Environment.GetCommandLineArgs();
+                    var sendStr = "";
+                    for (int i = 1; i < Environment.GetCommandLineArgs().Length; i++) {
+                        sendStr += cmdArgs[i] + ",";
+                    }
+                    sendStr = sendStr.Substring(0, sendStr.Length - 1);
+                    SendString(prc.MainWindowHandle, sendStr);
                     forcedExit = true;
                     try
                     {
@@ -7291,17 +7297,20 @@ namespace MDPlayer.form
                 string sParam = ReceiveString(m);
                 try
                 {
-
+                    var args = sParam.Split(',');
                     frmPlayList.Stop();
 
                     PlayList pl = frmPlayList.getPlayList();
-                    if (pl.lstMusic.Count < 1 || pl.lstMusic[pl.lstMusic.Count - 1].fileName != sParam)
+                    if (pl.lstMusic.Count < 1 || pl.lstMusic[pl.lstMusic.Count - 1].fileName != args[0])
                     {
-                        frmPlayList.getPlayList().AddFile(sParam);
+                        frmPlayList.getPlayList().AddFile(args[0]);
                         //frmPlayList.AddList(sParam);
                     }
-
-                    if (!loadAndPlay(0, 0, sParam))
+                    var songNo = 0;
+                    if (args.Length > 1) {
+                        songNo = Common.StrToInt(args[1]);
+                    }
+                    if (!loadAndPlay(0, songNo, args[0]))
                     {
                         frmPlayList.Stop();
                         Request req = new Request(enmRequest.Stop);
