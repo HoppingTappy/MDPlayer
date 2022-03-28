@@ -294,6 +294,7 @@ namespace MDPlayer
             if (filename.ToLower().LastIndexOf(".vgm") != -1) return EnmFileFormat.VGM;
             if (filename.ToLower().LastIndexOf(".vgz") != -1) return EnmFileFormat.VGM;
             if (filename.ToLower().LastIndexOf(".xgm") != -1) return EnmFileFormat.XGM;
+            if (filename.ToLower().LastIndexOf(".xgz") != -1) return EnmFileFormat.XGM;
             if (filename.ToLower().LastIndexOf(".zgm") != -1) return EnmFileFormat.ZGM;
             if (filename.ToLower().LastIndexOf(".zip") != -1) return EnmFileFormat.ZIP;
             if (filename.ToLower().LastIndexOf(".lzh") != -1) return EnmFileFormat.LZH;
@@ -601,6 +602,7 @@ namespace MDPlayer
         , FME7
         , RF5C68
         , MultiPCM
+        , uPD7759
         , YMF271
         , YMZ280B
         , QSound
@@ -650,6 +652,7 @@ namespace MDPlayer
         , S_FME7
         , S_RF5C68
         , S_MultiPCM
+        , S_uPD7759
         , S_YMF271
         , S_YMZ280B
         , S_QSound
@@ -737,9 +740,10 @@ namespace MDPlayer
         AIFF = 23,
         MGS = 24,
         MDL=25,
-        HOOT_GENERIC_Z80 = 26,
-        XML = 27,
-        HOOT = 28
+        XGZ=26
+        HOOT_GENERIC_Z80 = 27,
+        XML = 28,
+        HOOT = 29
     }
 
     public enum EnmArcType : int

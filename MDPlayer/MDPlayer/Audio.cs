@@ -417,6 +417,75 @@ namespace MDPlayer
                     music.title = string.Format("({0})", System.IO.Path.GetFileName(file));
                 }
             }
+            else if (file.ToLower().LastIndexOf(".xgz") != -1)
+            {
+
+                //XGZかもしれないので確認する
+                try
+                {
+                    int num;
+                    buf = new byte[1024]; // 1Kbytesずつ処理する
+
+                    if (entry == null || entry is ZipArchiveEntry)
+                    {
+                        Stream inStream; // 入力ストリーム
+                        if (entry == null)
+                        {
+                            inStream = new FileStream(file, FileMode.Open, FileAccess.Read);
+                        }
+                        else
+                        {
+                            inStream = ((ZipArchiveEntry)entry).Open();
+                        }
+                        GZipStream decompStream // 解凍ストリーム
+                          = new GZipStream(
+                            inStream, // 入力元となるストリームを指定
+                            CompressionMode.Decompress); // 解凍（圧縮解除）を指定
+
+                        MemoryStream outStream // 出力ストリーム
+                          = new MemoryStream();
+
+                        using (inStream)
+                        using (outStream)
+                        using (decompStream)
+                        {
+                            while ((num = decompStream.Read(buf, 0, buf.Length)) > 0)
+                            {
+                                outStream.Write(buf, 0, num);
+                            }
+                        }
+
+                        buf = outStream.ToArray();
+                    }
+                    else
+                    {
+                        UnlhaWrap.UnlhaCmd cmd = new UnlhaWrap.UnlhaCmd();
+                        buf = cmd.GetFileByte(((Tuple<string, string>)entry).Item1, ((Tuple<string, string>)entry).Item2);
+                    }
+                }
+                catch
+                {
+                    //vgzではなかった
+                }
+
+                music.format = EnmFileFormat.XGM;
+                GD3 gd3 = new xgm(setting).getGD3Info(buf, 0);
+                music.title = gd3.TrackName;
+                music.titleJ = gd3.TrackNameJ;
+                music.game = gd3.GameName;
+                music.gameJ = gd3.GameNameJ;
+                music.composer = gd3.Composer;
+                music.composerJ = gd3.ComposerJ;
+                music.vgmby = gd3.VGMBy;
+
+                music.converted = gd3.Converted;
+                music.notes = gd3.Notes;
+
+                if (music.title == "" && music.titleJ == "" && music.game == "" && music.gameJ == "" && music.composer == "" && music.composerJ == "")
+                {
+                    music.title = string.Format("({0})", System.IO.Path.GetFileName(file));
+                }
+            }
             else if (file.ToLower().LastIndexOf(".zgm") != -1)
             {
                 music.format = EnmFileFormat.ZGM;
@@ -5260,6 +5329,34 @@ namespace MDPlayer
 
                         lstChips.Add(chip);
                         useChip.Add(i == 0 ? EnmChip.MultiPCM : EnmChip.S_MultiPCM);
+                    }
+                }
+
+                if (((vgm)driverVirtual).uPD7759ClockValue != 0)
+                {
+                    MDSound.upd7759 upd7759 = new MDSound.upd7759();
+                    for (int i = 0; i < (((vgm)driverVirtual).uPD7759DualChipFlag ? 2 : 1); i++)
+                    {
+                        chip = new MDSound.MDSound.Chip();
+                        chip.type = MDSound.MDSound.enmInstrumentType.uPD7759;
+                        chip.ID = (byte)i;
+                        chip.Instrument = upd7759;
+                        chip.Update = upd7759.Update;
+                        chip.Start = upd7759.Start;
+                        chip.Stop = upd7759.Stop;
+                        chip.Reset = upd7759.Reset;
+                        chip.SamplingRate = (UInt32)setting.outputDevice.SampleRate;
+                        chip.Volume = setting.balance.uPD7759Volume;
+                        chip.Clock = ((vgm)driverVirtual).uPD7759ClockValue;
+                        chip.Option = null;
+
+                        hiyorimiDeviceFlag |= 0x2;
+
+                        if (i == 0) chipLED.PriuPD7759 = 1;
+                        else chipLED.SecuPD7759 = 1;
+
+                        lstChips.Add(chip);
+                        useChip.Add(i == 0 ? EnmChip.uPD7759 : EnmChip.S_uPD7759);
                     }
                 }
 
