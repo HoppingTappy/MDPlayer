@@ -95,6 +95,7 @@ namespace MDPlayer.Driver
                 return;
             }
 #endif
+            if (Stopped) return;
 
             try
             {
@@ -115,10 +116,10 @@ namespace MDPlayer.Driver
 
                 if (moonDriverDriver.GetStatus() < 1)
                 {
-                    if (moonDriverDriver.GetStatus() == 0)
-                    {
-                        Thread.Sleep((int)(latency * 2.0));//実際の音声が発音しきるまでlatency*2の分だけ待つ
-                    }
+                    //if (moonDriverDriver.GetStatus() == 0)
+                    //{
+                    //    Thread.Sleep((int)(latency * 2.0));//実際の音声が発音しきるまでlatency*2の分だけ待つ
+                    //}
                     Stopped = true;
                 }
             }
@@ -272,7 +273,16 @@ namespace MDPlayer.Driver
             foreach (byte b in vgmBuf) buf.Add(new MmlDatum(b));
 
             List<ChipAction> lca = new List<ChipAction>();
-            ChipAction ca = new MoonDriverChipAction(opl4Write, opl4WaitSend); lca.Add(ca);
+            ChipAction ca;
+            if (useChip[0] == EnmChip.YMF278B)
+            {
+                ca = new MoonDriverChipAction(opl4Write, opl4WaitSend); lca.Add(ca);
+            }
+            else
+            {
+                ca = new MoonDriverChipAction(opl3Write, opl3WaitSend); lca.Add(ca);
+            }
+
             object additionalOption = new object[]{
                     PlayingFileName,
                     (double)44100,
@@ -358,6 +368,32 @@ namespace MDPlayer.Driver
         }
 
         private void opl4WaitSend(long size, int elapsed)
+        {
+            if (model == EnmModel.VirtualModel)
+            {
+                //MessageBox.Show(string.Format("elapsed:{0} size:{1}", elapsed, size));
+                //int n = Math.Max((int)(size / 20 - elapsed), 0);//20 閾値(magic number)
+                //Thread.Sleep(n);
+                return;
+            }
+
+            ////サイズと経過時間から、追加でウエイトする。
+            //int m = Math.Max((int)(size / 20 - elapsed), 0);//20 閾値(magic number)
+            //Thread.Sleep(m);
+        }
+
+        private void opl3Write(ChipDatum cd)
+        {
+            if (cd == null) return;
+            if (cd.address == -1) return;
+            if (cd.data == -1) return;
+            if (cd.port == -1) return;
+            if (cd.port >1) return;
+
+            chipRegister.setYMF262Register(0, cd.port, cd.address, cd.data, model);
+        }
+
+        private void opl3WaitSend(long size, int elapsed)
         {
             if (model == EnmModel.VirtualModel)
             {

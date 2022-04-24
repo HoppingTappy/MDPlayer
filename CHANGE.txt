@@ -1,4 +1,40 @@
 更新履歴
+STBL234 2022/04/13 2nd
+  mdl/mdr:MoonDriverDotNET:OPL4-NOUSEとEX-OPL3の設定の組み合わせをチェックするように修正
+
+STBL233 2022/04/13
+  mdl/mdr:MoonDriverDotNET:mdrファイルもMoonDriverDotNETを使用するよう修正。
+  OPL4-NOUSE&EX-OPL3が宣言されているデータのみOPL3で演奏するよう修正。
+
+STBL232 2022/04/05 2nd
+  レジスターダンプ画面:PullRequestの反映：パラメータ表示バグの修正。
+  (くろまさんからプルリクいただきました！ありがとうございます！！)
+
+STBL231 2022/04/05
+  mucomDotNET更新
+
+STBL230 2022/04/04
+  vgm:OPL(YM3526)のdualChip対応
+
+STBL229 2022/04/04
+  Core:MDSound差し替え
+  mucomDotNET更新
+
+STBL228 2022/04/03
+  mucomDotNET更新
+
+STBL227 2022/04/02
+  mucomDotNET更新
+
+STBL226 2022/03/30
+  mucomDotNET:SSGExtendタグに対応
+
+STBL225 2022/03/29 2nd
+  Core:MDSound差し替え
+
+STBL224 2022/03/29
+  Core:XGM:1024byte以上のXGZが読み込めなかったバグを修正
+
 STBL223 2022/03/28
   Core:XGM:XGZ対応
 
