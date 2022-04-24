@@ -18,12 +18,12 @@ namespace MDPlayer
 
         public int AL
         {
-            set { this._AL = value & 0x3; }
+            set { this._AL = value & 0x7; }
             get { return this._AL; }
         }
         public int FB
         {
-            set { this._FB = value & 0x3; }
+            set { this._FB = value & 0x7; }
             get { return this._FB; }
         }
         public int AMS
