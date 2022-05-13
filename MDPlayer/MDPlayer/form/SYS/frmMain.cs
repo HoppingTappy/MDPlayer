@@ -7387,6 +7387,7 @@ namespace MDPlayer.form
                 if (Audio.flgReinit) flgReinit = true;
                 if (setting.other.InitAlways) flgReinit = true;
                 reinit(setting);
+                Audio.flgReinit = false;
 
                 if (Audio.isPaused)
                 {
@@ -7478,6 +7479,7 @@ namespace MDPlayer.form
                 if (Audio.flgReinit) flgReinit = true;
                 if (setting.other.InitAlways) flgReinit = true;
                 reinit(setting);
+                Audio.flgReinit = false;
 
                 if (Audio.isPaused)
                 {
