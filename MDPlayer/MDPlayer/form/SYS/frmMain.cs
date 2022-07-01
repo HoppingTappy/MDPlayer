@@ -5741,6 +5741,16 @@ namespace MDPlayer.form
                 int c = (ch > 2) ? ch - 3 : ch;
                 int[][] fmRegister = (chip == EnmChip.YM2612) ? Audio.GetFMRegister(chipID) : (chip == EnmChip.YM2608 ? Audio.GetYM2608Register(chipID) : (chip == EnmChip.YM2203 ? new int[][] { Audio.GetYM2203Register(chipID), null } : Audio.GetYM2610Register(chipID)));
 
+                int alg = fmRegister[p][0xb0 + c] & 0x07;
+                int[] tl = new int[]
+                {
+                        fmRegister[p][0x40 + 0x0 + c] & 0x7f//TL1
+                       ,fmRegister[p][0x40 + 0x8 + c] & 0x7f//TL2
+                       ,fmRegister[p][0x40 + 0x4 + c] & 0x7f//TL3
+                       ,fmRegister[p][0x40 + 0xc + c] & 0x7f//TL4
+                };
+                GetAdjustTLParam(alg, ref tl[0], ref tl[1], ref tl[2], ref tl[3]);
+
                 n = "'@ FA xx\r\n   AR  DR  SR  RR  SL  TL  KS  ML  DT  AM\r\n";
 
                 for (int i = 0; i < 4; i++)
@@ -5752,7 +5762,7 @@ namespace MDPlayer.form
                         , fmRegister[p][0x70 + ops + c] & 0x1f //SR
                         , fmRegister[p][0x80 + ops + c] & 0x0f //RR
                         , (fmRegister[p][0x80 + ops + c] & 0xf0) >> 4//SL
-                        , fmRegister[p][0x40 + ops + c] & 0x7f//TL
+                        , tl[i]//TL
                         , (fmRegister[p][0x50 + ops + c] & 0xc0) >> 6//KS
                         , fmRegister[p][0x30 + ops + c] & 0x0f//ML
                         , (fmRegister[p][0x30 + ops + c] & 0x70) >> 4//DT
@@ -5761,7 +5771,7 @@ namespace MDPlayer.form
                 }
                 n += "   ALG FB\r\n";
                 n += string.Format("'@ {0:D3},{1:D3}\r\n"
-                    , fmRegister[p][0xb0 + c] & 0x07//AL
+                    , alg//AL
                     , (fmRegister[p][0xb0 + c] & 0x38) >> 3//FB
                 );
             }
@@ -5769,6 +5779,16 @@ namespace MDPlayer.form
             {
                 int[] ym2151Register = Audio.GetYM2151Register(chipID);
                 n = "'@ FC xx\r\n   AR  DR  SR  RR  SL  TL  KS  ML  DT1 DT2 AM\r\n";
+
+                int alg = ym2151Register[0x20 + ch] & 0x07;
+                int[] tl = new int[]
+                {
+                        ym2151Register[0x60 + 0x00 + ch] & 0x7f//TL1
+                       ,ym2151Register[0x60 + 0x10 + ch] & 0x7f//TL1
+                       ,ym2151Register[0x60 + 0x08 + ch] & 0x7f//TL1
+                       ,ym2151Register[0x60 + 0x18 + ch] & 0x7f//TL1
+                };
+                GetAdjustTLParam(alg, ref tl[0], ref tl[1], ref tl[2], ref tl[3]);
 
                 for (int i = 0; i < 4; i++)
                 {
@@ -5779,7 +5799,7 @@ namespace MDPlayer.form
                         , ym2151Register[0xc0 + ops + ch] & 0x1f //SR
                         , ym2151Register[0xe0 + ops + ch] & 0x0f //RR
                         , (ym2151Register[0xe0 + ops + ch] & 0xf0) >> 4 //SL
-                        , ym2151Register[0x60 + ops + ch] & 0x7f //TL
+                        , tl[i] //TL
                         , (ym2151Register[0x80 + ops + ch] & 0xc0) >> 6 //KS
                         , ym2151Register[0x40 + ops + ch] & 0x0f //ML
                         , (ym2151Register[0x40 + ops + ch] & 0x70) >> 4 //DT
@@ -5789,7 +5809,7 @@ namespace MDPlayer.form
                 }
                 n += "   ALG FB\r\n";
                 n += string.Format("'@ {0:D3},{1:D3}\r\n"
-                    , ym2151Register[0x20 + ch] & 0x07 //AL
+                    , alg //AL
                     , (ym2151Register[0x20 + ch] & 0x38) >> 3//FB
                 );
             }
@@ -5810,6 +5830,16 @@ namespace MDPlayer.form
 
                 n = "'@xx = {\r\n/* AR  DR  SR  RR  SL  TL  KS  ML  DT1 DT2 AME\r\n";
 
+                int alg = fmRegister[p][0xb0 + c] & 0x07;
+                int[] tl = new int[]
+                {
+                        fmRegister[p][0x40 + 0x0 + c] & 0x7f//TL1
+                       ,fmRegister[p][0x40 + 0x8 + c] & 0x7f//TL2
+                       ,fmRegister[p][0x40 + 0x4 + c] & 0x7f//TL3
+                       ,fmRegister[p][0x40 + 0xc + c] & 0x7f//TL4
+                };
+                GetAdjustTLParam(alg, ref tl[0], ref tl[1], ref tl[2], ref tl[3]);
+
                 for (int i = 0; i < 4; i++)
                 {
                     int ops = (i == 0) ? 0 : ((i == 1) ? 8 : ((i == 2) ? 4 : 12));
@@ -5819,7 +5849,7 @@ namespace MDPlayer.form
                         , fmRegister[p][0x70 + ops + c] & 0x1f //SR
                         , fmRegister[p][0x80 + ops + c] & 0x0f //RR
                         , (fmRegister[p][0x80 + ops + c] & 0xf0) >> 4//SL
-                        , fmRegister[p][0x40 + ops + c] & 0x7f//TL
+                        , tl[i]//TL
                         , (fmRegister[p][0x50 + ops + c] & 0xc0) >> 6//KS
                         , fmRegister[p][0x30 + ops + c] & 0x0f//ML
                         , (fmRegister[p][0x30 + ops + c] & 0x70) >> 4//DT
@@ -5829,7 +5859,7 @@ namespace MDPlayer.form
                 }
                 n += "/* ALG FB  OP\r\n";
                 n += string.Format("   {0:D3},{1:D3},15\r\n}}\r\n"
-                    , fmRegister[p][0xb0 + c] & 0x07//AL
+                    , alg//AL
                     , (fmRegister[p][0xb0 + c] & 0x38) >> 3//FB
                 );
             }
@@ -5838,6 +5868,16 @@ namespace MDPlayer.form
                 int[] ym2151Register = Audio.GetYM2151Register(chipID);
 
                 n = "'@xx = {\r\n/* AR  DR  SR  RR  SL  TL  KS  ML  DT1 DT2 AME\r\n";
+
+                int alg = ym2151Register[0x20 + ch] & 0x07;
+                int[] tl = new int[]
+                {
+                        ym2151Register[0x60 + 0x00 + ch] & 0x7f//TL1
+                       ,ym2151Register[0x60 + 0x10 + ch] & 0x7f//TL1
+                       ,ym2151Register[0x60 + 0x08 + ch] & 0x7f//TL1
+                       ,ym2151Register[0x60 + 0x18 + ch] & 0x7f//TL1
+                };
+                GetAdjustTLParam(alg, ref tl[0], ref tl[1], ref tl[2], ref tl[3]);
 
                 for (int i = 0; i < 4; i++)
                 {
@@ -5848,7 +5888,7 @@ namespace MDPlayer.form
                         , ym2151Register[0xc0 + ops + ch] & 0x1f //SR
                         , ym2151Register[0xe0 + ops + ch] & 0x0f //RR
                         , (ym2151Register[0xe0 + ops + ch] & 0xf0) >> 4 //SL
-                        , ym2151Register[0x60 + ops + ch] & 0x7f //TL
+                        , tl[i] //TL
                         , (ym2151Register[0x80 + ops + ch] & 0xc0) >> 6 //KS
                         , ym2151Register[0x40 + ops + ch] & 0x0f //ML
                         , (ym2151Register[0x40 + ops + ch] & 0x70) >> 4 //DT
@@ -5858,7 +5898,7 @@ namespace MDPlayer.form
                 }
                 n += "/* ALG FB  OP\r\n";
                 n += string.Format("   {0:D3},{1:D3},15\r\n}}\r\n"
-                    , ym2151Register[0x20 + ch] & 0x07 //AL
+                    , alg //AL
                     , (ym2151Register[0x20 + ch] & 0x38) >> 3//FB
                 );
             }
@@ -5894,6 +5934,7 @@ namespace MDPlayer.form
 
         private int[] slot1Tbl = new int[] { 0, 1, 2, 6, 7, 8, 12, 13, 14 };
         private int[] slot2Tbl = new int[] { 3, 4, 5, 9, 10, 11, 15, 16, 17 };
+
         private string getInstChForMML2VGMFormat(EnmChip chip, int ch, int chipID)
         {
 
@@ -5907,6 +5948,16 @@ namespace MDPlayer.form
 
                 n = "'@ N xx\r\n   AR  DR  SR  RR  SL  TL  KS  ML  DT  AM  SSG-EG\r\n";
 
+                int alg = fmRegister[p][0xb0 + c] & 0x07;
+                int[] tl = new int[]
+                {
+                        fmRegister[p][0x40 + 0x0 + c] & 0x7f//TL1
+                       ,fmRegister[p][0x40 + 0x8 + c] & 0x7f//TL2
+                       ,fmRegister[p][0x40 + 0x4 + c] & 0x7f//TL3
+                       ,fmRegister[p][0x40 + 0xc + c] & 0x7f//TL4
+                };
+                GetAdjustTLParam(alg, ref tl[0], ref tl[1], ref tl[2], ref tl[3]);
+
                 for (int i = 0; i < 4; i++)
                 {
                     int ops = (i == 0) ? 0 : ((i == 1) ? 8 : ((i == 2) ? 4 : 12));
@@ -5916,7 +5967,7 @@ namespace MDPlayer.form
                         , fmRegister[p][0x70 + ops + c] & 0x1f //SR
                         , fmRegister[p][0x80 + ops + c] & 0x0f //RR
                         , (fmRegister[p][0x80 + ops + c] & 0xf0) >> 4//SL
-                        , fmRegister[p][0x40 + ops + c] & 0x7f//TL
+                        , tl[i]//TL
                         , (fmRegister[p][0x50 + ops + c] & 0xc0) >> 6//KS
                         , fmRegister[p][0x30 + ops + c] & 0x0f//ML
                         , (fmRegister[p][0x30 + ops + c] & 0x70) >> 4//DT
@@ -5926,7 +5977,7 @@ namespace MDPlayer.form
                 }
                 n += "   ALG FB\r\n";
                 n += string.Format("'@ {0:D3},{1:D3}\r\n"
-                    , fmRegister[p][0xb0 + c] & 0x07//AL
+                    , alg//AL
                     , (fmRegister[p][0xb0 + c] & 0x38) >> 3//FB
                 );
             }
@@ -5934,6 +5985,16 @@ namespace MDPlayer.form
             {
                 int[] ym2151Register = Audio.GetYM2151Register(chipID);
                 n = "'@ M xx\r\n   AR  DR  SR  RR  SL  TL  KS  ML  DT1 DT2 AME\r\n";
+
+                int alg = ym2151Register[0x20 + ch] & 0x07;
+                int[] tl = new int[]
+                {
+                        ym2151Register[0x60 + 0x00 + ch] & 0x7f//TL1
+                       ,ym2151Register[0x60 + 0x10 + ch] & 0x7f//TL1
+                       ,ym2151Register[0x60 + 0x08 + ch] & 0x7f//TL1
+                       ,ym2151Register[0x60 + 0x18 + ch] & 0x7f//TL1
+                };
+                GetAdjustTLParam(alg, ref tl[0], ref tl[1], ref tl[2], ref tl[3]);
 
                 for (int i = 0; i < 4; i++)
                 {
@@ -5944,7 +6005,7 @@ namespace MDPlayer.form
                         , ym2151Register[0xc0 + ops + ch] & 0x1f //SR
                         , ym2151Register[0xe0 + ops + ch] & 0x0f //RR
                         , (ym2151Register[0xe0 + ops + ch] & 0xf0) >> 4 //SL
-                        , ym2151Register[0x60 + ops + ch] & 0x7f //TL
+                        , tl[i] //TL
                         , (ym2151Register[0x80 + ops + ch] & 0xc0) >> 6 //KS
                         , ym2151Register[0x40 + ops + ch] & 0x0f //ML
                         , (ym2151Register[0x40 + ops + ch] & 0x70) >> 4 //DT1
@@ -5954,7 +6015,7 @@ namespace MDPlayer.form
                 }
                 n += "   ALG FB\r\n";
                 n += string.Format("'@ {0:D3},{1:D3}\r\n"
-                    , ym2151Register[0x20 + ch] & 0x07 //AL
+                    , alg //AL
                     , (ym2151Register[0x20 + ch] & 0x38) >> 3//FB
                 );
             }
@@ -6042,9 +6103,19 @@ namespace MDPlayer.form
                 int c = (ch > 2) ? ch - 3 : ch;
                 int[][] fmRegister = (chip == EnmChip.YM2612) ? Audio.GetFMRegister(chipID) : (chip == EnmChip.YM2608 ? Audio.GetYM2608Register(chipID) : (chip == EnmChip.YM2203 ? new int[][] { Audio.GetYM2203Register(chipID), null } : Audio.GetYM2610Register(chipID)));
 
+                int alg = fmRegister[p][0xb0 + c] & 0x07;
+                int[] tl = new int[]
+                {
+                        fmRegister[p][0x40 + 0x0 + c] & 0x7f//TL1
+                       ,fmRegister[p][0x40 + 0x8 + c] & 0x7f//TL2
+                       ,fmRegister[p][0x40 + 0x4 + c] & 0x7f//TL3
+                       ,fmRegister[p][0x40 + 0xc + c] & 0x7f//TL4
+                };
+                GetAdjustTLParam(alg, ref tl[0], ref tl[1], ref tl[2], ref tl[3]);
+
                 n = string.Format("  @xx:{{\r\n  {0:D3} {1:D3}\r\n"
                     , (fmRegister[p][0xb0 + c] & 0x38) >> 3//FB
-                    , fmRegister[p][0xb0 + c] & 0x07//AL
+                    , alg//AL
                     );
 
                 for (int i = 0; i < 4; i++)
@@ -6056,7 +6127,7 @@ namespace MDPlayer.form
                         , fmRegister[p][0x70 + ops + c] & 0x1f //SR
                         , fmRegister[p][0x80 + ops + c] & 0x0f //RR
                         , (fmRegister[p][0x80 + ops + c] & 0xf0) >> 4//SL
-                        , fmRegister[p][0x40 + ops + c] & 0x7f//TL
+                        , tl[i]//TL
                         , (fmRegister[p][0x50 + ops + c] & 0xc0) >> 6//KS
                         , fmRegister[p][0x30 + ops + c] & 0x0f//ML
                         , (fmRegister[p][0x30 + ops + c] & 0x70) >> 4//DT
@@ -6068,9 +6139,19 @@ namespace MDPlayer.form
             {
                 int[] ym2151Register = Audio.GetYM2151Register(chipID);
 
+                int alg = ym2151Register[0x20 + ch] & 0x07;
+                int[] tl = new int[]
+                {
+                        ym2151Register[0x60 + 0x00 + ch] & 0x7f//TL1
+                       ,ym2151Register[0x60 + 0x10 + ch] & 0x7f//TL1
+                       ,ym2151Register[0x60 + 0x08 + ch] & 0x7f//TL1
+                       ,ym2151Register[0x60 + 0x18 + ch] & 0x7f//TL1
+                };
+                GetAdjustTLParam(alg, ref tl[0], ref tl[1], ref tl[2], ref tl[3]);
+
                 n = string.Format("  @xx:{{\r\n  {0:D3} {1:D3}\r\n"
                     , (ym2151Register[0x20 + ch] & 0x38) >> 3//FB
-                    , ym2151Register[0x20 + ch] & 0x07 //AL
+                    , alg //AL
                     );
 
                 for (int i = 0; i < 4; i++)
@@ -6082,7 +6163,7 @@ namespace MDPlayer.form
                         , ym2151Register[0xc0 + ops + ch] & 0x1f //SR
                         , ym2151Register[0xe0 + ops + ch] & 0x0f //RR
                         , (ym2151Register[0xe0 + ops + ch] & 0xf0) >> 4 //SL
-                        , ym2151Register[0x60 + ops + ch] & 0x7f //TL
+                        , tl[i] //TL
                         , (ym2151Register[0x80 + ops + ch] & 0xc0) >> 6 //KS
                         , ym2151Register[0x40 + ops + ch] & 0x0f //ML
                         , (ym2151Register[0x40 + ops + ch] & 0x70) >> 4 //DT
@@ -6105,9 +6186,19 @@ namespace MDPlayer.form
                 int c = (ch > 2) ? ch - 3 : ch;
                 int[][] fmRegister = (chip == EnmChip.YM2612) ? Audio.GetFMRegister(chipID) : (chip == EnmChip.YM2608 ? Audio.GetYM2608Register(chipID) : (chip == EnmChip.YM2203 ? new int[][] { Audio.GetYM2203Register(chipID), null } : Audio.GetYM2610Register(chipID)));
 
+                int alg = fmRegister[p][0xb0 + c] & 0x07;
+                int[] tl = new int[]
+                {
+                        fmRegister[p][0x40 + 0x0 + c] & 0x7f//TL1
+                       ,fmRegister[p][0x40 + 0x8 + c] & 0x7f//TL2
+                       ,fmRegister[p][0x40 + 0x4 + c] & 0x7f//TL3
+                       ,fmRegister[p][0x40 + 0xc + c] & 0x7f//TL4
+                };
+                GetAdjustTLParam(alg, ref tl[0], ref tl[1], ref tl[2], ref tl[3]);
+
                 n = string.Format("  @xx:{{\r\n  {0:D3}, {1:D3}\r\n"
                     , (fmRegister[p][0xb0 + c] & 0x38) >> 3//FB
-                    , fmRegister[p][0xb0 + c] & 0x07//AL
+                    , alg//AL
                     );
 
                 for (int i = 0; i < 4; i++)
@@ -6119,7 +6210,7 @@ namespace MDPlayer.form
                         , fmRegister[p][0x70 + ops + c] & 0x1f //SR
                         , fmRegister[p][0x80 + ops + c] & 0x0f //RR
                         , (fmRegister[p][0x80 + ops + c] & 0xf0) >> 4//SL
-                        , fmRegister[p][0x40 + ops + c] & 0x7f//TL
+                        , tl[i]//TL
                         , (fmRegister[p][0x50 + ops + c] & 0xc0) >> 6//KS
                         , fmRegister[p][0x30 + ops + c] & 0x0f//ML
                         , (fmRegister[p][0x30 + ops + c] & 0x70) >> 4//DT
@@ -6131,9 +6222,19 @@ namespace MDPlayer.form
             {
                 int[] ym2151Register = Audio.GetYM2151Register(chipID);
 
+                int alg = ym2151Register[0x20 + ch] & 0x07;
+                int[] tl = new int[]
+                {
+                        ym2151Register[0x60 + 0x00 + ch] & 0x7f//TL1
+                       ,ym2151Register[0x60 + 0x10 + ch] & 0x7f//TL1
+                       ,ym2151Register[0x60 + 0x08 + ch] & 0x7f//TL1
+                       ,ym2151Register[0x60 + 0x18 + ch] & 0x7f//TL1
+                };
+                GetAdjustTLParam(alg, ref tl[0], ref tl[1], ref tl[2], ref tl[3]);
+
                 n = string.Format("  @xx:{{\r\n  {0:D3}, {1:D3}\r\n"
                     , (ym2151Register[0x20 + ch] & 0x38) >> 3//FB
-                    , ym2151Register[0x20 + ch] & 0x07 //AL
+                    , alg //AL
                     );
 
                 for (int i = 0; i < 4; i++)
@@ -6145,7 +6246,7 @@ namespace MDPlayer.form
                         , ym2151Register[0xc0 + ops + ch] & 0x1f //SR
                         , ym2151Register[0xe0 + ops + ch] & 0x0f //RR
                         , (ym2151Register[0xe0 + ops + ch] & 0xf0) >> 4 //SL
-                        , ym2151Register[0x60 + ops + ch] & 0x7f //TL
+                        , tl[i] //TL
                         , (ym2151Register[0x80 + ops + ch] & 0xc0) >> 6 //KS
                         , ym2151Register[0x40 + ops + ch] & 0x0f //ML
                         , (ym2151Register[0x40 + ops + ch] & 0x70) >> 4 //DT
@@ -6168,16 +6269,38 @@ namespace MDPlayer.form
                 int c = (ch > 2) ? ch - 3 : ch;
                 int[][] fmRegister = (chip == EnmChip.YM2612) ? Audio.GetFMRegister(chipID) : (chip == EnmChip.YM2608 ? Audio.GetYM2608Register(chipID) : (chip == EnmChip.YM2203 ? new int[][] { Audio.GetYM2203Register(chipID), null } : Audio.GetYM2610Register(chipID)));
 
+                int alg = fmRegister[p][0xb0 + c] & 0x07;
+                int[] tl = new int[]
+                {
+                        fmRegister[p][0x40 + 0x0 + c] & 0x7f//TL1
+                       ,fmRegister[p][0x40 + 0x8 + c] & 0x7f//TL2
+                       ,fmRegister[p][0x40 + 0x4 + c] & 0x7f//TL3
+                       ,fmRegister[p][0x40 + 0xc + c] & 0x7f//TL4
+                };
+                GetAdjustTLParam(alg, ref tl[0], ref tl[1], ref tl[2], ref tl[3]);
+
                 n = "@%xxx\r\n";
 
                 for (int i = 0; i < 6; i++)
                 {
-                    n += string.Format("${0:X3},${1:X3},${2:X3},${3:X3}\r\n"
-                        , fmRegister[p][0x30 + 0 + c + i * 0x10] & 0xff
-                        , fmRegister[p][0x30 + 8 + c + i * 0x10] & 0xff
-                        , fmRegister[p][0x30 + 16 + c + i * 0x10] & 0xff
-                        , fmRegister[p][0x30 + 24 + c + i * 0x10] & 0xff
-                    );
+                    if (0x30 + i * 0x10 != 0x40)
+                    {
+                        n += string.Format("${0:X3},${1:X3},${2:X3},${3:X3}\r\n"
+                            , fmRegister[p][0x30 + 0 + c + i * 0x10] & 0xff
+                            , fmRegister[p][0x30 + 8 + c + i * 0x10] & 0xff
+                            , fmRegister[p][0x30 + 16 + c + i * 0x10] & 0xff
+                            , fmRegister[p][0x30 + 24 + c + i * 0x10] & 0xff
+                        );
+                    }
+                    else
+                    {
+                        n += string.Format("${0:X3},${1:X3},${2:X3},${3:X3}\r\n"
+                            , tl[0]
+                            , tl[2]
+                            , tl[1]
+                            , tl[3]
+                        );
+                    }
                 }
                 n += string.Format("${0:X3}\r\n"
                     , fmRegister[p][0xb0 + c] //FB/AL
@@ -6186,6 +6309,16 @@ namespace MDPlayer.form
             else if (chip == EnmChip.YM2151)
             {
                 int[] ym2151Register = Audio.GetYM2151Register(chipID);
+
+                int alg = ym2151Register[0x20 + ch] & 0x07;
+                int[] tl = new int[]
+                {
+                        ym2151Register[0x60 + 0x00 + ch] & 0x7f//TL1
+                       ,ym2151Register[0x60 + 0x10 + ch] & 0x7f//TL1
+                       ,ym2151Register[0x60 + 0x08 + ch] & 0x7f//TL1
+                       ,ym2151Register[0x60 + 0x18 + ch] & 0x7f//TL1
+                };
+                GetAdjustTLParam(alg, ref tl[0], ref tl[1], ref tl[2], ref tl[3]);
 
                 n = "@%xxx\r\n";
 
@@ -6196,10 +6329,10 @@ namespace MDPlayer.form
                     , (ym2151Register[0x40 + 24 + ch] & 0x7f)//DT/ML
                 );
                 n += string.Format("${0:X3},${1:X3},${2:X3},${3:X3}\r\n"
-                    , (ym2151Register[0x60 + 0 + ch] & 0x7f) //TL
-                    , (ym2151Register[0x60 + 8 + ch] & 0x7f) //TL
-                    , (ym2151Register[0x60 + 16 + ch] & 0x7f)//TL
-                    , (ym2151Register[0x60 + 24 + ch] & 0x7f)//TL
+                    , tl[0] //TL
+                    , tl[2] //TL
+                    , tl[1] //TL
+                    , tl[3] //TL
                 );
                 n += string.Format("${0:X3},${1:X3},${2:X3},${3:X3}\r\n"
                     , (ym2151Register[0x80 + 0 + ch] & 0xdf) //KS/AR
@@ -6245,9 +6378,19 @@ namespace MDPlayer.form
                 int c = (ch > 2) ? ch - 3 : ch;
                 int[][] fmRegister = (chip == EnmChip.YM2612) ? Audio.GetFMRegister(chipID) : (chip == EnmChip.YM2608 ? Audio.GetYM2608Register(chipID) : (chip == EnmChip.YM2203 ? new int[][] { Audio.GetYM2203Register(chipID), null } : Audio.GetYM2610Register(chipID)));
 
+                int alg = fmRegister[p][0xb0 + c] & 0x07;
+                int[] tl = new int[]
+                {
+                        fmRegister[p][0x40 + 0x0 + c] & 0x7f//TL1
+                       ,fmRegister[p][0x40 + 0x8 + c] & 0x7f//TL2
+                       ,fmRegister[p][0x40 + 0x4 + c] & 0x7f//TL3
+                       ,fmRegister[p][0x40 + 0xc + c] & 0x7f//TL4
+                };
+                GetAdjustTLParam(alg, ref tl[0], ref tl[1], ref tl[2], ref tl[3]);
+
                 n = "@ xxxx {\r\n";
                 n += string.Format("000,{0:D3},{1:D3},015\r\n"
-                    , fmRegister[p][0xb0 + c] & 0x07//AL
+                    , alg//AL
                     , (fmRegister[p][0xb0 + c] & 0x38) >> 3//FB
                 );
 
@@ -6260,7 +6403,7 @@ namespace MDPlayer.form
                         , fmRegister[p][0x70 + ops + c] & 0x1f //SR
                         , fmRegister[p][0x80 + ops + c] & 0x0f //RR
                         , (fmRegister[p][0x80 + ops + c] & 0xf0) >> 4//SL
-                        , fmRegister[p][0x40 + ops + c] & 0x7f//TL
+                        , tl[i]//TL
                         , (fmRegister[p][0x50 + ops + c] & 0xc0) >> 6//KS
                         , fmRegister[p][0x30 + ops + c] & 0x0f//ML
                         , (fmRegister[p][0x30 + ops + c] & 0x70) >> 4//DT
@@ -6274,9 +6417,19 @@ namespace MDPlayer.form
             {
                 int[] ym2151Register = Audio.GetYM2151Register(chipID);
 
+                int alg = ym2151Register[0x20 + ch] & 0x07;
+                int[] tl = new int[]
+                {
+                        ym2151Register[0x60 + 0x00 + ch] & 0x7f//TL1
+                       ,ym2151Register[0x60 + 0x10 + ch] & 0x7f//TL1
+                       ,ym2151Register[0x60 + 0x08 + ch] & 0x7f//TL1
+                       ,ym2151Register[0x60 + 0x18 + ch] & 0x7f//TL1
+                };
+                GetAdjustTLParam(alg, ref tl[0], ref tl[1], ref tl[2], ref tl[3]);
+
                 n = "@ xxxx {\r\n";
                 n += string.Format("000,{0:D3},{1:D3},015\r\n"
-                    , ym2151Register[0x20 + ch] & 0x07 //AL
+                    , alg //AL
                     , (ym2151Register[0x20 + ch] & 0x38) >> 3//FB
                 );
 
@@ -6289,7 +6442,7 @@ namespace MDPlayer.form
                         , ym2151Register[0xc0 + ops + ch] & 0x1f //SR
                         , ym2151Register[0xe0 + ops + ch] & 0x0f //RR
                         , (ym2151Register[0xe0 + ops + ch] & 0xf0) >> 4 //SL
-                        , ym2151Register[0x60 + ops + ch] & 0x7f //TL
+                        , tl[i] //TL
                         , (ym2151Register[0x80 + ops + ch] & 0xc0) >> 6 //KS
                         , ym2151Register[0x40 + ops + ch] & 0x0f //ML
                         , (ym2151Register[0x40 + ops + ch] & 0x70) >> 4 //DT
@@ -6492,7 +6645,17 @@ namespace MDPlayer.form
                 int c = (ch > 2) ? ch - 3 : ch;
                 int[][] fmRegister = (chip == EnmChip.YM2612) ? Audio.GetFMRegister(chipID) : (chip == EnmChip.YM2608 ? Audio.GetYM2608Register(chipID) : (chip == EnmChip.YM2203 ? new int[][] { Audio.GetYM2203Register(chipID), null } : Audio.GetYM2610Register(chipID)));
 
-                n[0] = (byte)(fmRegister[p][0xb0 + c] & 0x07);//AL
+                int alg = fmRegister[p][0xb0 + c] & 0x07;
+                int[] tl = new int[]
+                {
+                        fmRegister[p][0x40 + 0x0 + c] & 0x7f//TL1
+                       ,fmRegister[p][0x40 + 0x8 + c] & 0x7f//TL2
+                       ,fmRegister[p][0x40 + 0x4 + c] & 0x7f//TL3
+                       ,fmRegister[p][0x40 + 0xc + c] & 0x7f//TL4
+                };
+                GetAdjustTLParam(alg, ref tl[0], ref tl[1], ref tl[2], ref tl[3]);
+
+                n[0] = (byte)(alg);//AL
                 n[1] = (byte)((fmRegister[p][0xb0 + c] & 0x38) >> 3);//FB
 
 
@@ -6506,7 +6669,7 @@ namespace MDPlayer.form
                     // 0>3  1>4  2>5  3>6  4>3  5>2  6>1  7>0
                     dt = (dt < 4) ? (dt + 3) : (7 - dt);
                     n[i * 10 + 3] = (byte)dt;
-                    n[i * 10 + 4] = (byte)(fmRegister[p][0x40 + ops + c] & 0x7f);//TL
+                    n[i * 10 + 4] = (byte)(tl[i]);//TL
                     n[i * 10 + 5] = (byte)((fmRegister[p][0x50 + ops + c] & 0xc0) >> 6);//KS
                     n[i * 10 + 6] = (byte)(fmRegister[p][0x50 + ops + c] & 0x1f); //AR
                     n[i * 10 + 7] = (byte)(fmRegister[p][0x60 + ops + c] & 0x1f); //DR
@@ -6521,7 +6684,17 @@ namespace MDPlayer.form
             {
                 int[] ym2151Register = Audio.GetYM2151Register(chipID);
 
-                n[0] = (byte)(ym2151Register[0x20 + ch] & 0x07);//AL
+                int alg = ym2151Register[0x20 + ch] & 0x07;
+                int[] tl = new int[]
+                {
+                        ym2151Register[0x60 + 0x00 + ch] & 0x7f//TL1
+                       ,ym2151Register[0x60 + 0x10 + ch] & 0x7f//TL1
+                       ,ym2151Register[0x60 + 0x08 + ch] & 0x7f//TL1
+                       ,ym2151Register[0x60 + 0x18 + ch] & 0x7f//TL1
+                };
+                GetAdjustTLParam(alg, ref tl[0], ref tl[1], ref tl[2], ref tl[3]);
+
+                n[0] = (byte)(alg);//AL
                 n[1] = (byte)((ym2151Register[0x20 + ch] & 0x38) >> 3);//FB
 
                 for (int i = 0; i < 4; i++)
@@ -6534,7 +6707,7 @@ namespace MDPlayer.form
                     // 0>3  1>4  2>5  3>6  4>3  5>2  6>1  7>0
                     dt = (dt < 4) ? (dt + 3) : (7 - dt);
                     n[i * 10 + 3] = (byte)dt;
-                    n[i * 10 + 4] = (byte)(ym2151Register[0x60 + ops + ch] & 0x7f);//TL
+                    n[i * 10 + 4] = (byte)(tl[i]);//TL
                     n[i * 10 + 5] = (byte)((ym2151Register[0x80 + ops + ch] & 0xc0) >> 6);//KS
                     n[i * 10 + 6] = (byte)(ym2151Register[0x80 + ops + ch] & 0x1f); //AR
                     n[i * 10 + 7] = (byte)(ym2151Register[0xa0 + ops + ch] & 0x1f); //DR
@@ -6583,11 +6756,21 @@ namespace MDPlayer.form
                 int c = (ch > 2) ? ch - 3 : ch;
                 int[][] fmRegister = (chip == EnmChip.YM2612) ? Audio.GetFMRegister(chipID) : (chip == EnmChip.YM2608 ? Audio.GetYM2608Register(chipID) : (chip == EnmChip.YM2203 ? new int[][] { Audio.GetYM2203Register(chipID), null } : Audio.GetYM2610Register(chipID)));
 
+                int alg = fmRegister[p][0xb0 + c] & 0x07;
+                int[] tl = new int[]
+                {
+                        fmRegister[p][0x40 + 0x0 + c] & 0x7f//TL1
+                       ,fmRegister[p][0x40 + 0x8 + c] & 0x7f//TL2
+                       ,fmRegister[p][0x40 + 0x4 + c] & 0x7f//TL3
+                       ,fmRegister[p][0x40 + 0xc + c] & 0x7f//TL4
+                };
+                GetAdjustTLParam(alg, ref tl[0], ref tl[1], ref tl[2], ref tl[3]);
+
                 n[1] = 0x02;//SYSTEM_GENESIS
 
                 n[3] = (byte)(fmRegister[p][0xb4 + c] & 0x03);//LFO (FMS on YM2612, PMS on YM2151)
                 n[4] = (byte)((fmRegister[p][0xb0 + c] & 0x38) >> 3);//FB
-                n[5] = (byte)(fmRegister[p][0xb0 + c] & 0x07);//ALG
+                n[5] = (byte)(alg);//ALG
                 n[6] = (byte)((fmRegister[p][0xb4 + c] & 0x30) >> 4);//LFO2(AMS on YM2612, AMS on YM2151)
 
                 for (int i = 0; i < 4; i++)
@@ -6596,7 +6779,7 @@ namespace MDPlayer.form
                     int ops = i * 4;
 
                     n[i * 11 + 7] = (byte)(fmRegister[p][0x30 + ops + c] & 0x0f);//ML
-                    n[i * 11 + 8] = (byte)(fmRegister[p][0x40 + ops + c] & 0x7f);//TL
+                    n[i * 11 + 8] = (byte)(tl[i]);//TL
                     n[i * 11 + 9] = (byte)(fmRegister[p][0x50 + ops + c] & 0x1f); //AR
                     n[i * 11 + 10] = (byte)(fmRegister[p][0x60 + ops + c] & 0x1f); //DR
                     n[i * 11 + 11] = (byte)((fmRegister[p][0x80 + ops + c] & 0xf0) >> 4);//SL
@@ -6617,11 +6800,21 @@ namespace MDPlayer.form
             {
                 int[] ym2151Register = Audio.GetYM2151Register(chipID);
 
+                int alg = ym2151Register[0x20 + ch] & 0x07;
+                int[] tl = new int[]
+                {
+                        ym2151Register[0x60 + 0x00 + ch] & 0x7f//TL1
+                       ,ym2151Register[0x60 + 0x10 + ch] & 0x7f//TL1
+                       ,ym2151Register[0x60 + 0x08 + ch] & 0x7f//TL1
+                       ,ym2151Register[0x60 + 0x18 + ch] & 0x7f//TL1
+                };
+                GetAdjustTLParam(alg, ref tl[0], ref tl[1], ref tl[2], ref tl[3]);
+
                 n[1] = 0x08;//SYSTEM_YM2151
 
                 n[3] = (byte)((ym2151Register[0x38 + ch] & 0x70) >> 4);//LFO (FMS on YM2612, PMS on YM2151)
                 n[4] = (byte)((ym2151Register[0x20 + ch] & 0x38) >> 3);//FB
-                n[5] = (byte)(ym2151Register[0x20 + ch] & 0x07);//AL
+                n[5] = (byte)(alg);//AL
                 n[6] = (byte)(ym2151Register[0x38 + ch] & 0x03);//LFO2(AMS on YM2612, AMS on YM2151)
 
                 for (int i = 0; i < 4; i++)
@@ -6630,7 +6823,7 @@ namespace MDPlayer.form
                     int ops = i * 8;
 
                     n[i * 11 + 7] = (byte)(ym2151Register[0x40 + ops + ch] & 0x0f);//ML
-                    n[i * 11 + 8] = (byte)(ym2151Register[0x60 + ops + ch] & 0x7f);//TL
+                    n[i * 11 + 8] = (byte)(tl[i]);//TL
                     n[i * 11 + 9] = (byte)(ym2151Register[0x80 + ops + ch] & 0x1f); //AR
                     n[i * 11 + 10] = (byte)(ym2151Register[0xa0 + ops + ch] & 0x1f); //DR
                     n[i * 11 + 11] = (byte)((ym2151Register[0xe0 + ops + ch] & 0xf0) >> 4);//SL
@@ -6724,7 +6917,17 @@ namespace MDPlayer.form
                         )
                     );
 
-                alg = (fmRegister[p][0xb0 + c] & 0x07) >> 0;
+                alg = fmRegister[p][0xb0 + c] & 0x07;
+                int[] tls = new int[]
+                {
+                        fmRegister[p][0x40 + 0x0 + c] & 0x7f//TL1
+                       ,fmRegister[p][0x40 + 0x8 + c] & 0x7f//TL2
+                       ,fmRegister[p][0x40 + 0x4 + c] & 0x7f//TL3
+                       ,fmRegister[p][0x40 + 0xc + c] & 0x7f//TL4
+                };
+                GetAdjustTLParam(alg, ref tls[0], ref tls[1], ref tls[2], ref tls[3]);
+
+                //alg = (fmRegister[p][0xb0 + c] & 0x07) >> 0;
                 fb = (fmRegister[p][0xb0 + c] & 0x38) >> 3;
                 ams = (fmRegister[p][0xb4 + c] & 0x30) >> 4;
                 pms = (fmRegister[p][0xb4 + c] & 0x07) >> 0;
@@ -6732,7 +6935,7 @@ namespace MDPlayer.form
                 for (int i = 0; i < 4; i++)
                 {
                     int ops = (i == 0) ? 0 : ((i == 1) ? 8 : ((i == 2) ? 4 : 12));
-                    int tl = 127 - ((fmRegister[p][0x40 + ops + c] & 0x7f) >> 0);
+                    int tl = 127 - tls[i];
                     int vel = 0;
                     int ssg = fmRegister[p][0x90 + ops + c] & 0x0f;
                     ssg = ((ssg & 0x8) == 0) ? 0 : ((ssg & 0x7) + 1);
@@ -6759,7 +6962,17 @@ namespace MDPlayer.form
             {
                 int[] ym2151Register = Audio.GetYM2151Register(chipID);
 
-                alg = (ym2151Register[0x20 + ch] & 0x07) >> 0;
+                 alg = ym2151Register[0x20 + ch] & 0x07;
+                int[] tls = new int[]
+                {
+                        ym2151Register[0x60 + 0x00 + ch] & 0x7f//TL1
+                       ,ym2151Register[0x60 + 0x10 + ch] & 0x7f//TL1
+                       ,ym2151Register[0x60 + 0x08 + ch] & 0x7f//TL1
+                       ,ym2151Register[0x60 + 0x18 + ch] & 0x7f//TL1
+                };
+                GetAdjustTLParam(alg, ref tls[0], ref tls[1], ref tls[2], ref tls[3]);
+
+                //alg = (ym2151Register[0x20 + ch] & 0x07) >> 0;
                 fb = (ym2151Register[0x20 + ch] & 0x38) >> 3;
                 ams = (ym2151Register[0x38 + ch] & 0x03) >> 0;
                 pms = (ym2151Register[0x38 + ch] & 0x70) >> 4;
@@ -6767,7 +6980,7 @@ namespace MDPlayer.form
                 for (int i = 0; i < 4; i++)
                 {
                     int ops = (i == 0) ? 0 : ((i == 1) ? 16 : ((i == 2) ? 8 : 24));
-                    int tl = 127 - ((ym2151Register[0x60 + ops + ch] & 0x7f) >> 0);
+                    int tl = 127 - tls[i];
                     int vel = 0;
                     op[i].Add(string.Format("  <PARAM id=\"OP{0}Vel\" value=\"{1}.0\"/>", i + 1, vel));
                     op[i].Add(string.Format("  <PARAM id=\"OP{0}TL\" value=\"{1}.0\"/>", i + 1, tl));
@@ -6866,6 +7079,16 @@ namespace MDPlayer.form
                 int c = (ch > 2) ? ch - 3 : ch;
                 int[][] fmRegister = (chip == EnmChip.YM2612) ? Audio.GetFMRegister(chipID) : (chip == EnmChip.YM2608 ? Audio.GetYM2608Register(chipID) : (chip == EnmChip.YM2203 ? new int[][] { Audio.GetYM2203Register(chipID), null } : Audio.GetYM2610Register(chipID)));
 
+                int alg = fmRegister[p][0xb0 + c] & 0x07;
+                int[] tl = new int[]
+                {
+                        fmRegister[p][0x40 + 0x0 + c] & 0x7f//TL1
+                       ,fmRegister[p][0x40 + 0x8 + c] & 0x7f//TL2
+                       ,fmRegister[p][0x40 + 0x4 + c] & 0x7f//TL3
+                       ,fmRegister[p][0x40 + 0xc + c] & 0x7f//TL4
+                };
+                GetAdjustTLParam(alg, ref tl[0], ref tl[1], ref tl[2], ref tl[3]);
+
                 n[12 + 32 + 3] = (byte)(fmRegister[p][0xb0 + c] & 0x3f);//FB & ALG
                 n[12 + 32 + 4] = 0x10;//0x00:OPN2  0x10:OPNA
 
@@ -6874,7 +7097,7 @@ namespace MDPlayer.form
                     //int ops = (i == 0) ? 0 : ((i == 1) ? 4 : ((i == 2) ? 8 : 12));
                     int ops = i * 4;
                     n[i * 7 + 12 + 32 + 5] = (byte)fmRegister[p][0x30 + ops + c];//DT & ML
-                    n[i * 7 + 12 + 32 + 6] = (byte)(fmRegister[p][0x40 + ops + c] & 0x7f);//TL
+                    n[i * 7 + 12 + 32 + 6] = (byte)tl[i];//TL
                     n[i * 7 + 12 + 32 + 7] = (byte)fmRegister[p][0x50 + ops + c];//KS & AR
                     n[i * 7 + 12 + 32 + 8] = (byte)fmRegister[p][0x60 + ops + c]; //AM & DR
                     n[i * 7 + 12 + 32 + 9] = (byte)fmRegister[p][0x70 + ops + c]; //SR
@@ -6887,6 +7110,16 @@ namespace MDPlayer.form
             {
                 int[] ym2151Register = Audio.GetYM2151Register(chipID);
 
+                int alg = ym2151Register[0x20 + ch] & 0x07;
+                int[] tl = new int[]
+                {
+                        ym2151Register[0x60 + 0x00 + ch] & 0x7f//TL1
+                       ,ym2151Register[0x60 + 0x10 + ch] & 0x7f//TL1
+                       ,ym2151Register[0x60 + 0x08 + ch] & 0x7f//TL1
+                       ,ym2151Register[0x60 + 0x18 + ch] & 0x7f//TL1
+                };
+                GetAdjustTLParam(alg, ref tl[0], ref tl[1], ref tl[2], ref tl[3]);
+
                 n[12 + 32 + 3] = (byte)ym2151Register[0x20 + ch];//FB & ALG
                 n[12 + 32 + 4] = 0x10;//0x00:OPN2  0x10:OPNA
 
@@ -6895,7 +7128,7 @@ namespace MDPlayer.form
                     //int ops = (i == 0) ? 0 : ((i == 1) ? 8 : ((i == 2) ? 16 : 24));
                     int ops = i * 8;
                     n[i * 7 + 12 + 32 + 5] = (byte)ym2151Register[0x40 + ops + ch];//DT & ML
-                    n[i * 7 + 12 + 32 + 6] = (byte)(ym2151Register[0x60 + ops + ch] & 0x7f);//TL
+                    n[i * 7 + 12 + 32 + 6] = (byte)tl[i];//TL
                     n[i * 7 + 12 + 32 + 7] = (byte)ym2151Register[0x80 + ops + ch]; //KS & AR
                     n[i * 7 + 12 + 32 + 8] = (byte)ym2151Register[0xa0 + ops + ch]; //AME DR
                     n[i * 7 + 12 + 32 + 9] = (byte)ym2151Register[0xc0 + ops + ch]; //SR
@@ -7099,11 +7332,21 @@ namespace MDPlayer.form
                 int c = (ch > 2) ? ch - 3 : ch;
                 int[][] fmRegister = (chip == EnmChip.YM2612) ? Audio.GetFMRegister(chipID) : (chip == EnmChip.YM2608 ? Audio.GetYM2608Register(chipID) : (chip == EnmChip.YM2203 ? new int[][] { Audio.GetYM2203Register(chipID), null } : Audio.GetYM2610Register(chipID)));
 
+                int alg = fmRegister[p][0xb0 + c] & 0x07;
+                int[] tl = new int[]
+                {
+                        fmRegister[p][0x40 + 0x0 + c] & 0x7f//TL1
+                       ,fmRegister[p][0x40 + 0x8 + c] & 0x7f//TL2
+                       ,fmRegister[p][0x40 + 0x4 + c] & 0x7f//TL3
+                       ,fmRegister[p][0x40 + 0xc + c] & 0x7f//TL4
+                };
+                GetAdjustTLParam(alg, ref tl[0], ref tl[1], ref tl[2], ref tl[3]);
+
                 n = "@: n MDPlayer\r\n";
                 n += "LFO:  0   0   0   0   0\r\n";
                 n += string.Format("CH: 64  {0,2}  {1,2}   0   0 120   0\r\n"
                     , (fmRegister[p][0xb0 + c] & 0x38) >> 3//FB
-                    , fmRegister[p][0xb0 + c] & 0x07//AL
+                    , alg//AL
                 );
 
                 for (int i = 0; i < 4; i++)
@@ -7122,7 +7365,7 @@ namespace MDPlayer.form
                         )
                         , string.Format(
                             "{0,3} {1,3} {2,3} {3,3}   0 {4,3}\r\n"
-                            , fmRegister[p][0x40 + ops + c] & 0x7f//TL
+                            , tl[i]//TL
                             , (fmRegister[p][0x50 + ops + c] & 0xc0) >> 6//KS
                             , fmRegister[p][0x30 + ops + c] & 0x0f//ML
                             , (fmRegister[p][0x30 + ops + c] & 0x70) >> 4//DT
@@ -7135,11 +7378,21 @@ namespace MDPlayer.form
             {
                 int[] ym2151Register = Audio.GetYM2151Register(chipID);
 
+                int alg = ym2151Register[0x20 + ch] & 0x07;
+                int[] tl = new int[]
+                {
+                        ym2151Register[0x60 + 0x00 + ch] & 0x7f//TL1
+                       ,ym2151Register[0x60 + 0x10 + ch] & 0x7f//TL1
+                       ,ym2151Register[0x60 + 0x08 + ch] & 0x7f//TL1
+                       ,ym2151Register[0x60 + 0x18 + ch] & 0x7f//TL1
+                };
+                GetAdjustTLParam(alg, ref tl[0], ref tl[1], ref tl[2], ref tl[3]);
+
                 n = "@: n MDPlayer\r\n";
                 n += "LFO:  0   0   0   0   0\r\n";
                 n += string.Format("CH: 64  {0,2}  {1,2}   0   0 120   0\r\n"
                     , (ym2151Register[0x20 + ch] & 0x38) >> 3//FB
-                    , ym2151Register[0x20 + ch] & 0x07 //AL
+                    , alg //AL
                 );
 
                 for (int i = 0; i < 4; i++)
@@ -7158,7 +7411,7 @@ namespace MDPlayer.form
                         )
                         , string.Format(
                             "{0,3} {1,3} {2,3} {3,3} {4,3} {5,3}\r\n"
-                            , ym2151Register[0x60 + ops + ch] & 0x7f //TL
+                            , tl[i] //TL
                             , (ym2151Register[0x80 + ops + ch] & 0xc0) >> 6 //KS
                             , ym2151Register[0x40 + ops + ch] & 0x0f //ML
                             , (ym2151Register[0x40 + ops + ch] & 0x70) >> 4 //DT
@@ -7183,9 +7436,19 @@ namespace MDPlayer.form
                 int c = (ch > 2) ? ch - 3 : ch;
                 int[][] fmRegister = (chip == EnmChip.YM2612) ? Audio.GetFMRegister(chipID) : (chip == EnmChip.YM2608 ? Audio.GetYM2608Register(chipID) : (chip == EnmChip.YM2203 ? new int[][] { Audio.GetYM2203Register(chipID), null } : Audio.GetYM2610Register(chipID)));
 
+                int alg = fmRegister[p][0xb0 + c] & 0x07;
+                int[] tl = new int[]
+                {
+                        fmRegister[p][0x40 + 0x0 + c] & 0x7f//TL1
+                       ,fmRegister[p][0x40 + 0x8 + c] & 0x7f//TL2
+                       ,fmRegister[p][0x40 + 0x4 + c] & 0x7f//TL3
+                       ,fmRegister[p][0x40 + 0xc + c] & 0x7f//TL4
+                };
+                GetAdjustTLParam(alg, ref tl[0], ref tl[1], ref tl[2], ref tl[3]);
+
                 n = "; nm alg fbl\r\n";
                 n += string.Format("@xxx {0:D3} {1:D3}                            =      MDPlayer\r\n"
-                    , fmRegister[p][0xb0 + c] & 0x07//AL
+                    , alg//AL
                     , (fmRegister[p][0xb0 + c] & 0x38) >> 3//FB
                 );
                 n += "; ar  dr  sr  rr  sl  tl  ks  ml  dt ams   seg\r\n";
@@ -7199,7 +7462,7 @@ namespace MDPlayer.form
                         , fmRegister[p][0x70 + ops + c] & 0x1f //SR
                         , fmRegister[p][0x80 + ops + c] & 0x0f //RR
                         , (fmRegister[p][0x80 + ops + c] & 0xf0) >> 4//SL
-                        , fmRegister[p][0x40 + ops + c] & 0x7f//TL
+                        , tl[i]//TL
                         , (fmRegister[p][0x50 + ops + c] & 0xc0) >> 6//KS
                         , fmRegister[p][0x30 + ops + c] & 0x0f//ML
                         , (fmRegister[p][0x30 + ops + c] & 0x70) >> 4//DT
@@ -7211,9 +7474,19 @@ namespace MDPlayer.form
             else if (chip == EnmChip.YM2151)
             {
                 int[] ym2151Register = Audio.GetYM2151Register(chipID);
+                int alg = ym2151Register[0x20 + ch] & 0x07;
+                int[] tl = new int[]
+                {
+                        ym2151Register[0x60 + 0x00 + ch] & 0x7f//TL1
+                       ,ym2151Register[0x60 + 0x10 + ch] & 0x7f//TL1
+                       ,ym2151Register[0x60 + 0x08 + ch] & 0x7f//TL1
+                       ,ym2151Register[0x60 + 0x18 + ch] & 0x7f//TL1
+                };
+                GetAdjustTLParam(alg, ref tl[0], ref tl[1], ref tl[2], ref tl[3]);
+
                 n = "; nm alg fbl\r\n";
                 n += string.Format("@xxx {0:D3} {1:D3}                            =      MDPlayer\r\n"
-                    , ym2151Register[0x20 + ch] & 0x07 //AL
+                    , alg //AL
                     , (ym2151Register[0x20 + ch] & 0x38) >> 3//FB
                 );
                 n += "; ar  dr  sr  rr  sl  tl  ks  ml  dt ams   seg\r\n";
@@ -7227,7 +7500,7 @@ namespace MDPlayer.form
                         , ym2151Register[0xc0 + ops + ch] & 0x1f //SR
                         , ym2151Register[0xe0 + ops + ch] & 0x0f //RR
                         , (ym2151Register[0xe0 + ops + ch] & 0xf0) >> 4 //SL
-                        , ym2151Register[0x60 + ops + ch] & 0x7f //TL
+                        , tl[i] //TL
                         , (ym2151Register[0x80 + ops + ch] & 0xc0) >> 6 //KS
                         , ym2151Register[0x40 + ops + ch] & 0x0f //ML
                         , (ym2151Register[0x40 + ops + ch] & 0x70) >> 4 //DT
@@ -7241,7 +7514,56 @@ namespace MDPlayer.form
             if (!string.IsNullOrEmpty(n)) Clipboard.SetText(n);
         }
 
+        private void GetAdjustTLParam(int alg, ref int tl1, ref int tl2, ref int tl3, ref int tl4)
+        {
+            if (!setting.other.AdjustTLParam) return;
 
+            int[] algs = new int[] { 0x8, 0x8, 0x8, 0x8, 0xc, 0xe, 0xe, 0xe };
+            int min = int.MaxValue;
+
+            //最小値を調べる
+            for(int i = 0; i < 4; i++)
+            {
+                if ((algs[alg] & (1 << i)) == 0) continue;
+                switch (i)
+                {
+                    case 0:
+                        if (tl1 < min) min = tl1;
+                        break;
+                    case 1:
+                        if (tl2 < min) min = tl2;
+                        break;
+                    case 2:
+                        if (tl3 < min) min = tl3;
+                        break;
+                    case 3:
+                        if (tl4 < min) min = tl4;
+                        break;
+                }
+            }
+
+            //補正実施
+            for (int i = 0; i < 4; i++)
+            {
+                if ((algs[alg] & (1 << i)) == 0) continue;
+                switch (i)
+                {
+                    case 0:
+                        tl1 -= min;
+                        break;
+                    case 1:
+                        tl2 -= min;
+                        break;
+                    case 2:
+                        tl3 -= min;
+                        break;
+                    case 3:
+                        tl4 -= min;
+                        break;
+                }
+            }
+
+        }
 
 
         //SendMessageで送る構造体（Unicode文字列送信に最適化したパターン）
