@@ -28,7 +28,11 @@ namespace MDPlayer
         {
 
             public int pan = -1;
+            public int panL = -1;
+            public int panR = -1;
             public int pantp = -1;
+            public int panLtp = -1;
+            public int panRtp = -1;
             public int note = -1;
             public int volume = -1;
             public int volumeL = -1;
@@ -58,10 +62,11 @@ namespace MDPlayer
             public bool loopFlg = false;//YMZ280B
             public int echo = -1;
 
-            public int[] inst = new int[48];
-            public int[] typ = new int[48];
-            public bool[] bit = new bool[48];
+            public int[] inst = new int[67];
+            public int[] typ = new int[67];
+            public bool[] bit = new bool[67];
             public short[] aryWave16bit = null;
+            public byte[] PSGWave = null;
 
             public Channel()
             {
@@ -271,6 +276,42 @@ namespace MDPlayer
 
         }
         public YM2608[] ym2608 = new YM2608[] { new YM2608(), new YM2608() };
+
+        public class YM2609
+        {
+            public bool[] lfoSw =new bool[] { false, false };
+            public int[] lfoFrq = new int[] { -1, -1 };
+            public int[] nfrq = new int[] { -1, -1, -1, -1 };
+            public int[] efrq = new int[] { -1, -1, -1, -1 };
+            public int[] etype = new int[] { -1, -1, -1, -1 };
+            public int timerA = -1;
+            public int timerB = -1;
+            public int[] rhythmTotalLevel = new int[] { -1, -1 };
+            public int[] adpcmLevel = new int[] { -1, -1, -1 };
+            public bool eqLowSw = false;
+            public bool eqMidSw = false;
+            public bool eqHiSw = false;
+            public int[] eqLow = new int[] {  -1, -1, -1 };
+            public int[] eqMid = new int[] {  -1, -1, -1 };
+            public int[] eqHi = new int[] {  -1, -1, -1 };
+
+            public Channel[] channels = new Channel[] {
+                new Channel(), new Channel(), new Channel(), new Channel(),
+                new Channel(), new Channel(), new Channel(), new Channel(),
+                new Channel(), new Channel(), new Channel(), new Channel(),
+                new Channel(), new Channel(), new Channel(),
+                new Channel(), new Channel(),new Channel() //FM 0-11 12-17
+                ,new Channel(), new Channel(), new Channel()
+                ,new Channel(), new Channel(), new Channel()
+                ,new Channel(), new Channel(), new Channel()
+                ,new Channel(), new Channel(), new Channel() //SSG 18-30
+                ,new Channel(), new Channel(), new Channel(),new Channel(), new Channel(), new Channel() //RHYTHM 
+                ,new Channel(),new Channel(),new Channel() //ADPCM012
+                ,new Channel(), new Channel(), new Channel(),new Channel(), new Channel(), new Channel() //ADPCM-A
+            };
+
+        }
+        public YM2609[] ym2609 = new YM2609[] { new YM2609(), new YM2609() };
 
         public class YM2610
         {

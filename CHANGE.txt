@@ -1,4 +1,41 @@
 更新履歴
+STBL250 2022/07/19
+  OPNA2:EQ値表示に対応
+
+STBL249 2022/07/16 2nd
+  OPNA2:PSGのボリュームメータをステレオ仕様に修正、リズム/ADPCM-Aのパン表示、レイアウト調整、ボリューム値表示に対応
+
+STBL248 2022/07/16
+  OPNA2:Timer-A/B値、ハードLFO2系統の値、リズム/ADPCM-Aのトータルレベル値、ADPCM012のEGControl値の表示を追加
+
+STBL247 2022/07/14
+  OPNA2:PSGのnoise値、エンベロープ値、エンベロープ種の表示を追加
+
+STBL246 2022/07/13
+  OPNA2:FMのボリュームメータにパンの値が反映されていなかったのを修正
+
+STBL245 2022/07/12
+  OPNA2:ADPCM012の表示追加
+
+STBL244 2022/07/11
+  OPNA2:FMexを使用したデータを再生すると落ちるバグを修正。(Thanks! Some Spoony Bard!)
+        RhythmとADPCM-Aのメーターが動くように機能追加。
+
+STBL243 2022/07/10
+  OPNA2:PSGの波形が出るように機能追加
+
+STBL242 2022/07/09 2nd
+  OPNA2:Ch9が動いてなかったので修正
+
+STBL241 2022/07/09
+  OPNA2:鍵盤追加
+
+STBL240 2022/07/06 2nd
+  Core:ZGM:L(loop)に対応。ループ回数検知に対応。また、演奏完了を検知するように修正。
+
+STBL239 2022/07/06
+  Core:ZGM:OPNA2:PCMデータとOperatorの波形データの高速転送に対応
+
 STBL238 2022/06/29
   Core:ZGM:OPNA2:zgmのプレイバックに対応。但しOPNA2のみ。
 
