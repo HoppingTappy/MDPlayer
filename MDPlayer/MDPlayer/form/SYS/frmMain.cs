@@ -117,7 +117,7 @@ namespace MDPlayer.form
         };
 
         //private FileSystemWatcher watcher = null;
-        private mmfControl mmf = null;
+        private KumaCom mmf = null;
         private long now = 0;
         private string opeFolder = "";
         private object remoteLockObj = new object();
@@ -360,7 +360,7 @@ namespace MDPlayer.form
             ////operationフォルダクリア
             //opeFolder = Common.GetOperationFolder(true);
             //startWatch(opeFolder);
-            mmf = new mmfControl(false, "MDPlayer", 1024 * 4);
+            mmf = new fileCom(false, "MDPlayer", "MDPlayer", 1024 * 4);
         }
 
         //private void startWatch(string opeFolder)
@@ -548,12 +548,14 @@ namespace MDPlayer.form
                     case "SPLAY":
                         
                         string lin = optionLine.Trim();
+                        string appName = lin.Substring(0, lin.IndexOf(" "));
+                        lin = lin.Substring(lin.IndexOf(" ")).Trim();
                         string mName = lin.Substring(0, lin.IndexOf(" "));
                         lin = lin.Substring(lin.IndexOf(" ")).Trim();
                         int count = int.Parse(lin.Substring(0, lin.IndexOf(" ")));
                         lin = lin.Substring(lin.IndexOf(" ")).Trim();
                         string path = lin.Trim();
-                        mmfControl mml2vgmMmf = new mmfControl(true, mName, count);
+                        KumaCom mml2vgmMmf = new fileCom(true,appName, mName, count);
                         byte[] buf = mml2vgmMmf.GetBytes();
                         
                         bufferPlay(buf, path);
@@ -6011,7 +6013,7 @@ namespace MDPlayer.form
             string n = getInstChForMML2VGMFormat(chip, ch, chipID);
             if (string.IsNullOrEmpty(n)) return;
 
-            mmfControl mmf = new mmfControl(true, "mml2vgmFMVoicePool", 1024 * 4);
+            KumaCom mmf = new fileCom(true, "mml2vgmIDE", "mml2vgmFMVoicePool", 1024 * 4);
             try
             {
                 mmf.SendMessage(string.Join(":", "SendVoice", n));
@@ -7612,7 +7614,7 @@ namespace MDPlayer.form
         {
             if (!setting.other.AdjustTLParam) return;
 
-            int[] algs = new int[] { 0x8, 0x8, 0x8, 0x8, 0xc, 0xe, 0xe, 0xe };
+            int[] algs = new int[] { 0x8, 0x8, 0x8, 0x8, 0xa, 0xe, 0xe, 0xe };
             int min = int.MaxValue;
 
             //最小値を調べる
