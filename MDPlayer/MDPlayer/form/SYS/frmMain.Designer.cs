@@ -1,4 +1,8 @@
-﻿using MDPlayer.Properties;
+﻿#if X64
+using MDPlayerx64.Properties;
+#else
+using MDPlayer.Properties;
+#endif
 namespace MDPlayer.form
 {
     partial class frmMain
@@ -53,6 +57,7 @@ namespace MDPlayer.form
             this.tsmiPOPN2 = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiPOPNA = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiPOPNB = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiPOPNA2 = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiPOPM = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiPOPX = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiYMZ280B = new System.Windows.Forms.ToolStripMenuItem();
@@ -97,6 +102,7 @@ namespace MDPlayer.form
             this.tsmiSOPN2 = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiSOPNA = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiSOPNB = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiSOPNA2 = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiSOPM = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiSOPX = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiSYMZ280B = new System.Windows.Forms.ToolStripMenuItem();
@@ -166,6 +172,7 @@ namespace MDPlayer.form
             this.aY8910ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.sIDToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiVisualizer = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiOutputwavFile = new System.Windows.Forms.ToolStripMenuItem();
             this.opeButtonSetting = new System.Windows.Forms.Button();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this.opeButtonStop = new System.Windows.Forms.Button();
@@ -186,8 +193,6 @@ namespace MDPlayer.form
             this.opeButtonOpen = new System.Windows.Forms.Button();
             this.opeButtonMode = new System.Windows.Forms.Button();
             this.keyboardHook1 = new HongliangSoft.Utilities.Gui.KeyboardHook();
-            this.tsmiPOPNA2 = new System.Windows.Forms.ToolStripMenuItem();
-            this.tsmiSOPNA2 = new System.Windows.Forms.ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)(this.pbScreen)).BeginInit();
             this.cmsOpenOtherPanel.SuspendLayout();
             this.cmsMenu.SuspendLayout();
@@ -197,7 +202,7 @@ namespace MDPlayer.form
             // 
             this.pbScreen.BackColor = System.Drawing.Color.Black;
             resources.ApplyResources(this.pbScreen, "pbScreen");
-            this.pbScreen.Image = global::MDPlayer.Properties.Resources.planeControl;
+            this.pbScreen.Image = Resources.planeControl;
             this.pbScreen.Name = "pbScreen";
             this.pbScreen.TabStop = false;
             this.pbScreen.DragDrop += new System.Windows.Forms.DragEventHandler(this.pbScreen_DragDrop);
@@ -360,6 +365,12 @@ namespace MDPlayer.form
             this.tsmiPOPNB.Name = "tsmiPOPNB";
             resources.ApplyResources(this.tsmiPOPNB, "tsmiPOPNB");
             this.tsmiPOPNB.Click += new System.EventHandler(this.tsmiPOPNB_Click);
+            // 
+            // tsmiPOPNA2
+            // 
+            this.tsmiPOPNA2.Name = "tsmiPOPNA2";
+            resources.ApplyResources(this.tsmiPOPNA2, "tsmiPOPNA2");
+            this.tsmiPOPNA2.Click += new System.EventHandler(this.tsmiPOPNA2_Click);
             // 
             // tsmiPOPM
             // 
@@ -669,6 +680,12 @@ namespace MDPlayer.form
             resources.ApplyResources(this.tsmiSOPNB, "tsmiSOPNB");
             this.tsmiSOPNB.Click += new System.EventHandler(this.tsmiSOPNB_Click);
             // 
+            // tsmiSOPNA2
+            // 
+            this.tsmiSOPNA2.Name = "tsmiSOPNA2";
+            resources.ApplyResources(this.tsmiSOPNA2, "tsmiSOPNA2");
+            this.tsmiSOPNA2.Click += new System.EventHandler(this.tsmiSOPNA2_Click);
+            // 
             // tsmiSOPM
             // 
             this.tsmiSOPM.Name = "tsmiSOPM";
@@ -843,7 +860,8 @@ namespace MDPlayer.form
             this.その他ウィンドウ表示ToolStripMenuItem,
             this.tsmiChangeZoom,
             this.レジスタダンプ表示ToolStripMenuItem,
-            this.tsmiVisualizer});
+            this.tsmiVisualizer,
+            this.tsmiOutputwavFile});
             this.cmsMenu.Name = "contextMenuStrip1";
             resources.ApplyResources(this.cmsMenu, "cmsMenu");
             // 
@@ -852,7 +870,7 @@ namespace MDPlayer.form
             this.ファイルToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.tsmiOpenFile,
             this.tsmiExit});
-            this.ファイルToolStripMenuItem.Image = global::MDPlayer.Properties.Resources.ccOpenFolder;
+            this.ファイルToolStripMenuItem.Image = Resources.ccOpenFolder;
             this.ファイルToolStripMenuItem.Name = "ファイルToolStripMenuItem";
             resources.ApplyResources(this.ファイルToolStripMenuItem, "ファイルToolStripMenuItem");
             // 
@@ -884,84 +902,84 @@ namespace MDPlayer.form
             // 
             // tsmiPlay
             // 
-            this.tsmiPlay.Image = global::MDPlayer.Properties.Resources.ccPlay;
+            this.tsmiPlay.Image = Resources.ccPlay;
             this.tsmiPlay.Name = "tsmiPlay";
             resources.ApplyResources(this.tsmiPlay, "tsmiPlay");
             this.tsmiPlay.Click += new System.EventHandler(this.tsmiPlay_Click);
             // 
             // tsmiStop
             // 
-            this.tsmiStop.Image = global::MDPlayer.Properties.Resources.ccStop;
+            this.tsmiStop.Image = Resources.ccStop;
             this.tsmiStop.Name = "tsmiStop";
             resources.ApplyResources(this.tsmiStop, "tsmiStop");
             this.tsmiStop.Click += new System.EventHandler(this.tsmiStop_Click);
             // 
             // tsmiPause
             // 
-            this.tsmiPause.Image = global::MDPlayer.Properties.Resources.ccPause;
+            this.tsmiPause.Image = Resources.ccPause;
             this.tsmiPause.Name = "tsmiPause";
             resources.ApplyResources(this.tsmiPause, "tsmiPause");
             this.tsmiPause.Click += new System.EventHandler(this.tsmiPause_Click);
             // 
             // tsmiFadeOut
             // 
-            this.tsmiFadeOut.Image = global::MDPlayer.Properties.Resources.ccFadeout;
+            this.tsmiFadeOut.Image = Resources.ccFadeout;
             this.tsmiFadeOut.Name = "tsmiFadeOut";
             resources.ApplyResources(this.tsmiFadeOut, "tsmiFadeOut");
             this.tsmiFadeOut.Click += new System.EventHandler(this.tsmiFadeOut_Click);
             // 
             // tsmiSlow
             // 
-            this.tsmiSlow.Image = global::MDPlayer.Properties.Resources.ccSlow;
+            this.tsmiSlow.Image = Resources.ccSlow;
             this.tsmiSlow.Name = "tsmiSlow";
             resources.ApplyResources(this.tsmiSlow, "tsmiSlow");
             this.tsmiSlow.Click += new System.EventHandler(this.tsmiSlow_Click);
             // 
             // tsmiFf
             // 
-            this.tsmiFf.Image = global::MDPlayer.Properties.Resources.ccFast;
+            this.tsmiFf.Image = Resources.ccFast;
             this.tsmiFf.Name = "tsmiFf";
             resources.ApplyResources(this.tsmiFf, "tsmiFf");
             this.tsmiFf.Click += new System.EventHandler(this.tsmiFf_Click);
             // 
             // tsmiNext
             // 
-            this.tsmiNext.Image = global::MDPlayer.Properties.Resources.ccNext;
+            this.tsmiNext.Image = Resources.ccNext;
             this.tsmiNext.Name = "tsmiNext";
             resources.ApplyResources(this.tsmiNext, "tsmiNext");
             this.tsmiNext.Click += new System.EventHandler(this.tsmiNext_Click);
             // 
             // tsmiPlayMode
             // 
-            this.tsmiPlayMode.Image = global::MDPlayer.Properties.Resources.ccStep;
+            this.tsmiPlayMode.Image = Resources.ccStep;
             this.tsmiPlayMode.Name = "tsmiPlayMode";
             resources.ApplyResources(this.tsmiPlayMode, "tsmiPlayMode");
             this.tsmiPlayMode.Click += new System.EventHandler(this.tsmiPlayMode_Click);
             // 
             // tsmiOption
             // 
-            this.tsmiOption.Image = global::MDPlayer.Properties.Resources.ccSetting;
+            this.tsmiOption.Image = Resources.ccSetting;
             this.tsmiOption.Name = "tsmiOption";
             resources.ApplyResources(this.tsmiOption, "tsmiOption");
             this.tsmiOption.Click += new System.EventHandler(this.tsmiOption_Click);
             // 
             // tsmiPlayList
             // 
-            this.tsmiPlayList.Image = global::MDPlayer.Properties.Resources.ccPlayList;
+            this.tsmiPlayList.Image = Resources.ccPlayList;
             this.tsmiPlayList.Name = "tsmiPlayList";
             resources.ApplyResources(this.tsmiPlayList, "tsmiPlayList");
             this.tsmiPlayList.Click += new System.EventHandler(this.tsmiPlayList_Click);
             // 
             // tsmiOpenInfo
             // 
-            this.tsmiOpenInfo.Image = global::MDPlayer.Properties.Resources.ccInformation;
+            this.tsmiOpenInfo.Image = Resources.ccInformation;
             this.tsmiOpenInfo.Name = "tsmiOpenInfo";
             resources.ApplyResources(this.tsmiOpenInfo, "tsmiOpenInfo");
             this.tsmiOpenInfo.Click += new System.EventHandler(this.tsmiOpenInfo_Click);
             // 
             // tsmiOpenMixer
             // 
-            this.tsmiOpenMixer.Image = global::MDPlayer.Properties.Resources.ccMixer;
+            this.tsmiOpenMixer.Image = Resources.ccMixer;
             this.tsmiOpenMixer.Name = "tsmiOpenMixer";
             resources.ApplyResources(this.tsmiOpenMixer, "tsmiOpenMixer");
             this.tsmiOpenMixer.Click += new System.EventHandler(this.tsmiOpenMixer_Click);
@@ -977,21 +995,21 @@ namespace MDPlayer.form
             // 
             // tsmiKBrd
             // 
-            this.tsmiKBrd.Image = global::MDPlayer.Properties.Resources.ccKBD;
+            this.tsmiKBrd.Image = Resources.ccKBD;
             this.tsmiKBrd.Name = "tsmiKBrd";
             resources.ApplyResources(this.tsmiKBrd, "tsmiKBrd");
             this.tsmiKBrd.Click += new System.EventHandler(this.tsmiKBrd_Click);
             // 
             // tsmiVST
             // 
-            this.tsmiVST.Image = global::MDPlayer.Properties.Resources.ccVST;
+            this.tsmiVST.Image = Resources.ccVST;
             this.tsmiVST.Name = "tsmiVST";
             resources.ApplyResources(this.tsmiVST, "tsmiVST");
             this.tsmiVST.Click += new System.EventHandler(this.tsmiVST_Click);
             // 
             // tsmiMIDIkbd
             // 
-            this.tsmiMIDIkbd.Image = global::MDPlayer.Properties.Resources.ccMIDIKBD;
+            this.tsmiMIDIkbd.Image = Resources.ccMIDIKBD;
             this.tsmiMIDIkbd.Name = "tsmiMIDIkbd";
             resources.ApplyResources(this.tsmiMIDIkbd, "tsmiMIDIkbd");
             this.tsmiMIDIkbd.Click += new System.EventHandler(this.tsmiMIDIkbd_Click);
@@ -1003,7 +1021,7 @@ namespace MDPlayer.form
             this.tsmiChangeZoomX2,
             this.tsmiChangeZoomX3,
             this.tsmiChangeZoomX4});
-            this.tsmiChangeZoom.Image = global::MDPlayer.Properties.Resources.ccZoom;
+            this.tsmiChangeZoom.Image = Resources.ccZoom;
             this.tsmiChangeZoom.Name = "tsmiChangeZoom";
             resources.ApplyResources(this.tsmiChangeZoom, "tsmiChangeZoom");
             this.tsmiChangeZoom.Click += new System.EventHandler(this.tsmiChangeZoom_Click);
@@ -1163,11 +1181,18 @@ namespace MDPlayer.form
             resources.ApplyResources(this.tsmiVisualizer, "tsmiVisualizer");
             this.tsmiVisualizer.Click += new System.EventHandler(this.tsmiVisWave_Click);
             // 
+            // tsmiOutputwavFile
+            // 
+            this.tsmiOutputwavFile.CheckOnClick = true;
+            this.tsmiOutputwavFile.Name = "tsmiOutputwavFile";
+            resources.ApplyResources(this.tsmiOutputwavFile, "tsmiOutputwavFile");
+            this.tsmiOutputwavFile.Click += new System.EventHandler(this.tsmiOutputwavFile_Click);
+            // 
             // opeButtonSetting
             // 
             this.opeButtonSetting.AllowDrop = true;
             this.opeButtonSetting.BackColor = System.Drawing.Color.Black;
-            this.opeButtonSetting.BackgroundImage = global::MDPlayer.Properties.Resources.ccFadeout;
+            this.opeButtonSetting.BackgroundImage = Resources.ccFadeout;
             resources.ApplyResources(this.opeButtonSetting, "opeButtonSetting");
             this.opeButtonSetting.FlatAppearance.BorderColor = System.Drawing.Color.Black;
             this.opeButtonSetting.FlatAppearance.BorderSize = 0;
@@ -1187,7 +1212,7 @@ namespace MDPlayer.form
             // 
             this.opeButtonStop.AllowDrop = true;
             this.opeButtonStop.BackColor = System.Drawing.Color.Black;
-            this.opeButtonStop.BackgroundImage = global::MDPlayer.Properties.Resources.ccFadeout;
+            this.opeButtonStop.BackgroundImage = Resources.ccFadeout;
             resources.ApplyResources(this.opeButtonStop, "opeButtonStop");
             this.opeButtonStop.FlatAppearance.BorderColor = System.Drawing.Color.Black;
             this.opeButtonStop.FlatAppearance.BorderSize = 0;
@@ -1207,7 +1232,7 @@ namespace MDPlayer.form
             // 
             this.opeButtonPause.AllowDrop = true;
             this.opeButtonPause.BackColor = System.Drawing.Color.Black;
-            this.opeButtonPause.BackgroundImage = global::MDPlayer.Properties.Resources.ccFadeout;
+            this.opeButtonPause.BackgroundImage = Resources.ccFadeout;
             resources.ApplyResources(this.opeButtonPause, "opeButtonPause");
             this.opeButtonPause.FlatAppearance.BorderColor = System.Drawing.Color.Black;
             this.opeButtonPause.FlatAppearance.BorderSize = 0;
@@ -1227,7 +1252,7 @@ namespace MDPlayer.form
             // 
             this.opeButtonFadeout.AllowDrop = true;
             this.opeButtonFadeout.BackColor = System.Drawing.Color.Black;
-            this.opeButtonFadeout.BackgroundImage = global::MDPlayer.Properties.Resources.ccFadeout;
+            this.opeButtonFadeout.BackgroundImage = Resources.ccFadeout;
             resources.ApplyResources(this.opeButtonFadeout, "opeButtonFadeout");
             this.opeButtonFadeout.FlatAppearance.BorderColor = System.Drawing.Color.Black;
             this.opeButtonFadeout.FlatAppearance.BorderSize = 0;
@@ -1247,7 +1272,7 @@ namespace MDPlayer.form
             // 
             this.opeButtonPrevious.AllowDrop = true;
             this.opeButtonPrevious.BackColor = System.Drawing.Color.Black;
-            this.opeButtonPrevious.BackgroundImage = global::MDPlayer.Properties.Resources.ccFadeout;
+            this.opeButtonPrevious.BackgroundImage = Resources.ccFadeout;
             resources.ApplyResources(this.opeButtonPrevious, "opeButtonPrevious");
             this.opeButtonPrevious.FlatAppearance.BorderColor = System.Drawing.Color.Black;
             this.opeButtonPrevious.FlatAppearance.BorderSize = 0;
@@ -1267,7 +1292,7 @@ namespace MDPlayer.form
             // 
             this.opeButtonSlow.AllowDrop = true;
             this.opeButtonSlow.BackColor = System.Drawing.Color.Black;
-            this.opeButtonSlow.BackgroundImage = global::MDPlayer.Properties.Resources.ccFadeout;
+            this.opeButtonSlow.BackgroundImage = Resources.ccFadeout;
             resources.ApplyResources(this.opeButtonSlow, "opeButtonSlow");
             this.opeButtonSlow.FlatAppearance.BorderColor = System.Drawing.Color.Black;
             this.opeButtonSlow.FlatAppearance.BorderSize = 0;
@@ -1287,7 +1312,7 @@ namespace MDPlayer.form
             // 
             this.opeButtonPlay.AllowDrop = true;
             this.opeButtonPlay.BackColor = System.Drawing.Color.Black;
-            this.opeButtonPlay.BackgroundImage = global::MDPlayer.Properties.Resources.ccFadeout;
+            this.opeButtonPlay.BackgroundImage = Resources.ccFadeout;
             resources.ApplyResources(this.opeButtonPlay, "opeButtonPlay");
             this.opeButtonPlay.FlatAppearance.BorderColor = System.Drawing.Color.Black;
             this.opeButtonPlay.FlatAppearance.BorderSize = 0;
@@ -1307,7 +1332,7 @@ namespace MDPlayer.form
             // 
             this.opeButtonFast.AllowDrop = true;
             this.opeButtonFast.BackColor = System.Drawing.Color.Black;
-            this.opeButtonFast.BackgroundImage = global::MDPlayer.Properties.Resources.ccFadeout;
+            this.opeButtonFast.BackgroundImage = Resources.ccFadeout;
             resources.ApplyResources(this.opeButtonFast, "opeButtonFast");
             this.opeButtonFast.FlatAppearance.BorderColor = System.Drawing.Color.Black;
             this.opeButtonFast.FlatAppearance.BorderSize = 0;
@@ -1327,7 +1352,7 @@ namespace MDPlayer.form
             // 
             this.opeButtonNext.AllowDrop = true;
             this.opeButtonNext.BackColor = System.Drawing.Color.Black;
-            this.opeButtonNext.BackgroundImage = global::MDPlayer.Properties.Resources.ccFadeout;
+            this.opeButtonNext.BackgroundImage = Resources.ccFadeout;
             resources.ApplyResources(this.opeButtonNext, "opeButtonNext");
             this.opeButtonNext.FlatAppearance.BorderColor = System.Drawing.Color.Black;
             this.opeButtonNext.FlatAppearance.BorderSize = 0;
@@ -1347,7 +1372,7 @@ namespace MDPlayer.form
             // 
             this.opeButtonZoom.AllowDrop = true;
             this.opeButtonZoom.BackColor = System.Drawing.Color.Black;
-            this.opeButtonZoom.BackgroundImage = global::MDPlayer.Properties.Resources.ccFadeout;
+            this.opeButtonZoom.BackgroundImage = Resources.ccFadeout;
             resources.ApplyResources(this.opeButtonZoom, "opeButtonZoom");
             this.opeButtonZoom.FlatAppearance.BorderColor = System.Drawing.Color.Black;
             this.opeButtonZoom.FlatAppearance.BorderSize = 0;
@@ -1367,7 +1392,7 @@ namespace MDPlayer.form
             // 
             this.opeButtonMIDIKBD.AllowDrop = true;
             this.opeButtonMIDIKBD.BackColor = System.Drawing.Color.Black;
-            this.opeButtonMIDIKBD.BackgroundImage = global::MDPlayer.Properties.Resources.ccFadeout;
+            this.opeButtonMIDIKBD.BackgroundImage = Resources.ccFadeout;
             resources.ApplyResources(this.opeButtonMIDIKBD, "opeButtonMIDIKBD");
             this.opeButtonMIDIKBD.FlatAppearance.BorderColor = System.Drawing.Color.Black;
             this.opeButtonMIDIKBD.FlatAppearance.BorderSize = 0;
@@ -1387,7 +1412,7 @@ namespace MDPlayer.form
             // 
             this.opeButtonVST.AllowDrop = true;
             this.opeButtonVST.BackColor = System.Drawing.Color.Black;
-            this.opeButtonVST.BackgroundImage = global::MDPlayer.Properties.Resources.ccFadeout;
+            this.opeButtonVST.BackgroundImage = Resources.ccFadeout;
             resources.ApplyResources(this.opeButtonVST, "opeButtonVST");
             this.opeButtonVST.FlatAppearance.BorderColor = System.Drawing.Color.Black;
             this.opeButtonVST.FlatAppearance.BorderSize = 0;
@@ -1407,7 +1432,7 @@ namespace MDPlayer.form
             // 
             this.opeButtonKBD.AllowDrop = true;
             this.opeButtonKBD.BackColor = System.Drawing.Color.Black;
-            this.opeButtonKBD.BackgroundImage = global::MDPlayer.Properties.Resources.ccFadeout;
+            this.opeButtonKBD.BackgroundImage = Resources.ccFadeout;
             resources.ApplyResources(this.opeButtonKBD, "opeButtonKBD");
             this.opeButtonKBD.FlatAppearance.BorderColor = System.Drawing.Color.Black;
             this.opeButtonKBD.FlatAppearance.BorderSize = 0;
@@ -1427,7 +1452,7 @@ namespace MDPlayer.form
             // 
             this.opeButtonMixer.AllowDrop = true;
             this.opeButtonMixer.BackColor = System.Drawing.Color.Black;
-            this.opeButtonMixer.BackgroundImage = global::MDPlayer.Properties.Resources.ccFadeout;
+            this.opeButtonMixer.BackgroundImage = Resources.ccFadeout;
             resources.ApplyResources(this.opeButtonMixer, "opeButtonMixer");
             this.opeButtonMixer.FlatAppearance.BorderColor = System.Drawing.Color.Black;
             this.opeButtonMixer.FlatAppearance.BorderSize = 0;
@@ -1447,7 +1472,7 @@ namespace MDPlayer.form
             // 
             this.opeButtonInformation.AllowDrop = true;
             this.opeButtonInformation.BackColor = System.Drawing.Color.Black;
-            this.opeButtonInformation.BackgroundImage = global::MDPlayer.Properties.Resources.ccFadeout;
+            this.opeButtonInformation.BackgroundImage = Resources.ccFadeout;
             resources.ApplyResources(this.opeButtonInformation, "opeButtonInformation");
             this.opeButtonInformation.FlatAppearance.BorderColor = System.Drawing.Color.Black;
             this.opeButtonInformation.FlatAppearance.BorderSize = 0;
@@ -1467,7 +1492,7 @@ namespace MDPlayer.form
             // 
             this.opeButtonPlayList.AllowDrop = true;
             this.opeButtonPlayList.BackColor = System.Drawing.Color.Black;
-            this.opeButtonPlayList.BackgroundImage = global::MDPlayer.Properties.Resources.ccFadeout;
+            this.opeButtonPlayList.BackgroundImage = Resources.ccFadeout;
             resources.ApplyResources(this.opeButtonPlayList, "opeButtonPlayList");
             this.opeButtonPlayList.FlatAppearance.BorderColor = System.Drawing.Color.Black;
             this.opeButtonPlayList.FlatAppearance.BorderSize = 0;
@@ -1487,7 +1512,7 @@ namespace MDPlayer.form
             // 
             this.opeButtonOpen.AllowDrop = true;
             this.opeButtonOpen.BackColor = System.Drawing.Color.Black;
-            this.opeButtonOpen.BackgroundImage = global::MDPlayer.Properties.Resources.ccFadeout;
+            this.opeButtonOpen.BackgroundImage = Resources.ccFadeout;
             resources.ApplyResources(this.opeButtonOpen, "opeButtonOpen");
             this.opeButtonOpen.FlatAppearance.BorderColor = System.Drawing.Color.Black;
             this.opeButtonOpen.FlatAppearance.BorderSize = 0;
@@ -1507,7 +1532,7 @@ namespace MDPlayer.form
             // 
             this.opeButtonMode.AllowDrop = true;
             this.opeButtonMode.BackColor = System.Drawing.Color.Black;
-            this.opeButtonMode.BackgroundImage = global::MDPlayer.Properties.Resources.ccFadeout;
+            this.opeButtonMode.BackgroundImage = Resources.ccFadeout;
             resources.ApplyResources(this.opeButtonMode, "opeButtonMode");
             this.opeButtonMode.FlatAppearance.BorderColor = System.Drawing.Color.Black;
             this.opeButtonMode.FlatAppearance.BorderSize = 0;
@@ -1526,18 +1551,6 @@ namespace MDPlayer.form
             // keyboardHook1
             // 
             this.keyboardHook1.KeyboardHooked += new HongliangSoft.Utilities.Gui.KeyboardHookedEventHandler(this.keyboardHook1_KeyboardHooked);
-            // 
-            // tsmiPOPNA2
-            // 
-            this.tsmiPOPNA2.Name = "tsmiPOPNA2";
-            resources.ApplyResources(this.tsmiPOPNA2, "tsmiPOPNA2");
-            this.tsmiPOPNA2.Click += new System.EventHandler(this.tsmiPOPNA2_Click);
-            // 
-            // tsmiSOPNA2
-            // 
-            this.tsmiSOPNA2.Name = "tsmiSOPNA2";
-            resources.ApplyResources(this.tsmiSOPNA2, "tsmiSOPNA2");
-            this.tsmiSOPNA2.Click += new System.EventHandler(this.tsmiSOPNA2_Click);
             // 
             // frmMain
             // 
@@ -1739,6 +1752,7 @@ namespace MDPlayer.form
         private System.Windows.Forms.ToolStripMenuItem tsmiVisualizer;
         private System.Windows.Forms.ToolStripMenuItem tsmiPOPNA2;
         private System.Windows.Forms.ToolStripMenuItem tsmiSOPNA2;
+        private System.Windows.Forms.ToolStripMenuItem tsmiOutputwavFile;
     }
 }
 

@@ -5,7 +5,11 @@ using System.Drawing.Imaging;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+#if X64
+using MDPlayerx64.Properties;
+#else
 using MDPlayer.Properties;
+#endif
 
 namespace MDPlayer
 {
@@ -268,7 +272,7 @@ namespace MDPlayer
                 DrawBuff.ChSN76489_P(screen, 0, ch * 8 + 8, ch, false, tp);
 
                 int d = 99;
-                DrawBuff.Volume(screen, 256, 8 + ch * 8, 0, ref d, 0, tp);
+                //DrawBuff.Volume(screen, 256, 8 + ch * 8, 0, ref d, 0, tp);
             }
         }
 
@@ -305,7 +309,7 @@ namespace MDPlayer
             for (int y = 0; y < 6 + 3 + 3 + 1; y++)
             {
 
-                drawFont8(screen, 296, y * 8 + 8, 1, "   ");
+                drawFont8(screen, 328+1, y * 8 + 8, 1, "   ");
                 for (int i = 0; i < 96; i++)
                 {
                     int kx = Tables.kbl[(i % 12) * 2] + i / 12 * 28;
@@ -326,13 +330,13 @@ namespace MDPlayer
                 int d = 99;
                 if (y > 5 && y < 9)
                 {
-                    Volume(screen, 289, 8 + y * 8, 0, ref d, 0, tp);
+                    Volume(screen, 272+1, 8 + y * 8, 0, ref d, 0, tp);
                 }
                 else
                 {
-                    Volume(screen, 289, 8 + y * 8, 1, ref d, 0, tp);
+                    Volume(screen, 272+1, 8 + y * 8, 1, ref d, 0, tp);
                     d = 99;
-                    Volume(screen, 289, 8 + y * 8, 2, ref d, 0, tp);
+                    Volume(screen, 272+1, 8 + y * 8, 2, ref d, 0, tp);
                 }
             }
 
@@ -941,6 +945,46 @@ namespace MDPlayer
 
         }
 
+        public static void VolumeShort(FrameBuffer screen, int x, int y, int c, ref int ov, int nv, int tp)
+        {
+            if (ov == nv) return;
+
+            //int t = 0;
+            //int sy = 0;
+            //if (c == 1 || c == 2) { t = 4; }
+            //if (c == 2) { sy = 4; }
+            //y = (y + 1) * 8;
+
+            //for (int i = 0; i <= 19; i++)
+            //{
+            //    VolumeP(screen, 256 + i * 2, y + sy, (1 + t), tp);
+            //}
+
+            //for (int i = 0; i <= nv; i++)
+            //{
+            //    VolumeP(screen, 256 + i * 2, y + sy, i > 17 ? (2 + t) : (0 + t), tp);
+            //}
+
+            int t = 0;
+            int sy = 0;
+            if (c == 1 || c == 2) { t = 4; }
+            if (c == 2) { sy = 4; }
+            //y = (y + 1) * 8;
+
+            for (int i = 0; i <= 15; i++)
+            {
+                VolumeP(screen, x + i * 2, y + sy, (1 + t), tp);
+            }
+
+            for (int i = 0; i <= nv; i++)
+            {
+                VolumeP(screen, x + i * 2, y + sy, i > 13 ? (2 + t) : (0 + t), tp);
+            }
+
+            ov = nv;
+
+        }
+
         public static void VolumeToC140(FrameBuffer screen, int y, int c, ref int ov, int nv, int tp)
         {
             if (ov == nv) return;
@@ -1258,6 +1302,41 @@ namespace MDPlayer
                 if (nt / 12 < 10)
                 {
                     drawFont8(screen, 280 + x, y, 1, Tables.kbo[nt / 12]);
+                }
+            }
+
+            ot = nt;
+        }
+
+        public static void KeyBoardDCSG(FrameBuffer screen, int x, int y, ref int ot, int nt, int tp)
+        {
+            if (ot == nt) return;
+
+            int kx;
+            int kt;
+
+            if (ot >= 0 && ot < 12 * 8)
+            {
+                kx = Tables.kbl[(ot % 12) * 2] + ot / 12 * 28;
+                kt = Tables.kbl[(ot % 12) * 2 + 1];
+                drawKbn(screen, x + kx, y, kt, tp);
+            }
+
+            if (nt >= 0 && nt < 12 * 8)
+            {
+                kx = Tables.kbl[(nt % 12) * 2] + nt / 12 * 28;
+                kt = Tables.kbl[(nt % 12) * 2 + 1] + 4;
+                drawKbn(screen, x + kx, y, kt, tp);
+            }
+
+            drawFont8(screen, 288 + x, y, 1, "   ");
+
+            if (nt >= 0)
+            {
+                drawFont8(screen, 288 + x, y, 1, Tables.kbn[nt % 12]);
+                if (nt / 12 < 10)
+                {
+                    drawFont8(screen, 304 + x, y, 1, Tables.kbo[nt / 12]);
                 }
             }
 

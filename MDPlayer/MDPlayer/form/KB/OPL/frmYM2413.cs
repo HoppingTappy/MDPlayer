@@ -1,4 +1,8 @@
-﻿using MDPlayer.Properties;
+﻿#if X64
+using MDPlayerx64.Properties;
+#else
+using MDPlayer.Properties;
+#endif
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -404,7 +408,10 @@ namespace MDPlayer.form
                 if (e.Button == MouseButtons.Left)
                 {
                     //マスク
-                    parent.SetChannelMask(EnmChip.YM2413, chipID, ch);
+                    if (newParam.channels[ch].mask == true)
+                        parent.ResetChannelMask(EnmChip.YM2413, chipID, ch);
+                    else
+                        parent.SetChannelMask(EnmChip.YM2413, chipID, ch);
                     return;
                 }
 

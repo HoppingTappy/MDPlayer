@@ -2629,9 +2629,16 @@ namespace MDPlayer
             uint vgmGd3 = getLE32(0x14);
             if (vgmGd3 != 0)
             {
-                uint vgmGd3Id = getLE32(vgmGd3 + 0x14);
-                if (vgmGd3Id != FCC_GD3) return false;
-                GD3 = getGD3Info(vgmBuf, vgmGd3);
+                try
+                {
+                    uint vgmGd3Id = getLE32(vgmGd3 + 0x14);
+                    if (vgmGd3Id != FCC_GD3) return false;
+                    uint adr = vgmGd3 + 12 + 0x14;
+                    GD3 = Common.getGD3Info(vgmBuf, adr);
+                    GD3.UsedChips = UsedChips;
+                    //GD3 = Common.getGD3Info(vgmBuf, vgmGd3);
+                }
+                catch { }
             }
 
             return true;
@@ -2702,10 +2709,12 @@ namespace MDPlayer
 
         public override GD3 getGD3Info(byte[] buf, uint vgmGd3)
         {
+            vgmBuf = buf;
+            getInformationHeader();
 
-            uint adr = vgmGd3 + 12 + 0x14;
-            GD3 = Common.getGD3Info(buf, adr);
-            GD3.UsedChips = UsedChips;
+            //uint adr = vgmGd3 + 12 + 0x14;
+            //GD3 = Common.getGD3Info(buf, adr);
+            //GD3.UsedChips = UsedChips;
 
             return GD3;
         }
