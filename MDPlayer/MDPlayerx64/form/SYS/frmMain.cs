@@ -60,6 +60,7 @@ namespace MDPlayer.form
         private frmAY8910[] frmAY8910 = new frmAY8910[2] { null, null };
         private frmHuC6280[] frmHuC6280 = new frmHuC6280[2] { null, null };
         private frmK051649[] frmK051649 = new frmK051649[2] { null, null };
+        private frmK053260[] frmK053260 = new frmK053260[2] { null, null };
         private frmYM2413[] frmYM2413 = new frmYM2413[2] { null, null };
         private frmYMF262[] frmYMF262 = new frmYMF262[2] { null, null };
         private frmYMF271[] frmYMF271 = new frmYMF271[2] { null, null };
@@ -159,6 +160,7 @@ namespace MDPlayer.form
             lstForm.Add(frmAY8910);
             lstForm.Add(frmHuC6280);
             lstForm.Add(frmK051649);
+            lstForm.Add(frmK053260);
             lstForm.Add(frmMIDI);
             lstForm.Add(frmNESDMC);
             lstForm.Add(frmFDS);
@@ -204,11 +206,11 @@ namespace MDPlayer.form
             {
                 if ((Control.ModifierKeys & Keys.Shift) == Keys.Shift)
                 {
-                    DialogResult res= MessageBox.Show(
+                    DialogResult res = MessageBox.Show(
                         "ウィンドウの位置情報を初期化しますか？",
                         "MDPlayer",
-                        MessageBoxButtons.YesNo,MessageBoxIcon.Question);
-                    if(res== DialogResult.Yes)
+                        MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                    if (res == DialogResult.Yes)
                     {
                         ClearWindowPos();
                     }
@@ -245,8 +247,11 @@ namespace MDPlayer.form
 
             log.ForcedWrite("frmMain_Load:STEP 05");
 
-            if (setting.location.PMain != System.Drawing.Point.Empty)
-                this.Location = setting.location.PMain;
+            if (setting.location.Main.Point != System.Drawing.Point.Empty)
+                this.Location = setting.location.Main.Point;
+            //this.WindowState = setting.location.Main.State;
+            //if(setting.location.Main.Size!= System.Drawing.Size.Empty)
+            //    this.Size=new Size(setting.location.Main.Size.Width,setting.location.Main.Size.Height);
 
             // DoubleBufferオブジェクトの作成
 
@@ -295,6 +300,7 @@ namespace MDPlayer.form
                 if (setting.location.OpenS5B[chipID]) OpenFormS5B(chipID);
                 if (setting.location.OpenDMG[chipID]) OpenFormDMG(chipID);
                 if (setting.location.OpenYMZ280B[chipID]) OpenFormYMZ280B(chipID);
+                if (setting.location.OpenK053260[chipID]) OpenFormK053260(chipID);
                 if (setting.location.OpenC352[chipID]) OpenFormC352(chipID);
                 if (setting.location.OpenMultiPCM[chipID]) OpenFormMultiPCM(chipID);
                 if (setting.location.OpenQSound[chipID]) OpenFormQSound(chipID);
@@ -552,7 +558,7 @@ namespace MDPlayer.form
                         tsmiOpenInfo_Click(null, null);
                         break;
                     case "SPLAY":
-                        
+
                         string lin = optionLine.Trim();
                         string appName = lin.Substring(0, lin.IndexOf(" "));
                         lin = lin.Substring(lin.IndexOf(" ")).Trim();
@@ -561,9 +567,9 @@ namespace MDPlayer.form
                         int count = int.Parse(lin.Substring(0, lin.IndexOf(" ")));
                         lin = lin.Substring(lin.IndexOf(" ")).Trim();
                         string path = lin.Trim();
-                        KumaCom mml2vgmMmf = new fileCom(true,appName, mName, count);
+                        KumaCom mml2vgmMmf = new fileCom(true, appName, mName, count);
                         byte[] buf = mml2vgmMmf.GetBytes();
-                        
+
                         bufferPlay(buf, path);
 
                         break;
@@ -582,7 +588,7 @@ namespace MDPlayer.form
 
         private void changeZoom()
         {
-            toolTip1.SetToolTip(opeButtonZoom, zoomTip[setting.other.Zoom-1]);
+            toolTip1.SetToolTip(opeButtonZoom, zoomTip[setting.other.Zoom - 1]);
 
             this.MaximumSize = new System.Drawing.Size(frameSizeW + Resources.planeControl.Width * setting.other.Zoom, frameSizeH + Resources.planeControl.Height * setting.other.Zoom);
             this.MinimumSize = new System.Drawing.Size(frameSizeW + Resources.planeControl.Width * setting.other.Zoom, frameSizeH + Resources.planeControl.Height * setting.other.Zoom);
@@ -1006,6 +1012,18 @@ namespace MDPlayer.form
                 OpenFormN106(1);
             }
 
+            if (frmK053260[0] != null && !frmK053260[0].isClosed)
+            {
+                OpenFormK053260(0);
+                OpenFormK053260(0);
+            }
+
+            if (frmK053260[1] != null && !frmK053260[1].isClosed)
+            {
+                OpenFormK053260(1);
+                OpenFormK053260(1);
+            }
+
             if (frmMixer2 != null && !frmMixer2.isClosed)
             {
                 openMixer();
@@ -1016,6 +1034,7 @@ namespace MDPlayer.form
 
         private void frmMain_Shown(object sender, EventArgs e)
         {
+
             log.ForcedWrite("frmMain_Shown:STEP 09");
 
             System.Threading.Thread trd = new System.Threading.Thread(screenMainLoop);
@@ -1039,7 +1058,7 @@ namespace MDPlayer.form
             }
 
             log.ForcedWrite("frmMain_Shown:STEP 10");
-            
+
             try
             {
 
@@ -1087,7 +1106,7 @@ namespace MDPlayer.form
             screen.setting = setting;
             reqAllScreenInit = true;
             //screen.screenInitAll();
-            
+
         }
 
         private void frmMain_FormClosing(object sender, FormClosingEventArgs e)
@@ -1149,6 +1168,7 @@ namespace MDPlayer.form
                 setting.location.OpenPPZ8[chipID] = false;
                 setting.location.OpenS5B[chipID] = false;
                 setting.location.OpenDMG[chipID] = false;
+                setting.location.OpenK053260[chipID] = false;
                 setting.location.OpenYMZ280B[chipID] = false;
                 setting.location.OpenC352[chipID] = false;
                 setting.location.OpenQSound[chipID] = false;
@@ -1186,12 +1206,16 @@ namespace MDPlayer.form
 
             if (WindowState == FormWindowState.Normal)
             {
-                setting.location.PMain = Location;
+                setting.location.Main.Point = Location;
+                setting.location.Main.Size = Size;
             }
             else
             {
-                setting.location.PMain = RestoreBounds.Location;
+                setting.location.Main.Point = RestoreBounds.Location;
+                setting.location.Main.Size = RestoreBounds.Size;
             }
+            setting.location.Main.State = WindowState;
+
             if (frmPlayList != null && !frmPlayList.isClosed)
             {
                 frmPlayList.Close();
@@ -1250,6 +1274,11 @@ namespace MDPlayer.form
                     frmYMZ280B[chipID].Close();
                     setting.location.OpenYMZ280B[chipID] = true;
                 }
+                if (frmK053260[chipID] != null && !frmK053260[chipID].isClosed)
+                {
+                    frmK053260[chipID].Close();
+                    setting.location.OpenK053260[chipID] = true;
+                }
                 if (frmC352[chipID] != null && !frmC352[chipID].isClosed)
                 {
                     frmC352[chipID].Close();
@@ -1269,11 +1298,6 @@ namespace MDPlayer.form
                 {
                     frmHuC6280[chipID].Close();
                     setting.location.OpenHuC6280[chipID] = true;
-                }
-                if (frmK051649[chipID] != null && !frmK051649[chipID].isClosed)
-                {
-                    frmK051649[chipID].Close();
-                    setting.location.OpenK051649[chipID] = true;
                 }
                 if (frmK051649[chipID] != null && !frmK051649[chipID].isClosed)
                 {
@@ -1457,7 +1481,7 @@ namespace MDPlayer.form
 
         private void pbScreen_MouseClick(object sender, MouseEventArgs e)
         {
-            if(e.Button== MouseButtons.Right)
+            if (e.Button == MouseButtons.Right)
             {
                 cmsMenu.Show();
                 System.Drawing.Point p = Control.MousePosition;
@@ -1947,6 +1971,23 @@ namespace MDPlayer.form
             OpenFormN106(1);
         }
 
+        private void tsmiPK053260_Click(global::System.Object sender, global::System.EventArgs e)
+        {
+            OpenFormK053260(0);
+        }
+
+        private void tsmiSK053260_Click(global::System.Object sender, global::System.EventArgs e)
+        {
+            OpenFormK053260(1);
+        }
+
+
+
+
+
+
+
+
         private void tsmiVisWave_Click(object sender, EventArgs e)
         {
             OpenFormVisWave();
@@ -2124,6 +2165,66 @@ namespace MDPlayer.form
                 log.ForcedWrite(ex);
             }
             frmYMF271[chipID] = null;
+        }
+
+        private void OpenFormK053260(int chipID, bool force = false)
+        {
+            if (frmK053260[chipID] != null)// && frmInfo.isClosed)
+            {
+                if (!force)
+                {
+                    CloseFormK053260(chipID);
+                    return;
+                }
+                else
+                    return;
+            }
+
+            frmK053260[chipID] = new frmK053260(
+                this, chipID,
+                setting.other.Zoom,
+                newParam.k053260[chipID], oldParam.k053260[chipID]);
+            if (setting.location.PosK053260[chipID] == System.Drawing.Point.Empty)
+            {
+                frmK053260[chipID].x = this.Location.X;
+                frmK053260[chipID].y = this.Location.Y + 264;
+            }
+            else
+            {
+                frmK053260[chipID].x = setting.location.PosK053260[chipID].X;
+                frmK053260[chipID].y = setting.location.PosK053260[chipID].Y;
+            }
+
+            frmK053260[chipID].Show();
+            frmK053260[chipID].update();
+            frmK053260[chipID].Text = string.Format("K053260 ({0})", chipID == 0 ? "Primary" : "Secondary");
+            oldParam.k053260[chipID] = new MDChipParams.K053260();
+
+            CheckAndSetForm(frmK053260[chipID]);
+        }
+
+        private void CloseFormK053260(int chipID)
+        {
+            if (frmK053260[chipID] == null) return;
+
+            try
+            {
+                frmK053260[chipID].Close();
+            }
+            catch (Exception ex)
+            {
+                log.ForcedWrite(ex);
+
+            }
+            try
+            {
+                frmK053260[chipID].Dispose();
+            }
+            catch (Exception ex)
+            {
+                log.ForcedWrite(ex);
+            }
+            frmK053260[chipID] = null;
         }
 
         private void OpenFormYM2608(int chipID, bool force = false)
@@ -2872,7 +2973,7 @@ namespace MDPlayer.form
             }
 
             oldParam.ym2612[chipID] = new MDChipParams.YM2612();
-            for(int i=0;i< oldParam.ym2612[chipID].channels.Length; i++)
+            for (int i = 0; i < oldParam.ym2612[chipID].channels.Length; i++)
             {
                 oldParam.ym2612[chipID].channels[i].mask = null;
             }
@@ -3830,7 +3931,7 @@ namespace MDPlayer.form
             {
                 oldParam.vrc6[chipID].channels[i].mask = null;
             }
-            frmVRC6[chipID] = new frmVRC6(this, chipID, setting.other.Zoom, newParam.vrc6[chipID] ,oldParam.vrc6[chipID]);
+            frmVRC6[chipID] = new frmVRC6(this, chipID, setting.other.Zoom, newParam.vrc6[chipID], oldParam.vrc6[chipID]);
 
             if (setting.location.PosVrc6[chipID] == System.Drawing.Point.Empty)
             {
@@ -3986,12 +4087,14 @@ namespace MDPlayer.form
             frmMMC5[chipID] = null;
         }
 
-        private void OpenFormRegTest(int chipID, EnmChip selectedChip = EnmChip.Unuse, bool force = false) {
-            if(frmRegTest != null) {
+        private void OpenFormRegTest(int chipID, EnmChip selectedChip = EnmChip.Unuse, bool force = false)
+        {
+            if (frmRegTest != null)
+            {
                 frmRegTest.changeChip(selectedChip);
                 return;
             }
-            
+
             frmRegTest = new frmRegTest(this, chipID, selectedChip, setting.other.Zoom);
 
             if (setting.location.PosRegTest[chipID] == System.Drawing.Point.Empty)
@@ -4103,17 +4206,24 @@ namespace MDPlayer.form
 
 
 
-        private void CloseFormRegTest(int chipID) {
+        private void CloseFormRegTest(int chipID)
+        {
             if (frmRegTest == null) return;
 
-            try {
+            try
+            {
                 frmRegTest.Close();
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 log.ForcedWrite(ex);
             }
-            try {
+            try
+            {
                 frmRegTest.Dispose();
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 log.ForcedWrite(ex);
             }
             frmRegTest = null;
@@ -4281,15 +4391,15 @@ namespace MDPlayer.form
 
             StopMIDIInMonitoring();
             frmPlayList.Stop();
-            
+
             Request req = new Request(enmRequest.Stop);
             OpeManager.RequestToAudio(req);
             while (!req.end) System.Threading.Thread.Sleep(1);
-            
+
             //req = new Request(enmRequest.Die);
             //OpeManager.RequestToAudio(req);
             //while (!req.end) System.Threading.Thread.Sleep(1);
-            
+
             Audio.Stop();
             Audio.Close(false);
 
@@ -4459,6 +4569,7 @@ namespace MDPlayer.form
                 if (frmFDS[i] != null) frmFDS[i].screenInit();
                 //if (frmHuC6280[i] != null) frmHuC6280[i].screenInit();
                 if (frmK051649[i] != null) frmK051649[i].screenInit();
+                if (frmK053260[i] != null) frmK053260[i].screenInit();
                 if (frmMCD[i] != null) frmMCD[i].screenInit();
                 if (frmMIDI[i] != null) frmMIDI[i].screenInit();
                 if (frmMMC5[i] != null) frmMMC5[i].screenInit();
@@ -4565,7 +4676,7 @@ namespace MDPlayer.form
                         this.Invoke(//Asyncしないこと
                             (Action<string>)remote
                             //, new object[] { lin }//配列が引数の場合はこの様に指定する必要あり
-                            ,msg
+                            , msg
                             );
                     }
                 }
@@ -4575,7 +4686,8 @@ namespace MDPlayer.form
                     log.ForcedWrite("AudioでFatalErrorが発生。再度Audio初期化処理開始");
 
                     frmPlayList.Stop();
-                    try {
+                    try
+                    {
                         Request req = new Request(enmRequest.Stop);
                         OpeManager.RequestToAudio(req);
                         while (!req.end) System.Threading.Thread.Sleep(1);
@@ -4731,6 +4843,9 @@ namespace MDPlayer.form
                 if (frmK051649[chipID] != null && !frmK051649[chipID].isClosed) frmK051649[chipID].screenChangeParams();
                 else frmK051649[chipID] = null;
 
+                if (frmK053260[chipID] != null && !frmK053260[chipID].isClosed) frmK053260[chipID].screenChangeParams();
+                else frmK053260[chipID] = null;
+
                 if (frmMIDI[chipID] != null && !frmMIDI[chipID].isClosed) frmMIDI[chipID].screenChangeParams();
                 else frmMIDI[chipID] = null;
 
@@ -4817,9 +4932,9 @@ namespace MDPlayer.form
             //DrawBuff.drawChipName(screen.mainScreen, 71 * 4, 0 * 8, 14, ref oldParam.chipLED.SecHuC8, chips[128 + 14]);
 
             DrawBuff.drawFont4(screen.mainScreen, 1, 9, 1, Audio.GetIsDataBlock(EnmModel.VirtualModel) ? "VD" : "  ");
-            DrawBuff.drawFont4(screen.mainScreen, 321-16, 9, 1, Audio.GetIsPcmRAMWrite(EnmModel.VirtualModel) ? "VP" : "  ");
+            DrawBuff.drawFont4(screen.mainScreen, 321 - 16, 9, 1, Audio.GetIsPcmRAMWrite(EnmModel.VirtualModel) ? "VP" : "  ");
             DrawBuff.drawFont4(screen.mainScreen, 1, 17, 1, Audio.GetIsDataBlock(EnmModel.RealModel) ? "RD" : "  ");
-            DrawBuff.drawFont4(screen.mainScreen, 321-16, 17, 1, Audio.GetIsPcmRAMWrite(EnmModel.RealModel) ? "RP" : "  ");
+            DrawBuff.drawFont4(screen.mainScreen, 321 - 16, 17, 1, Audio.GetIsPcmRAMWrite(EnmModel.RealModel) ? "RP" : "  ");
 
             if (setting.Debug_DispFrameCounter)
             {
@@ -4950,6 +5065,9 @@ namespace MDPlayer.form
                 if (frmK051649[chipID] != null && !frmK051649[chipID].isClosed) { frmK051649[chipID].screenDrawParams(); frmK051649[chipID].update(); }
                 else frmK051649[chipID] = null;
 
+                if (frmK053260[chipID] != null && !frmK053260[chipID].isClosed) { frmK053260[chipID].screenDrawParams(); frmK053260[chipID].update(); }
+                else frmK053260[chipID] = null;
+
                 if (frmMIDI[chipID] != null && !frmMIDI[chipID].isClosed) { frmMIDI[chipID].screenDrawParams(); frmMIDI[chipID].update(); }
                 else frmMIDI[chipID] = null;
 
@@ -5061,9 +5179,9 @@ namespace MDPlayer.form
             //DrawBuff.drawChipName(screen.mainScreen, 71 * 4, 0 * 8, 14, ref oldParam.chipLED.SecHuC8, chips[128 + 14]);
 
             DrawBuff.drawFont4(screen.mainScreen, 1, 9, 1, Audio.GetIsDataBlock(EnmModel.VirtualModel) ? "VD" : "  ");
-            DrawBuff.drawFont4(screen.mainScreen, 321-16, 9, 1, Audio.GetIsPcmRAMWrite(EnmModel.VirtualModel) ? "VP" : "  ");
+            DrawBuff.drawFont4(screen.mainScreen, 321 - 16, 9, 1, Audio.GetIsPcmRAMWrite(EnmModel.VirtualModel) ? "VP" : "  ");
             DrawBuff.drawFont4(screen.mainScreen, 1, 17, 1, Audio.GetIsDataBlock(EnmModel.RealModel) ? "RD" : "  ");
-            DrawBuff.drawFont4(screen.mainScreen, 321-16, 17, 1, Audio.GetIsPcmRAMWrite(EnmModel.RealModel) ? "RP" : "  ");
+            DrawBuff.drawFont4(screen.mainScreen, 321 - 16, 17, 1, Audio.GetIsPcmRAMWrite(EnmModel.RealModel) ? "RP" : "  ");
 
             oldParam.Cminutes = -1; oldParam.Csecond = -1; oldParam.Cmillisecond = -1;
             oldParam.TCminutes = -1; oldParam.TCsecond = -1; oldParam.TCmillisecond = -1;
@@ -5080,7 +5198,7 @@ namespace MDPlayer.form
                 Audio.Pause();
             }
 
-            if(Audio.trdStopped && Audio.Stopped)
+            if (Audio.trdStopped && Audio.Stopped)
             {
                 Audio.ResetTimeCounter();
             }
@@ -5160,7 +5278,7 @@ namespace MDPlayer.form
 
                 if (srcBuf == null)
                 {
-                    
+
                     Audio.errMsg = "cancel";
                     return;
                 }
@@ -5275,6 +5393,7 @@ namespace MDPlayer.form
                     for (int ch = 0; ch < 4; ch++) ForceChannelMask(EnmChip.DMG, chipID, ch, newParam.dmg[chipID].channels[ch].mask);
                     for (int ch = 0; ch < 3; ch++) ForceChannelMask(EnmChip.VRC6, chipID, ch, newParam.vrc6[chipID].channels[ch].mask);
                     for (int ch = 0; ch < 8; ch++) ForceChannelMask(EnmChip.N163, chipID, ch, newParam.n106[chipID].channels[ch].mask);
+                    for (int ch = 0; ch < 4; ch++) ForceChannelMask(EnmChip.K053260, chipID, ch, newParam.k053260[chipID].channels[ch].mask);
                     ResetChannelMask(EnmChip.FDS, chipID, 0);
                 }
 
@@ -5402,9 +5521,12 @@ namespace MDPlayer.form
 
                     if (Audio.chipLED.PriOPX != 0) OpenFormYMF271(0, true); else CloseFormYMF271(0);
                     if (Audio.chipLED.SecOPX != 0) OpenFormYMF271(1, true); else CloseFormYMF271(1);
+
+                    if (Audio.chipLED.PriK053260 != 0) OpenFormK053260(0, true); else CloseFormK053260(0);
+                    if (Audio.chipLED.SecK053260 != 0) OpenFormK053260(1, true); else CloseFormK053260(1);
                 }
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 Audio.errMsg = e.Message;
             }
@@ -5541,7 +5663,7 @@ namespace MDPlayer.form
             //    frmPlayList.Height = setting.location.PPlayListWH.Y;
             //}
             frmPlayList.Visible = !frmPlayList.Visible;
-            if(frmPlayList.Visible) CheckAndSetForm(frmPlayList);
+            if (frmPlayList.Visible) CheckAndSetForm(frmPlayList);
             frmPlayList.TopMost = true;
             frmPlayList.TopMost = false;
         }
@@ -5595,7 +5717,7 @@ namespace MDPlayer.form
             byte[] buf = System.IO.File.ReadAllBytes(filename);
 
             //.NRDファイルの場合は拡張子判定
-            if (ext==".nrd")
+            if (ext == ".nrd")
             {
                 format = EnmFileFormat.NRT;
                 return buf;
@@ -5841,7 +5963,7 @@ namespace MDPlayer.form
                     }
                     return;
                 }
-                else if(chip== EnmChip.HuC6280)
+                else if (chip == EnmChip.HuC6280)
                 {
                     if (setting.other.InstFormat == EnmInstFormat.MML2VGM)
                     {
@@ -5906,7 +6028,7 @@ namespace MDPlayer.form
                     }
                 }
             }
-            catch 
+            catch
             {
                 MessageBox.Show("音色出力エラー", "エラー", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
@@ -6244,30 +6366,30 @@ namespace MDPlayer.form
                 if (ch < 0 || ch > 8) return null;
 
                 n = "'@ L No \"MDP\"\r\n   AR DR SL RR KSL TL MT AM VIB EGT KSR WS\r\n";
-                for (int i = 0; i < 2; i ++)
+                for (int i = 0; i < 2; i++)
                 {
                     if (i == 0) slot = slot1Tbl[ch];
                     else slot = slot2Tbl[ch];
 
                     slot = (slot % 6) + 8 * (slot / 6);
                     n += string.Format("'@ {0:D2},{1:D2},{2:D2},{3:D2}, {4:D2},{5:D2},{6:D2},{7:D2}, {8:D2}, {9:D2}, {10:D2},{11:D2}\r\n"
-                        , regs[0x60+slot]>>4
-                        ,regs[0x60 + slot] & 0xf
-                        ,regs[0x80 + slot] >> 4
-                        ,regs[0x80 + slot] & 0xf
-                        ,regs[0x40 + slot] >> 6
-                        ,regs[0x40 + slot] & 0x3f
-                        ,regs[0x20 + slot] & 0xf
-                        ,regs[0x20 + slot] >> 7
-                        ,(regs[0x20 + slot] >> 6) & 1
-                        ,(regs[0x20 + slot] >> 5) & 1
-                        ,(regs[0x20 + slot] >> 4) & 1
-                        ,(regs[0xe0 + slot] & 3)
+                        , regs[0x60 + slot] >> 4
+                        , regs[0x60 + slot] & 0xf
+                        , regs[0x80 + slot] >> 4
+                        , regs[0x80 + slot] & 0xf
+                        , regs[0x40 + slot] >> 6
+                        , regs[0x40 + slot] & 0x3f
+                        , regs[0x20 + slot] & 0xf
+                        , regs[0x20 + slot] >> 7
+                        , (regs[0x20 + slot] >> 6) & 1
+                        , (regs[0x20 + slot] >> 5) & 1
+                        , (regs[0x20 + slot] >> 4) & 1
+                        , (regs[0xe0 + slot] & 3)
                         );
                 }
                 n += string.Format("   CNT FB\r\n'@  {0:D2},{1:D2}\r\n"
-                    ,(regs[0xc0 + ch] & 1)
-                    ,(regs[0xc0 + ch] >> 1) & 7
+                    , (regs[0xc0 + ch] & 1)
+                    , (regs[0xc0 + ch] >> 1) & 7
                     );
             }
 
@@ -6680,7 +6802,7 @@ namespace MDPlayer.form
         {
 
             string n = "";
-            int[] Register=null;
+            int[] Register = null;
 
             if (chip == EnmChip.YM2413)
             {
@@ -6796,7 +6918,7 @@ namespace MDPlayer.form
             if (!string.IsNullOrEmpty(n)) Clipboard.SetText(n);
         }
 
-        private void getInstChForMCK(EnmChip chip,int ch,int chipID)
+        private void getInstChForMCK(EnmChip chip, int ch, int chipID)
         {
             string n = "";
 
@@ -7072,7 +7194,7 @@ namespace MDPlayer.form
             string buf = "<?xml version = \"1.0\" encoding = \"UTF-8\"?>\r\n";
             buf += "\r\n";
             int alg = 0, fb = 0, ams = 0, pms = 0;
-            
+
             GD3 gd3 = Audio.GetGD3();
             string patch_Name = "MDPlayer_{0}";
             if (gd3 != null)
@@ -7091,12 +7213,12 @@ namespace MDPlayer.form
             {
                 int p = (ch > 2) ? 1 : 0;
                 int c = (ch > 2) ? ch - 3 : ch;
-                int[][] fmRegister = (chip == EnmChip.YM2612) 
-                    ? Audio.GetFMRegister(chipID) 
-                    : (chip == EnmChip.YM2608 
-                        ? Audio.GetYM2608Register(chipID) 
-                        : (chip == EnmChip.YM2203 
-                            ? new int[][] { Audio.GetYM2203Register(chipID), null } 
+                int[][] fmRegister = (chip == EnmChip.YM2612)
+                    ? Audio.GetFMRegister(chipID)
+                    : (chip == EnmChip.YM2608
+                        ? Audio.GetYM2608Register(chipID)
+                        : (chip == EnmChip.YM2203
+                            ? new int[][] { Audio.GetYM2203Register(chipID), null }
                             : Audio.GetYM2610Register(chipID)
                         )
                     );
@@ -7146,7 +7268,7 @@ namespace MDPlayer.form
             {
                 int[] ym2151Register = Audio.GetYM2151Register(chipID);
 
-                 alg = ym2151Register[0x20 + ch] & 0x07;
+                alg = ym2151Register[0x20 + ch] & 0x07;
                 int[] tls = new int[]
                 {
                         ym2151Register[0x60 + 0x00 + ch] & 0x7f//TL1
@@ -7461,7 +7583,7 @@ namespace MDPlayer.form
                 n[14 + 32 + 9] = (byte)(reg[p][0xc0 + chTbl[(c + 1) % 9]]);//8-bit unsigned integer, Feedback / Connection
             }
 
-            for(int i = 0; i < 4; i++)
+            for (int i = 0; i < 4; i++)
             {
                 if (isOP4 || i < 2)
                 {
@@ -7688,7 +7810,7 @@ namespace MDPlayer.form
                         , (ym2151Register[0x80 + ops + ch] & 0xc0) >> 6 //KS
                         , ym2151Register[0x40 + ops + ch] & 0x0f //ML
                         , (ym2151Register[0x40 + ops + ch] & 0x70) >> 4 //DT
-                        //, (ym2151Register[0xc0 + ops + ch] & 0xc0) >> 6 //DT2
+                                                                        //, (ym2151Register[0xc0 + ops + ch] & 0xc0) >> 6 //DT2
                         , (ym2151Register[0xa0 + ops + ch] & 0x80) >> 7 //AM
                         , 0
                     );
@@ -7706,7 +7828,7 @@ namespace MDPlayer.form
             int min = int.MaxValue;
 
             //最小値を調べる
-            for(int i = 0; i < 4; i++)
+            for (int i = 0; i < 4; i++)
             {
                 if ((algs[alg] & (1 << i)) == 0) continue;
                 switch (i)
@@ -7960,8 +8082,8 @@ namespace MDPlayer.form
                     }
                 }
 
-                    //再生前に音量のバランスを設定する
-                    LoadPresetMixerBalance(playingFileName, playingArcFileName, format);
+                //再生前に音量のバランスを設定する
+                LoadPresetMixerBalance(playingFileName, playingArcFileName, format);
 
                 Audio.SetVGMBuffer(format, srcBuf, playingFileName, playingArcFileName, m, songNo, extFile);
                 newParam.ym2612[0].fileFormat = format;
@@ -7985,7 +8107,7 @@ namespace MDPlayer.form
             return true;
         }
 
-        public bool bufferPlay(byte[] buf,string fullPath)
+        public bool bufferPlay(byte[] buf, string fullPath)
         {
             try
             {
@@ -8074,7 +8196,7 @@ namespace MDPlayer.form
                     }
                     break;
                 case EnmFileFormat.MND:
-                    uint hs=(uint)((srcBuf[0x06] << 8) + srcBuf[0x07]);
+                    uint hs = (uint)((srcBuf[0x06] << 8) + srcBuf[0x07]);
                     uint pcmptr = (uint)((srcBuf[0x14] << 24) + (srcBuf[0x15] << 16) + (srcBuf[0x16] << 8) + srcBuf[0x17]);
                     if (hs < 0x18) pcmptr = 0;
                     if (pcmptr != 0)
@@ -8457,7 +8579,7 @@ namespace MDPlayer.form
                     }
                     else
                     {
-                        Audio.resetOKIM6295Mask(chipID,ch);
+                        Audio.resetOKIM6295Mask(chipID, ch);
                     }
                     newParam.okim6295[chipID].channels[ch].mask = !newParam.okim6295[chipID].channels[ch].mask;
                     break;
@@ -8538,12 +8660,23 @@ namespace MDPlayer.form
                 case EnmChip.K051649:
                     if (ch >= 0 && ch < 5)
                     {
-                        if (newParam.k051649[chipID].channels[ch].mask == false|| newParam.k051649[chipID].channels[ch].mask == null)
+                        if (newParam.k051649[chipID].channels[ch].mask == false || newParam.k051649[chipID].channels[ch].mask == null)
                             Audio.setK051649Mask(chipID, ch);
                         else
                             Audio.resetK051649Mask(chipID, ch);
 
                         newParam.k051649[chipID].channels[ch].mask = !newParam.k051649[chipID].channels[ch].mask;
+                    }
+                    break;
+                case EnmChip.K053260:
+                    if (ch >= 0 && ch < 4)
+                    {
+                        if (newParam.k053260[chipID].channels[ch].mask == false || newParam.k053260[chipID].channels[ch].mask == null)
+                            Audio.setK053260Mask(chipID, ch);
+                        else
+                            Audio.resetK053260Mask(chipID, ch);
+
+                        newParam.k053260[chipID].channels[ch].mask = !newParam.k053260[chipID].channels[ch].mask;
                     }
                     break;
                 case EnmChip.DMG:
@@ -8625,6 +8758,10 @@ namespace MDPlayer.form
                 case EnmChip.VRC7:
                     newParam.vrc7[chipID].channels[ch].mask = false;
                     Audio.resetVRC7Mask(chipID, ch);
+                    break;
+                case EnmChip.K053260:
+                    newParam.k053260[chipID].channels[ch].mask = false;
+                    Audio.resetK053260Mask(chipID, ch);
                     break;
                 case EnmChip.YM2608:
                     if (ch >= 0 && ch < 14)
@@ -8736,7 +8873,7 @@ namespace MDPlayer.form
                     break;
                 case EnmChip.OKIM6295:
                     newParam.okim6295[chipID].channels[ch].mask = false;
-                    Audio.resetOKIM6295Mask(chipID,ch);
+                    Audio.resetOKIM6295Mask(chipID, ch);
                     break;
                 case EnmChip.NES:
                     switch (ch)
@@ -8879,6 +9016,14 @@ namespace MDPlayer.form
                         Audio.resetQSoundMask(chipID, ch);
                     newParam.qSound[chipID].channels[ch].mask = mask;
                     oldParam.qSound[chipID].channels[ch].mask = !mask;
+                    break;
+                case EnmChip.K053260:
+                    if (mask == true)
+                        Audio.setK053260Mask(chipID, ch);
+                    else
+                        Audio.resetK053260Mask(chipID, ch);
+                    newParam.k053260[chipID].channels[ch].mask = mask;
+                    oldParam.k053260[chipID].channels[ch].mask = !mask;
                     break;
                 case EnmChip.YM2151:
                     if (mask == true)
@@ -9106,7 +9251,7 @@ namespace MDPlayer.form
             }
         }
 
-        public void ForceChannelMaskNES(EnmChip chip, int chipID, int ch,MDChipParams.NESDMC[] param)
+        public void ForceChannelMaskNES(EnmChip chip, int chipID, int ch, MDChipParams.NESDMC[] param)
         {
             if (ch == 0 || ch == 1)
             {
@@ -9121,7 +9266,7 @@ namespace MDPlayer.form
                     Audio.resetNESMask(chipID, ch);
                 }
             }
-            else if(ch==2)
+            else if (ch == 2)
             {
                 if (param[chipID].triChannel.mask == true)
                 {
@@ -9363,7 +9508,7 @@ namespace MDPlayer.form
             YM2612MIDI.ChangeSelectedParamValue(n);
         }
 
-        private void LoadPresetMixerBalance(string playingFileName,string playingArcFileName, EnmFileFormat format)
+        private void LoadPresetMixerBalance(string playingFileName, string playingArcFileName, EnmFileFormat format)
         {
             if (!setting.autoBalance.UseThis) return;
 
@@ -9562,7 +9707,7 @@ namespace MDPlayer.form
         public string SaveDriverBalance(Setting.Balance balance)
         {
             PlayList.music music = frmPlayList.getPlayingSongInfo();
-            if(music==null)
+            if (music == null)
             {
                 throw new Exception("演奏情報が取得できませんでした。\r\n演奏中又は演奏完了直後に再度お試しください。");
             }
@@ -9579,7 +9724,7 @@ namespace MDPlayer.form
             return music;
         }
 
-        public static Action<HongliangSoft.Utilities.Gui.KeyboardHookedEventArgs> keyHookMeth=null;
+        public static Action<HongliangSoft.Utilities.Gui.KeyboardHookedEventArgs> keyHookMeth = null;
 
         private void keyboardHook1_KeyboardHooked(object sender, HongliangSoft.Utilities.Gui.KeyboardHookedEventArgs e)
         {
@@ -9781,7 +9926,7 @@ namespace MDPlayer.form
         {
             int n = frmPlayList.getMusicCount();
 
-            if (newButtonMode[9] != 1 || n<1)
+            if (newButtonMode[9] != 1 || n < 1)
             {
                 play();
                 oldParam = new MDChipParams();
@@ -9877,7 +10022,8 @@ namespace MDPlayer.form
             showContextMenu();
         }
 
-        private void RegisterDumpMenuItem_Click(object sender, EventArgs e) {
+        private void RegisterDumpMenuItem_Click(object sender, EventArgs e)
+        {
             if (sender == yM2612ToolStripMenuItem) OpenFormRegTest(0, EnmChip.YM2612);
             else if (sender == ym2151ToolStripMenuItem) OpenFormRegTest(0, EnmChip.YM2151);
             else if (sender == ym2203ToolStripMenuItem) OpenFormRegTest(0, EnmChip.YM2203);
@@ -10065,7 +10211,7 @@ namespace MDPlayer.form
         private void opeButton_MouseEnter(object sender, EventArgs e)
         {
             Button btn = (Button)sender;
-            int index =int.Parse(btn.Tag.ToString());
+            int index = int.Parse(btn.Tag.ToString());
             int m = index;
             if (m == 9)
             {
@@ -10220,5 +10366,6 @@ namespace MDPlayer.form
         {
             setting.other.WavSwitch = tsmiOutputwavFile.Checked;
         }
+
     }
 }

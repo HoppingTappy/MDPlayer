@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
+using System.Security.Cryptography;
 using System.Text;
 using System.Windows.Forms;
 using System.Xml.Serialization;
@@ -2651,23 +2652,43 @@ namespace MDPlayer
         [Serializable]
         public class Location
         {
-            private Point _PMain = Point.Empty;
-            public Point PMain
+            public class Form
             {
-                get
+                public Point Point
                 {
-                    if (_PMain.X < 0 || _PMain.Y < 0)
+                    get
                     {
-                        return new Point(0, 0);
+                        if (_Point.X < 0 || _Point.Y < 0)
+                        {
+                            return new Point(0, 0);
+                        }
+                        return _Point;
                     }
-                    return _PMain;
-                }
 
-                set
+                    set
+                    {
+                        _Point = value;
+                    }
+                }
+                private Point _Point = Point.Empty;
+
+                public bool IsOpen { get; set; } = false;
+                public System.Windows.Forms.FormWindowState State { get; set; } = FormWindowState.Normal;
+                public Size Size { get; set; } = Size.Empty;
+
+                public Form Copy()
                 {
-                    _PMain = value;
+                    Form n = new Form();
+                    n.Point = this.Point;
+                    n.IsOpen = this.IsOpen;
+                    n.State = this.State;
+                    n.Size = this.Size;
+
+                    return n;
                 }
             }
+
+            public Form Main = new Form();
 
             private Point _PInfo = Point.Empty;
             public Point PInfo
@@ -3023,6 +3044,34 @@ namespace MDPlayer
                 set
                 {
                     _OpenYMZ280B = value;
+                }
+            }
+
+            private Point[] _PosK053260 = new Point[2] { Point.Empty, Point.Empty };
+            public Point[] PosK053260
+            {
+                get
+                {
+                    return _PosK053260;
+                }
+
+                set
+                {
+                    _PosK053260 = value;
+                }
+            }
+
+            private bool[] _OpenK053260 = new bool[2] { false, false };
+            public bool[] OpenK053260
+            {
+                get
+                {
+                    return _OpenK053260;
+                }
+
+                set
+                {
+                    _OpenK053260 = value;
                 }
             }
 
@@ -3971,7 +4020,7 @@ namespace MDPlayer
             {
                 Location Location = new Location();
 
-                Location.PMain = this.PMain;
+                Location.Main = this.Main.Copy();
                 Location.PInfo = this.PInfo;
                 Location.OInfo = this.OInfo;
                 Location.PPlayList = this.PPlayList;
@@ -4038,6 +4087,8 @@ namespace MDPlayer
                 Location.OpenHuC6280 = this.OpenHuC6280;
                 Location.PosK051649 = this.PosK051649;
                 Location.OpenK051649 = this.OpenK051649;
+                Location.PosK053260 = this.PosK053260;
+                Location.OpenK053260 = this.OpenK053260;
                 Location.PosYm2612MIDI = this.PosYm2612MIDI;
                 Location.OpenYm2612MIDI = this.OpenYm2612MIDI;
                 Location.PosVSTeffectList = this.PosVSTeffectList;

@@ -29,6 +29,7 @@ namespace MDPlayer
         public static int clockAY8910 = 1789750;
         public static int clockS5B = 1789772;
         public static int clockK051649 = 1500000;
+        public static int clockK053260 = 3579545;
         public static int clockC140 = 21390;
         public static int clockPPZ8 = 44100;// setting.outputDevice.SampleRate;
         public static int clockC352 = 24192000;
@@ -2568,7 +2569,9 @@ namespace MDPlayer
                     chip.Stop = ym2151.Stop;
                     chip.Reset = ym2151.Reset;
                     chip.Volume = setting.balance.YM2151Volume;
-                    chip.Clock = (uint)((Driver.MucomDotNET)driverVirtual).OPMClock;
+                    uint clock = (uint)((Driver.MucomDotNET)driverVirtual).OPMClock;
+                    if (clock == 0) clock = Driver.MucomDotNET.OPMbaseclock;
+                    chip.Clock = clock;
                     chip.SamplingRate = (UInt32)chip.Clock / 64;// (UInt32)setting.outputDevice.SampleRate;
                     chip.Option = null;
                     lstChips.Add(chip);
@@ -6134,6 +6137,8 @@ namespace MDPlayer
                         chip.Volume = setting.balance.K053260Volume;
                         chip.Clock = ((vgm)driverVirtual).K053260ClockValue;
                         chip.Option = null;
+                        clockK053260 = (int)chip.Clock;
+
                         if (i == 0) chipLED.PriK053260 = 1;
                         else chipLED.SecK053260 = 1;
 
@@ -7314,8 +7319,9 @@ namespace MDPlayer
                     Thread.Sleep(0);
 
                     double el1 = sw.ElapsedTicks / swFreq;
-                    if (el1 - o < step) continue;
-                    if (el1 - o >= step * setting.outputDevice.SampleRate / 100.0)//閾値10ms
+                    if (el1 - o < step)
+                        continue;
+                    if (el1 - o >= step * setting.outputDevice.SampleRate / 1.0)//閾値1000ms  //100.0)//閾値10ms
                     {
                         do
                         {
@@ -8010,6 +8016,11 @@ namespace MDPlayer
         public static K051649.k051649_state GetK051649Register(int chipID)
         {
             return chipRegister.scc_k051649.GetK051649_State((byte)chipID);//  mds.ReadK051649Status(chipID);
+        }
+
+        public static K053260.k053260_state GetK053260Register(int chipID)
+        {
+            return mds.getK053260State(chipID);
         }
 
         public static MIDIParam GetMIDIInfos(int chipID)
@@ -9151,6 +9162,11 @@ namespace MDPlayer
             chipRegister.setK051649Mask(chipID, ch);
         }
 
+        public static void setK053260Mask(int chipID, int ch)
+        {
+            chipRegister.setK053260Mask(chipID, ch,true);
+        }
+
         public static void setDMGMask(int chipID, int ch)
         {
             chipRegister.setDMGMask(chipID, ch);
@@ -9375,6 +9391,11 @@ namespace MDPlayer
         public static void resetK051649Mask(int chipID, int ch)
         {
             chipRegister.resetK051649Mask(chipID, ch);
+        }
+
+        public static void resetK053260Mask(int chipID, int ch)
+        {
+            chipRegister.setK053260Mask(chipID, ch, false);
         }
 
         public static void resetDMGMask(int chipID, int ch)
