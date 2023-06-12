@@ -1,4 +1,5 @@
 ﻿#if X64
+using MDPlayerx64;
 using MDPlayerx64.Properties;
 #else
 using MDPlayer.Properties;
@@ -31,7 +32,7 @@ namespace MDPlayer.form
 
             this.newParam = newParam;
             this.oldParam = oldParam;
-            frameBuffer.Add(pbScreen, Resources.planeYM2610, null, zoom);
+            frameBuffer.Add(pbScreen, ResMng.imgDic["planeYM2610"], null, zoom);
             screenInit();
             update();
         }
@@ -74,9 +75,9 @@ namespace MDPlayer.form
 
         public void changeZoom()
         {
-            this.MaximumSize = new System.Drawing.Size(frameSizeW + Resources.planeYM2610.Width * zoom, frameSizeH + Resources.planeYM2610.Height * zoom);
-            this.MinimumSize = new System.Drawing.Size(frameSizeW + Resources.planeYM2610.Width * zoom, frameSizeH + Resources.planeYM2610.Height * zoom);
-            this.Size = new System.Drawing.Size(frameSizeW + Resources.planeYM2610.Width * zoom, frameSizeH + Resources.planeYM2610.Height * zoom);
+            this.MaximumSize = new System.Drawing.Size(frameSizeW + ResMng.imgDic["planeYM2610"].Width * zoom, frameSizeH + ResMng.imgDic["planeYM2610"].Height * zoom);
+            this.MinimumSize = new System.Drawing.Size(frameSizeW + ResMng.imgDic["planeYM2610"].Width * zoom, frameSizeH + ResMng.imgDic["planeYM2610"].Height * zoom);
+            this.Size = new System.Drawing.Size(frameSizeW + ResMng.imgDic["planeYM2610"].Width * zoom, frameSizeH + ResMng.imgDic["planeYM2610"].Height * zoom);
             frmYM2610_Resize(null, null);
 
         }
@@ -393,7 +394,7 @@ namespace MDPlayer.form
                 bool n = (YM2610Register[0][0x07] & (0x8 << ch)) == 0;
                 channel.tn = (t ? 1 : 0) + (n ? 2 : 0);
 
-                channel.volume = (int)(((t || n) ? 1 : 0) * (YM2610Register[0][0x08 + ch] & 0xf) * (20.0 / 16.0));
+                channel.volume = (int)(((t || n) ? 1 : 0) * (YM2610Register[0][0x08 + ch] & 0xf) * (15.0 / 16.0));
                 if (!t && !n && channel.volume > 0)
                 {
                     channel.volume--;

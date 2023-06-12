@@ -18,6 +18,8 @@ using MDSound;
 //using MDPlayer.Properties;
 using MDPlayer.Driver.ZGM.ZgmChip;
 using MDSound.np.chip;
+using MDPlayerx64.form.SYS;
+using MDPlayerx64;
 using System.Xml;
 
 namespace MDPlayer.form
@@ -76,6 +78,7 @@ namespace MDPlayer.form
         private frmN106[] frmN106 = new frmN106[2] { null, null };
         private frmRegTest frmRegTest;
         private frmVisWave frmVisWave;
+        private frmConsole frmConsole;
 
         private List<Form[]> lstForm = new List<Form[]>();
 
@@ -131,8 +134,20 @@ namespace MDPlayer.form
 
         public frmMain()
         {
+            log.debug = this.setting.debug.logDebug;
+            log.logLevel = this.setting.debug.logLevel;
+
+            frmConsole = new frmConsole(setting);
+            if (setting.debug.ShowConsole) frmConsole.Show();
+
             log.ForcedWrite("起動処理開始");
             log.ForcedWrite("frmMain(コンストラクタ):STEP 00");
+
+            string resPath = setting.other.ResourceFile;
+            if (string.IsNullOrEmpty(resPath))
+                resPath = Application.StartupPath;
+            ResMng.Init(resPath);
+            setupControlImages();
 
             InitializeComponent();
             DrawBuff.Init();
@@ -176,13 +191,10 @@ namespace MDPlayer.form
                 Process prc = GetPreviousProcess();
                 if (prc != null)
                 {
-                    var cmdArgs = Environment.GetCommandLineArgs();
-                    var sendStr = "";
-                    for (int i = 1; i < Environment.GetCommandLineArgs().Length; i++) {
-                        sendStr += cmdArgs[i] + ",";
-                    }
-                    sendStr = sendStr.Substring(0, sendStr.Length - 1);
-                    SendString(prc.MainWindowHandle, sendStr);
+                    string[] args = Environment.GetCommandLineArgs();
+                    string arg = "";
+                    for (int i = 1; i < args.Length; i++) arg += string.Format("\"{0}\"", args[i]);
+                    SendString(prc.MainWindowHandle, arg);
                     forcedExit = true;
                     try
                     {
@@ -232,7 +244,6 @@ namespace MDPlayer.form
 
             log.ForcedWrite("frmMain(コンストラクタ):STEP 04");
 
-            log.debug = setting.Debug_DispFrameCounter;
 
         }
 
@@ -261,7 +272,7 @@ namespace MDPlayer.form
 
             log.ForcedWrite("frmMain_Load:STEP 06");
 
-            screen = new DoubleBuffer(pbScreen, Resources.planeControl, 1);
+            screen = new DoubleBuffer(pbScreen, ResMng.imgDic["planeControl"], 1);
             screen.setting = setting;
             //oldParam = new MDChipParams();
             //newParam = new MDChipParams();
@@ -369,10 +380,10 @@ namespace MDPlayer.form
 
             log.ForcedWrite("frmMain_Load:STEP 09");
 
-            ////operationフォルダクリア
-            //opeFolder = Common.GetOperationFolder(true);
-            //startWatch(opeFolder);
+            //operationフォルダクリア
+            log.ForcedWrite("frmMain_Load:Clear Operation folder.");
             mmf = new fileCom(false, "MDPlayer", "MDPlayer", 1024 * 4);
+
         }
 
         //private void startWatch(string opeFolder)
@@ -590,9 +601,9 @@ namespace MDPlayer.form
         {
             toolTip1.SetToolTip(opeButtonZoom, zoomTip[setting.other.Zoom - 1]);
 
-            this.MaximumSize = new System.Drawing.Size(frameSizeW + Resources.planeControl.Width * setting.other.Zoom, frameSizeH + Resources.planeControl.Height * setting.other.Zoom);
-            this.MinimumSize = new System.Drawing.Size(frameSizeW + Resources.planeControl.Width * setting.other.Zoom, frameSizeH + Resources.planeControl.Height * setting.other.Zoom);
-            this.Size = new System.Drawing.Size(frameSizeW + Resources.planeControl.Width * setting.other.Zoom, frameSizeH + Resources.planeControl.Height * setting.other.Zoom);
+            this.MaximumSize = new System.Drawing.Size(frameSizeW + ResMng.imgDic["planeControl"].Width * setting.other.Zoom, frameSizeH + ResMng.imgDic["planeControl"].Height * setting.other.Zoom);
+            this.MinimumSize = new System.Drawing.Size(frameSizeW + ResMng.imgDic["planeControl"].Width * setting.other.Zoom, frameSizeH + ResMng.imgDic["planeControl"].Height * setting.other.Zoom);
+            this.Size = new System.Drawing.Size(frameSizeW + ResMng.imgDic["planeControl"].Width * setting.other.Zoom, frameSizeH + ResMng.imgDic["planeControl"].Height * setting.other.Zoom);
             frmMain_Resize(null, null);
             RelocateOpeButton(setting.other.Zoom);
 
@@ -1041,58 +1052,31 @@ namespace MDPlayer.form
             trd.Priority = System.Threading.ThreadPriority.BelowNormal;
             trd.Start();
             string[] args = Environment.GetCommandLineArgs();
+            string arg = "";
+            for (int i = 1; i < args.Length; i++) arg += string.Format("\"{0}\"", args[i]);
 
             Application.DoEvents();
             Activate();
 
-            if (args.Length < 2)
-            {
-                return;
-            }
+            log.ForcedWrite("起動処理完了");
 
-            var songNum = 0;
+            log.Write("-------------------------------------------");
+            log.Write(" Welcome to the MDPlayer zone. Get Ready ? ");
+            log.Write("-------------------------------------------");
 
-            if (args.Length == 3)
-            {
-                songNum = Common.StrToInt(args[2]);
-            }
+            if (args.Length < 2) return;
 
-            log.ForcedWrite("frmMain_Shown:STEP 10");
+            log.ForcedWrite("frmMain_Shown:起動時オプション解析");
 
             try
             {
-
-                frmPlayList.Stop();
-
-                PlayList pl = frmPlayList.getPlayList();
-                if (pl.lstMusic.Count < 1 || pl.lstMusic[pl.lstMusic.Count - 1].fileName != args[1])
-                {
-                    pl.AddFile(args[1]);
-                    //frmPlayList.AddList(args[1]);
-                }
-
-                if (!loadAndPlay(0, songNum, args[1], ""))
-                {
-                    frmPlayList.Stop();
-                    OpeManager.RequestToAudio(new Request(enmRequest.Stop));
-                    //Audio.Stop();
-                    return;
-                }
-
-                frmPlayList.setStart(-1);
-
-                oldParam = new MDChipParams();
-                frmPlayList.Play();
-
+                PlayArgs(arg);
             }
             catch (Exception ex)
             {
                 log.ForcedWrite(ex);
                 MessageBox.Show("ファイルの読み込みに失敗しました。");
             }
-
-            log.ForcedWrite("frmMain_Shown:STEP 11");
-            log.ForcedWrite("起動処理完了");
 
         }
 
@@ -1102,7 +1086,7 @@ namespace MDPlayer.form
 
             if (screen != null) screen.Dispose();
 
-            screen = new DoubleBuffer(pbScreen, Resources.planeControl, setting.other.Zoom);
+            screen = new DoubleBuffer(pbScreen, ResMng.imgDic["planeControl"], setting.other.Zoom);
             screen.setting = setting;
             reqAllScreenInit = true;
             //screen.screenInitAll();
@@ -1445,6 +1429,7 @@ namespace MDPlayer.form
             log.ForcedWrite("frmMain_FormClosing:STEP 06");
 
             mmf.Close();
+            ResMng.Release();
 
             log.ForcedWrite("終了処理完了");
 
@@ -4418,7 +4403,8 @@ namespace MDPlayer.form
             Audio.Init(this.setting);
 
             log.ForcedWrite("Audio初期化処理完了");
-            log.debug = this.setting.Debug_DispFrameCounter;
+            log.debug = this.setting.debug.logDebug;
+            log.logLevel = this.setting.debug.logLevel;
 
             frmVSTeffectList.dispPluginList();
             StartMIDIInMonitoring();
@@ -4936,7 +4922,7 @@ namespace MDPlayer.form
             DrawBuff.drawFont4(screen.mainScreen, 1, 17, 1, Audio.GetIsDataBlock(EnmModel.RealModel) ? "RD" : "  ");
             DrawBuff.drawFont4(screen.mainScreen, 321 - 16, 17, 1, Audio.GetIsPcmRAMWrite(EnmModel.RealModel) ? "RP" : "  ");
 
-            if (setting.Debug_DispFrameCounter)
+            if (setting.debug.DispFrameCounter)
             {
                 long v = Audio.getVirtualFrameCounter();
                 if (v != -1) DrawBuff.drawFont8(screen.mainScreen, 0, 0, 0, string.Format("EMU        : {0:D12} ", v));
@@ -5726,6 +5712,18 @@ namespace MDPlayer.form
             if (ext == ".mgs")
             {
                 format = EnmFileFormat.MGS;
+                return buf;
+            }
+
+            if (ext == ".bgm")
+            {
+                format = EnmFileFormat.MuSICA;
+                return buf;
+            }
+
+            if (ext == ".msd")
+            {
+                format = EnmFileFormat.MuSICA_src;
                 return buf;
             }
 
@@ -7908,33 +7906,7 @@ namespace MDPlayer.form
                 string sParam = ReceiveString(m);
                 try
                 {
-                    var args = sParam.Split(',');
-                    frmPlayList.Stop();
-
-                    PlayList pl = frmPlayList.getPlayList();
-                    if (pl.lstMusic.Count < 1 || pl.lstMusic[pl.lstMusic.Count - 1].fileName != args[0])
-                    {
-                        frmPlayList.getPlayList().AddFile(args[0]);
-                        //frmPlayList.AddList(sParam);
-                    }
-                    var songNo = 0;
-                    if (args.Length > 1) {
-                        songNo = Common.StrToInt(args[1]);
-                    }
-                    if (!loadAndPlay(0, songNo, args[0]))
-                    {
-                        frmPlayList.Stop();
-                        Request req = new Request(enmRequest.Stop);
-                        OpeManager.RequestToAudio(req);
-                        //Audio.Stop();
-                        return;
-                    }
-
-                    frmPlayList.setStart(-1);
-                    oldParam = new MDChipParams();
-
-                    frmPlayList.Play();
-
+                    PlayArgs(sParam);
                 }
                 catch (Exception ex)
                 {
@@ -7944,6 +7916,83 @@ namespace MDPlayer.form
                 }
             }
 
+        }
+
+        private void PlayArgs(string arg)
+        {
+            string fname = "";
+            bool addPL = true;
+            int songNum = 0;
+            List<string> args = new List<string>();
+            string a = "";
+            for (int i = 0; i < arg.Length; i++)
+            {
+                char ch = arg[i];
+                if (ch != '"') continue;
+                i++;
+                a = "";
+                for (int j = i; j < arg.Length; j++)
+                {
+                    ch = arg[j];
+                    if (ch != '"')
+                    {
+                        a += ch;
+                        continue;
+                    }
+                    args.Add(a);
+                    i=j;
+                    break;
+                }
+            }
+            if (string.IsNullOrEmpty(a)) args.Add(a);
+
+            foreach(string b in args)
+            {
+                if (string.IsNullOrEmpty(b)) continue;
+                string c= b.Trim();
+                if (string.IsNullOrEmpty(c)) continue;
+                if (c[0] == '-')
+                {
+                    string d = c.Substring(1).ToUpper();
+                    if (d.IndexOf("PL") >= 0)
+                    {
+                        addPL = true;
+                        if (d.Length > 2 && d[2] == '-') addPL = false;
+                    }
+
+                    if (d.IndexOf("N") >= 0)
+                    {
+                        string buf = d.Trim().Substring(d.IndexOf("N") + 1);
+                        songNum = Common.StrToInt(buf);
+                    }
+
+                    continue;
+                }
+                fname = c.Trim();
+            }
+
+            frmPlayList.Stop();
+
+            PlayList pl = frmPlayList.getPlayList();
+            if (pl.lstMusic.Count < 1 || pl.lstMusic[pl.lstMusic.Count - 1].fileName != fname)
+            {
+                if (addPL) frmPlayList.getPlayList().AddFile(fname);
+                //frmPlayList.AddList(sParam);
+            }
+
+            if (!loadAndPlay(0, songNum, fname))
+            {
+                frmPlayList.Stop();
+                Request req = new Request(enmRequest.Stop);
+                OpeManager.RequestToAudio(req);
+                //Audio.Stop();
+                return;
+            }
+
+            frmPlayList.setStart(-1);
+            oldParam = new MDChipParams();
+
+            frmPlayList.Play();
         }
 
         //メッセージ処理
@@ -10044,78 +10093,86 @@ namespace MDPlayer.form
             else OpenFormRegTest(0);
         }
 
-        private Bitmap[] lstOpeButtonEnterImage = new Bitmap[]
+        private void setupControlImages()
         {
-            Resources.chSetting,
-            Resources.chStop,
-            Resources.chPause,
-            Resources.chFadeout,
-            Resources.chPrevious,
-            Resources.chSlow,
-            Resources.chPlay,
-            Resources.chFast,
-            Resources.chNext,
-            Resources.chStep,
-            Resources.chOpenFolder,
-            Resources.chPlayList,
-            Resources.chInformation,
-            Resources.chMixer,
-            Resources.chKBD,
-            Resources.chVST,
-            Resources.chMIDIKBD,
-            Resources.chZoom,
-            Resources.chRandom,
-            Resources.chLoop,
-            Resources.chLoopOne
-        };
-        private Bitmap[] lstOpeButtonLeaveImage = new Bitmap[]
-        {
-            Resources.ccSetting,
-            Resources.ccStop,
-            Resources.ccPause,
-            Resources.ccFadeout,
-            Resources.ccPrevious,
-            Resources.ccSlow,
-            Resources.ccPlay,
-            Resources.ccFast,
-            Resources.ccNext,
-            Resources.ccStep,
-            Resources.ccOpenFolder,
-            Resources.ccPlayList,
-            Resources.ccInformation,
-            Resources.ccMixer,
-            Resources.ccKBD,
-            Resources.ccVST,
-            Resources.ccMIDIKBD,
-            Resources.ccZoom,
-            Resources.ccRandom,
-            Resources.ccLoop,
-            Resources.ccLoopOne
-        };
-        private Bitmap[] lstOpeButtonActiveImage = new Bitmap[]
-        {
-            Resources.ciSetting,
-            Resources.ciStop,
-            Resources.ciPause,
-            Resources.ciFadeout,
-            Resources.ciPrevious,
-            Resources.ciSlow,
-            Resources.ciPlay,
-            Resources.ciFast,
-            Resources.ciNext,
-            Resources.ciStep,
-            Resources.ciOpenFolder,
-            Resources.ciPlayList,
-            Resources.ciInformation,
-            Resources.ciMixer,
-            Resources.ciKBD,
-            Resources.ciVST,
-            Resources.ciMIDIKBD,
-            Resources.ciZoom,
-            Resources.ciRandom,
-            Resources.ciLoop,
-            Resources.ciLoopOne
-        };
+            lstOpeButtonEnterImage = new Bitmap[]
+{
+            ResMng.imgDic["chSetting"],
+            ResMng.imgDic["chStop"],
+            ResMng.imgDic["chPause"],
+            ResMng.imgDic["chFadeout"],
+            ResMng.imgDic["chPrevious"],
+            ResMng.imgDic["chSlow"],
+            ResMng.imgDic["chPlay"],
+            ResMng.imgDic["chFast"],
+            ResMng.imgDic["chNext"],
+            ResMng.imgDic["chStep"],
+            ResMng.imgDic["chOpenFolder"],
+            ResMng.imgDic["chPlayList"],
+            ResMng.imgDic["chInformation"],
+            ResMng.imgDic["chMixer"],
+            ResMng.imgDic["chKBD"],
+            ResMng.imgDic["chVST"],
+            ResMng.imgDic["chMIDIKBD"],
+            ResMng.imgDic["chZoom"],
+            ResMng.imgDic["chRandom"],
+            ResMng.imgDic["chLoop"],
+            ResMng.imgDic["chLoopOne"]
+};
+            lstOpeButtonLeaveImage = new Bitmap[]
+            {
+            ResMng.imgDic["ccSetting"],
+            ResMng.imgDic["ccStop"],
+            ResMng.imgDic["ccPause"],
+            ResMng.imgDic["ccFadeout"],
+            ResMng.imgDic["ccPrevious"],
+            ResMng.imgDic["ccSlow"],
+            ResMng.imgDic["ccPlay"],
+            ResMng.imgDic["ccFast"],
+            ResMng.imgDic["ccNext"],
+            ResMng.imgDic["ccStep"],
+            ResMng.imgDic["ccOpenFolder"],
+            ResMng.imgDic["ccPlayList"],
+            ResMng.imgDic["ccInformation"],
+            ResMng.imgDic["ccMixer"],
+            ResMng.imgDic["ccKBD"],
+            ResMng.imgDic["ccVST"],
+            ResMng.imgDic["ccMIDIKBD"],
+            ResMng.imgDic["ccZoom"],
+            ResMng.imgDic["ccRandom"],
+            ResMng.imgDic["ccLoop"],
+            ResMng.imgDic["ccLoopOne"]
+            };
+            lstOpeButtonActiveImage = new Bitmap[]
+            {
+            ResMng.imgDic["ciSetting"],
+            ResMng.imgDic["ciStop"],
+            ResMng.imgDic["ciPause"],
+            ResMng.imgDic["ciFadeout"],
+            ResMng.imgDic["ciPrevious"],
+            ResMng.imgDic["ciSlow"],
+            ResMng.imgDic["ciPlay"],
+            ResMng.imgDic["ciFast"],
+            ResMng.imgDic["ciNext"],
+            ResMng.imgDic["ciStep"],
+            ResMng.imgDic["ciOpenFolder"],
+            ResMng.imgDic["ciPlayList"],
+            ResMng.imgDic["ciInformation"],
+            ResMng.imgDic["ciMixer"],
+            ResMng.imgDic["ciKBD"],
+            ResMng.imgDic["ciVST"],
+            ResMng.imgDic["ciMIDIKBD"],
+            ResMng.imgDic["ciZoom"],
+            ResMng.imgDic["ciRandom"],
+            ResMng.imgDic["ciLoop"],
+            ResMng.imgDic["ciLoopOne"]
+            };
+
+        }
+
+        private Bitmap[] lstOpeButtonEnterImage;
+        private Bitmap[] lstOpeButtonLeaveImage;
+        private Bitmap[] lstOpeButtonActiveImage;
         private bool[] lstOpeButtonActive = new bool[]
         {
             false,

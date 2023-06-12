@@ -313,6 +313,12 @@ namespace MDPlayer
                 case EnmFileFormat.MGS:
                     AddFileMML(mc, entry);
                     break;
+                case EnmFileFormat.MuSICA:
+                    AddFileMML(mc, entry);
+                    break;
+                case EnmFileFormat.MuSICA_src:
+                    AddFileMML(mc, entry);
+                    break;
                 case EnmFileFormat.M:
                     AddFileM(mc, entry);
                     break;
@@ -384,6 +390,9 @@ namespace MDPlayer
                     break;
                 case EnmFileFormat.MGS:
                     AddFileMGS(ref index, mc, entry);
+                    break;
+                case EnmFileFormat.MuSICA:
+                    AddFileMuSICA(ref index, mc, entry);
                     break;
                 case EnmFileFormat.M:
                     AddFileM(ref index, mc, entry);
@@ -736,6 +745,11 @@ namespace MDPlayer
         }
 
         private void AddFileMGS(ref int index, music mc, object entry = null)
+        {
+            AddFilexxx(ref index, mc, entry);
+        }
+
+        private void AddFileMuSICA(ref int index, music mc, object entry = null)
         {
             AddFilexxx(ref index, mc, entry);
         }

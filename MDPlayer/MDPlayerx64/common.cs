@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Konamiman.Z80dotNet;
+using MDSound.np;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
@@ -199,6 +201,31 @@ namespace MDPlayer
             }
             return "";
         }
+        public static string getNRDString(IMemory memory, ref uint adr)
+        {
+            if (memory == null || memory.Size < 1 || adr < 0 || adr >= memory.Size) return "";
+
+            try
+            {
+                List<byte> lst = new List<byte>();
+                for (int index=(int)adr; memory[index] != 0; index++)
+                {
+                    if (memory.Size > index + 1 && memory[index] == 0x1a && memory[index + 1] == 0x00)
+                        break;
+                    lst.Add(memory[index]);
+                }
+
+                string n = System.Text.Encoding.GetEncoding(932).GetString(lst.ToArray());
+                adr++;
+
+                return n;
+            }
+            catch (Exception e)
+            {
+                log.ForcedWrite(e);
+            }
+            return "";
+        }
 
         public static string AssemblyTitle
         {
@@ -287,6 +314,8 @@ namespace MDPlayer
             if (filename.ToLower().LastIndexOf(".muc") != -1) return EnmFileFormat.MUC;
             if (filename.ToLower().LastIndexOf(".mml") != -1) return EnmFileFormat.MML;
             if (filename.ToLower().LastIndexOf(".mgs") != -1) return EnmFileFormat.MGS;
+            if (filename.ToLower().LastIndexOf(".msd") != -1) return EnmFileFormat.MuSICA_src;
+            if (filename.ToLower().LastIndexOf(".bgm") != -1) return EnmFileFormat.MuSICA;
             if (filename.ToLower().LastIndexOf(".m") != -1) return EnmFileFormat.M;
             if (filename.ToLower().LastIndexOf(".m2") != -1) return EnmFileFormat.M;
             if (filename.ToLower().LastIndexOf(".mz") != -1) return EnmFileFormat.M;
@@ -540,7 +569,12 @@ namespace MDPlayer
 
             try
             {
-                if (!File.Exists(ffn)) return null;
+                if (!File.Exists(ffn))
+                {
+                    log.Write(LogLevel.Trace, "Not found {0}.",ffn);
+                    return null;
+                }
+                log.Write(LogLevel.Trace, "Found {0}.", ffn);
                 FileStream fs = new FileStream(ffn, FileMode.Open, FileAccess.Read, FileShare.Read);
                 return fs;
             }
@@ -596,6 +630,15 @@ namespace MDPlayer
         }
     }
 
+    public enum LogLevel : int
+    {
+        Trace = 0,
+        Debug,
+        Warning,
+        Error,
+        Information,
+        Enforcement
+    }
     public enum EnmModel
     {
         VirtualModel
@@ -781,9 +824,11 @@ namespace MDPlayer
         MGS = 24,
         MDL=25,
         XGZ=26,
-        HOOT_GENERIC_Z80 = 27,
-        XML = 28,
-        HOOT = 29
+        MuSICA=27,
+        MuSICA_src=28,
+        HOOT_GENERIC_Z80 = 29,
+        XML = 30,
+        HOOT = 31
     }
 
     public enum EnmArcType : int

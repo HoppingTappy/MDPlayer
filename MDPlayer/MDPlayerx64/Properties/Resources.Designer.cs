@@ -779,6 +779,7 @@ namespace MDPlayerx64.Properties {
         ///MDRファイル(*.mdr)|*.mdr|
         ///MDXファイル(*.mdx)|*.mdx|
         ///MGSファイル(*.mgs)|*.mgs|
+        ///MuSICAファイル(*.msd;*.bgm)|*.msd;*.bgm|
         ///MNDファイル(*.mnd)|*.mnd|
         ///MUCOM88ファイル(*.mub;*.muc)|*.mub;*.muc|
         ///NRDファイル(*.nrd)|*.nrd|
@@ -789,9 +790,7 @@ namespace MDPlayerx64.Properties {
         ///SIDファイル(*.sid)|*.sid|
         ///StandardMIDIファイル(*.mid)|*.mid|
         ///WAVファイル(*.wav)|*.wav|
-        ///MP3ファイル(*.mp3)|*.mp3|
-        ///AIFFファイル(*.aiff)|*.aiff|
-        ///M3Uファイル [残りの文字列は切り詰められました]&quot;; に類似しているローカライズされた文字列を検索します。
+        ///MP3ファイル(*.mp3)|*.m [残りの文字列は切り詰められました]&quot;; に類似しているローカライズされた文字列を検索します。
         /// </summary>
         internal static string cntSupportFile {
             get {
@@ -800,7 +799,7 @@ namespace MDPlayerx64.Properties {
         }
         
         /// <summary>
-        ///   yyyy/MM/dd HH:mm:ss     に類似しているローカライズされた文字列を検索します。
+        ///   yyMMddHHmmssfff に類似しているローカライズされた文字列を検索します。
         /// </summary>
         internal static string cntTimeFormat {
             get {
