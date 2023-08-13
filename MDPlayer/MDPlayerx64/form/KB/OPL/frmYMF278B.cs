@@ -1,18 +1,8 @@
 ﻿#if X64
 using MDPlayerx64;
-using MDPlayerx64.Properties;
 #else
 using MDPlayer.Properties;
 #endif
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 
 namespace MDPlayer.form
 {
@@ -37,7 +27,7 @@ namespace MDPlayer.form
             InitializeComponent();
 
             this.newParam = newParam;
-            frameBuffer.Add(pbScreen, ResMng.imgDic["planeYMF278B"], null, zoom);
+            frameBuffer.Add(pbScreen, ResMng.ImgDic["planeYMF278B"], null, zoom);
             bool YMF278BType = (chipID == 0)
                 ? parent.setting.YMF278BType[0].UseReal[0]
                 : parent.setting.YMF278BType[1].UseReal[0];
@@ -87,9 +77,9 @@ namespace MDPlayer.form
 
         public void changeZoom()
         {
-            this.MaximumSize = new System.Drawing.Size(frameSizeW + ResMng.imgDic["planeYMF278B"].Width * zoom, frameSizeH + ResMng.imgDic["planeYMF278B"].Height * zoom);
-            this.MinimumSize = new System.Drawing.Size(frameSizeW + ResMng.imgDic["planeYMF278B"].Width * zoom, frameSizeH + ResMng.imgDic["planeYMF278B"].Height * zoom);
-            this.Size = new System.Drawing.Size(frameSizeW + ResMng.imgDic["planeYMF278B"].Width * zoom, frameSizeH + ResMng.imgDic["planeYMF278B"].Height * zoom);
+            this.MaximumSize = new System.Drawing.Size(frameSizeW + ResMng.ImgDic["planeYMF278B"].Width * zoom, frameSizeH + ResMng.ImgDic["planeYMF278B"].Height * zoom);
+            this.MinimumSize = new System.Drawing.Size(frameSizeW + ResMng.ImgDic["planeYMF278B"].Width * zoom, frameSizeH + ResMng.ImgDic["planeYMF278B"].Height * zoom);
+            this.Size = new System.Drawing.Size(frameSizeW + ResMng.ImgDic["planeYMF278B"].Width * zoom, frameSizeH + ResMng.ImgDic["planeYMF278B"].Height * zoom);
             frmYMF278B_Resize(null, null);
 
         }
@@ -214,7 +204,7 @@ namespace MDPlayer.form
                 }
             }
 
-            int ko = Audio.getYMF278BFMKeyON(chipID);
+            int ko = Audio.GetYMF278BFMKeyON(chipID);
 
             for (int c = 0; c < 18; c++)
             {
@@ -264,7 +254,8 @@ namespace MDPlayer.form
                     {
                         nyc.note = nt;
 
-                        if (fouropMode) {
+                        if (fouropMode)
+                        {
                             int tl1 = nyc.inst[5 + 0 * 17];
                             int tl2 = nyc.inst[5 + 1 * 17];
                             int tl3 = csub.inst[5 + 0 * 17];
@@ -274,7 +265,8 @@ namespace MDPlayer.form
                             int tl = tl4;
 
                             int cnt = (n << 1) + cnt2;
-                            switch(cnt) {
+                            switch (cnt)
+                            {
                                 case 1:
                                     tl = Math.Min(tl2, tl4);
                                     break;
@@ -288,11 +280,14 @@ namespace MDPlayer.form
 
                             nyc.volumeL = (nyc.inst[36] & 2) != 0 ? (19 * (64 - tl) / 64) : 0;
                             nyc.volumeR = (nyc.inst[36] & 1) != 0 ? (19 * (64 - tl) / 64) : 0;
-                        } else {
+                        }
+                        else
+                        {
                             int tl1 = nyc.inst[5 + 0 * 17];
                             int tl2 = nyc.inst[5 + 1 * 17];
                             int tl = tl2;
-                            if (n != 0) {
+                            if (n != 0)
+                            {
                                 tl = Math.Min(tl1, tl2);
                             }
                             nyc.volumeL = (nyc.inst[36] & 2) != 0 ? (19 * (64 - tl) / 64) : 0;
@@ -317,7 +312,7 @@ namespace MDPlayer.form
 
             //Audio.resetYMF278BFMKeyON(chipID);
 
-            int r = Audio.getYMF278BRyhthmKeyON(chipID);
+            int r = Audio.GetYMF278BRyhthmKeyON(chipID);
 
             //slot14 TL 0x51 HH
             //slot15 TL 0x52 TOM
@@ -380,10 +375,10 @@ namespace MDPlayer.form
                 if (newParam.channels[22].volume < 0) newParam.channels[22].volume = 0;
             }
 
-            Audio.resetYMF278BRyhthmKeyON(chipID);
+            Audio.ResetYMF278BRyhthmKeyON(chipID);
 
             //PCM
-            int[] pcmKey = Audio.getYMF278BPCMKeyON(chipID);
+            int[] pcmKey = Audio.GetYMF278BPCMKeyON(chipID);
             int[] mdPCMKey = Audio.GetMoonDriverPCMKeyOn();
             for (int c = 23; c < 23 + 24; c++)
             {
@@ -470,7 +465,7 @@ namespace MDPlayer.form
                 //Wav
                 nyc.inst[12] = (ymf278bRegister[2][0x08 + (c - 23)]) + ((ymf278bRegister[2][0x20 + (c - 23)] & 0x1) << 8);
             }
-            Audio.resetYMF278BPCMKeyON(chipID);
+            Audio.ResetYMF278BPCMKeyON(chipID);
         }
 
         public void screenDrawParams()
@@ -593,7 +588,7 @@ namespace MDPlayer.form
                 //但しchをクリックした場合はマスク反転
                 if (px < 8)
                 {
-                    for ( ch = 0; ch < 47; ch++)
+                    for (ch = 0; ch < 47; ch++)
                     {
                         if (newParam.channels[ch].mask == true)
                             parent.ResetChannelMask(EnmChip.YMF278B, chipID, ch);
@@ -605,7 +600,7 @@ namespace MDPlayer.form
             }
 
             //鍵盤 FM & RHM
-             ch = (py / 8) - 1;
+            ch = (py / 8) - 1;
             if (ch < 0) return;
 
             if (ch == 18)
@@ -625,7 +620,7 @@ namespace MDPlayer.form
             {
                 if (ch < 18)
                 {
-                    parent.getInstCh(EnmChip.YMF278B, ch, chipID);
+                    parent.GetInstCh(EnmChip.YMF278B, ch, chipID);
                 }
 
                 //マスク

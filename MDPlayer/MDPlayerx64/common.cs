@@ -1,13 +1,7 @@
 ﻿using Konamiman.Z80dotNet;
-using MDSound.np;
-using System;
-using System.Collections.Generic;
-using System.IO;
 using System.IO.Compression;
-using System.Linq;
 using System.Reflection;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace MDPlayer
 {
@@ -208,7 +202,7 @@ namespace MDPlayer
             try
             {
                 List<byte> lst = new List<byte>();
-                for (int index=(int)adr; memory[index] != 0; index++)
+                for (int index = (int)adr; memory[index] != 0; index++)
                 {
                     if (memory.Size > index + 1 && memory[index] == 0x1a && memory[index + 1] == 0x00)
                         break;
@@ -319,6 +313,9 @@ namespace MDPlayer
             if (filename.ToLower().LastIndexOf(".m") != -1) return EnmFileFormat.M;
             if (filename.ToLower().LastIndexOf(".m2") != -1) return EnmFileFormat.M;
             if (filename.ToLower().LastIndexOf(".mz") != -1) return EnmFileFormat.M;
+            if (filename.ToLower().LastIndexOf(".opi") != -1) return EnmFileFormat.FMP;
+            if (filename.ToLower().LastIndexOf(".ovi") != -1) return EnmFileFormat.FMP;
+            if (filename.ToLower().LastIndexOf(".ozi") != -1) return EnmFileFormat.FMP;
             if (filename.ToLower().LastIndexOf(".rcp") != -1) return EnmFileFormat.RCP;
             if (filename.ToLower().LastIndexOf(".s98") != -1) return EnmFileFormat.S98;
             if (filename.ToLower().LastIndexOf(".vgm") != -1) return EnmFileFormat.VGM;
@@ -571,7 +568,7 @@ namespace MDPlayer
             {
                 if (!File.Exists(ffn))
                 {
-                    log.Write(LogLevel.Trace, "Not found {0}.",ffn);
+                    log.Write(LogLevel.Trace, "Not found {0}.", ffn);
                     return null;
                 }
                 log.Write(LogLevel.Trace, "Found {0}.", ffn);
@@ -588,7 +585,7 @@ namespace MDPlayer
 
 
 
-        public static byte[] unzipFile(string filename, ZipArchiveEntry entry=null)
+        public static byte[] unzipFile(string filename, ZipArchiveEntry entry = null)
         {
             int xnum;
             byte[] buf = new byte[1024]; // 1Kbytesずつ処理する
@@ -699,6 +696,7 @@ namespace MDPlayer
         , WSwan
         , YM2609
         , ES5503
+        , PCM8
 
         , S_SN76489
         , S_YM2612
@@ -751,6 +749,7 @@ namespace MDPlayer
         , S_WSwan
         , S_YM2609
         , S_ES5503
+        , S_PCM8
 
     }
 
@@ -826,9 +825,10 @@ namespace MDPlayer
         XGZ=26,
         MuSICA=27,
         MuSICA_src=28,
-        HOOT_GENERIC_Z80 = 29,
-        XML = 30,
-        HOOT = 31
+        FMP = 29,
+        HOOT_GENERIC_Z80 = 30,
+        XML = 31,
+        HOOT = 32
     }
 
     public enum EnmArcType : int

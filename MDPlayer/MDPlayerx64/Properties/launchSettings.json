@@ -2,7 +2,6 @@
   "profiles": {
     "MDPlayerx64": {
       "commandName": "Project",
-      "commandLineArgs": "gimmick.nsf -n3"
     }
   }
 }

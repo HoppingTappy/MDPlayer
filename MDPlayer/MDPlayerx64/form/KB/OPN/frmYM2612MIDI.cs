@@ -1,19 +1,8 @@
 ﻿#if X64
 using MDPlayerx64;
-using MDPlayerx64.Properties;
 #else
 using MDPlayer.Properties;
 #endif
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 
 namespace MDPlayer.form
 {
@@ -38,7 +27,7 @@ namespace MDPlayer.form
             this.MouseWheel += new System.Windows.Forms.MouseEventHandler(this.frmYM2612MIDI_MouseWheel);
 
             this.newParam = newParam;
-            frameBuffer.Add(pbScreen, ResMng.imgDic["planeYM2612MIDI"], null, zoom);
+            frameBuffer.Add(pbScreen, ResMng.ImgDic["planeYM2612MIDI"], null, zoom);
             DrawBuff.screenInitYM2612MIDI(frameBuffer);
             update();
         }
@@ -81,9 +70,9 @@ namespace MDPlayer.form
 
         public void changeZoom()
         {
-            this.MaximumSize = new System.Drawing.Size(frameSizeW + ResMng.imgDic["planeYM2612MIDI"].Width * zoom, frameSizeH + ResMng.imgDic["planeYM2612MIDI"].Height * zoom);
-            this.MinimumSize = new System.Drawing.Size(frameSizeW + ResMng.imgDic["planeYM2612MIDI"].Width * zoom, frameSizeH + ResMng.imgDic["planeYM2612MIDI"].Height * zoom);
-            this.Size = new System.Drawing.Size(frameSizeW + ResMng.imgDic["planeYM2612MIDI"].Width * zoom, frameSizeH + ResMng.imgDic["planeYM2612MIDI"].Height * zoom);
+            this.MaximumSize = new System.Drawing.Size(frameSizeW + ResMng.ImgDic["planeYM2612MIDI"].Width * zoom, frameSizeH + ResMng.ImgDic["planeYM2612MIDI"].Height * zoom);
+            this.MinimumSize = new System.Drawing.Size(frameSizeW + ResMng.ImgDic["planeYM2612MIDI"].Width * zoom, frameSizeH + ResMng.ImgDic["planeYM2612MIDI"].Height * zoom);
+            this.Size = new System.Drawing.Size(frameSizeW + ResMng.ImgDic["planeYM2612MIDI"].Width * zoom, frameSizeH + ResMng.ImgDic["planeYM2612MIDI"].Height * zoom);
             frmYM2612MIDI_Resize(null, null);
 
         }
@@ -343,7 +332,7 @@ namespace MDPlayer.form
         /// </summary>
         private void cmdSetMode(int m)
         {
-            parent.ym2612Midi_SetMode(m);
+            parent.Ym2612Midi_SetMode(m);
         }
 
         /// <summary>
@@ -351,7 +340,7 @@ namespace MDPlayer.form
         /// </summary>
         private void cmdAllNoteOff()
         {
-            parent.ym2612Midi_AllNoteOff();
+            parent.Ym2612Midi_AllNoteOff();
         }
 
         /// <summary>
@@ -359,7 +348,7 @@ namespace MDPlayer.form
         /// </summary>
         private void cmdLogClear()
         {
-            parent.ym2612Midi_ClearNoteLog();
+            parent.Ym2612Midi_ClearNoteLog();
         }
 
         /// <summary>
@@ -367,7 +356,7 @@ namespace MDPlayer.form
         /// </summary>
         private void cmdLogClear(int ch)
         {
-            parent.ym2612Midi_ClearNoteLog(ch);
+            parent.Ym2612Midi_ClearNoteLog(ch);
         }
 
         /// <summary>
@@ -375,7 +364,7 @@ namespace MDPlayer.form
         /// </summary>
         private void cmdLog2MML(int ch)
         {
-            parent.ym2612Midi_Log2MML(ch);
+            parent.Ym2612Midi_Log2MML(ch);
         }
 
         /// <summary>
@@ -383,22 +372,22 @@ namespace MDPlayer.form
         /// </summary>
         private void cmdSelectChannel(int ch)
         {
-            parent.ym2612Midi_SelectChannel(ch);
+            parent.Ym2612Midi_SelectChannel(ch);
         }
 
         private void cmdTPPut()
         {
-            parent.ym2612Midi_SetTonesToSetting();
+            parent.Ym2612Midi_SetTonesToSetting();
             frmTPPut frmTPPut = new frmTPPut();
             frmTPPut.ShowDialog(parent.setting, parent.tonePallet);
         }
 
         private void cmdTPGet()
         {
-            parent.ym2612Midi_SetTonesToSetting();
+            parent.Ym2612Midi_SetTonesToSetting();
             frmTPGet frmTPGet = new frmTPGet();
             frmTPGet.ShowDialog(parent.setting, parent.tonePallet);
-            parent.ym2612Midi_SetTonesFromSetting();
+            parent.Ym2612Midi_SetTonesFromSetting();
         }
 
         private bool IsInitialOpenFolder = true;
@@ -426,7 +415,7 @@ namespace MDPlayer.form
 
             try
             {
-                parent.ym2612Midi_SaveTonePallet(sfd.FileName, sfd.FilterIndex);
+                parent.Ym2612Midi_SaveTonePallet(sfd.FileName, sfd.FilterIndex);
             }
             catch (Exception ex)
             {
@@ -458,7 +447,7 @@ namespace MDPlayer.form
 
             try
             {
-                parent.ym2612Midi_LoadTonePallet(ofd.FileName, ofd.FilterIndex);
+                parent.Ym2612Midi_LoadTonePallet(ofd.FileName, ofd.FilterIndex);
             }
             catch (Exception ex)
             {
@@ -533,7 +522,7 @@ namespace MDPlayer.form
                 }
 
                 //Console.WriteLine("row={0} col={1} ch={2} n={3}", row, col, ch, n);
-                parent.ym2612Midi_SetSelectInstParam(ch, n);
+                parent.Ym2612Midi_SetSelectInstParam(ch, n);
                 return;
             }
 
@@ -547,36 +536,36 @@ namespace MDPlayer.form
             {
                 if (e.KeyCode == Keys.C)
                 {
-                    parent.ym2612Midi_CopyToneToClipboard();
+                    parent.Ym2612Midi_CopyToneToClipboard();
                 }
                 else if (e.KeyCode == Keys.V)
                 {
-                    parent.ym2612Midi_PasteToneFromClipboard();
+                    parent.Ym2612Midi_PasteToneFromClipboard();
                 }
             }
             else if (e.KeyCode == Keys.Enter)
             {
-                parent.ym2612Midi_AddSelectInstParam(1);
+                parent.Ym2612Midi_AddSelectInstParam(1);
             }
             else if (e.KeyCode == Keys.Space)
             {
-                parent.ym2612Midi_AddSelectInstParam(11);
+                parent.Ym2612Midi_AddSelectInstParam(11);
             }
         }
 
         private void ctsmiCopy_Click(object sender, EventArgs e)
         {
-            parent.ym2612Midi_CopyToneToClipboard((int)cmsMIDIKBD.Tag);
+            parent.Ym2612Midi_CopyToneToClipboard((int)cmsMIDIKBD.Tag);
         }
 
         private void ctsmiPaste_Click(object sender, EventArgs e)
         {
-            parent.ym2612Midi_PasteToneFromClipboard((int)cmsMIDIKBD.Tag);
+            parent.Ym2612Midi_PasteToneFromClipboard((int)cmsMIDIKBD.Tag);
         }
 
         private void frmYM2612MIDI_MouseWheel(object sender, MouseEventArgs e)
         {
-            parent.ym2612Midi_ChangeSelectedParamValue(Math.Sign(e.Delta));
+            parent.Ym2612Midi_ChangeSelectedParamValue(Math.Sign(e.Delta));
         }
 
     }

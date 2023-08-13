@@ -34,41 +34,41 @@ namespace MDPlayer.form
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmOKIM6258));
-            this.pbScreen = new System.Windows.Forms.PictureBox();
-            ((System.ComponentModel.ISupportInitialize)(this.pbScreen)).BeginInit();
-            this.SuspendLayout();
+            pbScreen = new PictureBox();
+            ((System.ComponentModel.ISupportInitialize)pbScreen).BeginInit();
+            SuspendLayout();
             // 
             // pbScreen
             // 
-            //this.pbScreen.Image = Resources.planeMSM6258;
-            this.pbScreen.Location = new System.Drawing.Point(0, 0);
-            this.pbScreen.Name = "pbScreen";
-            this.pbScreen.Size = new System.Drawing.Size(320, 16);
-            this.pbScreen.TabIndex = 0;
-            this.pbScreen.TabStop = false;
-            this.pbScreen.MouseClick += new System.Windows.Forms.MouseEventHandler(this.pbScreen_MouseClick);
+            pbScreen.Location = new Point(0, 0);
+            pbScreen.Margin = new Padding(4, 4, 4, 4);
+            pbScreen.Name = "pbScreen";
+            pbScreen.Size = new Size(373, 20);
+            pbScreen.TabIndex = 0;
+            pbScreen.TabStop = false;
+            pbScreen.MouseClick += pbScreen_MouseClick;
             // 
             // frmOKIM6258
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.BackColor = System.Drawing.SystemColors.ControlDarkDark;
-            this.ClientSize = new System.Drawing.Size(320, 16);
-            this.Controls.Add(this.pbScreen);
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
-            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-            this.MaximizeBox = false;
-            this.Name = "frmOKIM6258";
-            this.Text = "OKIM6258";
-            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.frmOKIM6258_FormClosed);
-            this.Load += new System.EventHandler(this.frmOKIM6258_Load);
-            ((System.ComponentModel.ISupportInitialize)(this.pbScreen)).EndInit();
-            this.ResumeLayout(false);
-
+            AutoScaleDimensions = new SizeF(7F, 15F);
+            AutoScaleMode = AutoScaleMode.Font;
+            BackColor = SystemColors.ControlDarkDark;
+            ClientSize = new Size(373, 20);
+            Controls.Add(pbScreen);
+            FormBorderStyle = FormBorderStyle.FixedSingle;
+            Icon = (Icon)resources.GetObject("$this.Icon");
+            Margin = new Padding(5, 5, 5, 5);
+            MaximizeBox = false;
+            Name = "frmOKIM6258";
+            Text = "OKIM6258";
+            FormClosed += frmOKIM6258_FormClosed;
+            Load += frmOKIM6258_Load;
+            ((System.ComponentModel.ISupportInitialize)pbScreen).EndInit();
+            ResumeLayout(false);
         }
 
         #endregion
 
-        public System.Windows.Forms.PictureBox pbScreen;
+        public PictureBox pbScreen;
     }
 }

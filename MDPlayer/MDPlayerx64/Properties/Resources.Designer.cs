@@ -785,12 +785,11 @@ namespace MDPlayerx64.Properties {
         ///NRDファイル(*.nrd)|*.nrd|
         ///NSFファイル(*.nsf)|*.nsf|
         ///PMDファイル(*.m;*.m2;*.mz;*.mml)|*.m;*.m2;*.mz;*.mml|
+        ///FMPファイル(*.opi;*.ovi;*.ozi)|*.opi;*.ovi;*.ozi|
         ///RCPファイル(*.rcp)|*.rcp|
         ///S98ファイル(*.s98)|*.s98|
         ///SIDファイル(*.sid)|*.sid|
-        ///StandardMIDIファイル(*.mid)|*.mid|
-        ///WAVファイル(*.wav)|*.wav|
-        ///MP3ファイル(*.mp3)|*.m [残りの文字列は切り詰められました]&quot;; に類似しているローカライズされた文字列を検索します。
+        ///StandardMIDIファイル(*.mid)|*. [残りの文字列は切り詰められました]&quot;; に類似しているローカライズされた文字列を検索します。
         /// </summary>
         internal static string cntSupportFile {
             get {
@@ -1394,6 +1393,16 @@ namespace MDPlayerx64.Properties {
         internal static System.Drawing.Bitmap planeNESDMC {
             get {
                 object obj = ResourceManager.GetObject("planeNESDMC", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   型 System.Drawing.Bitmap のローカライズされたリソースを検索します。
+        /// </summary>
+        internal static System.Drawing.Bitmap planePCM8 {
+            get {
+                object obj = ResourceManager.GetObject("planePCM8", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

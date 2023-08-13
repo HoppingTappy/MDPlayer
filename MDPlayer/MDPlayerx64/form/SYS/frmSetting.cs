@@ -3,16 +3,11 @@ using MDPlayerx64.Properties;
 #else
 using MDPlayer.Properties;
 #endif
-using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Windows.Forms;
 using NAudio.Wave;
 using NAudio.CoreAudioApi;
 using System.Reflection;
-using System.IO;
 using System.Diagnostics;
-using System.Security.Policy;
 
 namespace MDPlayer.form
 {
@@ -568,7 +563,7 @@ namespace MDPlayer.form
             lblLoopTimes.Enabled = cbUseLoopTimes.Checked;
             tbLoopTimes.Text = setting.other.LoopTimes.ToString();
             cbUseGetInst.Checked = setting.other.UseGetInst;
-            cbUseGetInst_CheckedChanged(null, null);
+            CbUseGetInst_CheckedChanged(null, null);
             tbDataPath.Text = setting.other.DefaultDataPath;
             tbResourceFile.Text = setting.other.ResourceFile;
             tbSearchPath.Text = setting.FileSearchPathList;
@@ -622,7 +617,7 @@ namespace MDPlayer.form
                     {
                         for (int j = 0; j < setting.midiOut.lstMidiOutInfo[i].Length; j++)
                         {
-                            midiOutInfo moi = setting.midiOut.lstMidiOutInfo[i][j];
+                            MidiOutInfo moi = setting.midiOut.lstMidiOutInfo[i][j];
                             int found = -999;
                             for (int k = 0; k < NAudio.Midi.MidiOut.NumberOfDevices; k++)
                             {
@@ -913,10 +908,10 @@ namespace MDPlayer.form
             tbPMDVolumeAdpcm.Text = setting.pmdDotNET.volumeAdpcm.ToString();
             tbPMDVolumeGIMICSSG.Text = setting.pmdDotNET.volumeGIMICSSG.ToString();
 
-            rbPMDManual_CheckedChanged(null, null);
-            cbPMDSetManualVolume_CheckedChanged(null, null);
-            cbPMDUsePPSDRV_CheckedChanged(null, null);
-            rbPMDUsePPSDRVManualFreq_CheckedChanged(null, null);
+            RbPMDManual_CheckedChanged(null, null);
+            CbPMDSetManualVolume_CheckedChanged(null, null);
+            CbPMDUsePPSDRV_CheckedChanged(null, null);
+            RbPMDUsePPSDRVManualFreq_CheckedChanged(null, null);
         }
 
         private void SetRealCombo(EnmRealChipType realType, ComboBox cmbP, RadioButton rbP, ComboBox cmbS, RadioButton rbS)
@@ -1643,16 +1638,16 @@ namespace MDPlayer.form
             setting.midiExport.UseYM2151Export = cbMIDIYM2151.Checked;
             setting.midiExport.UseYM2612Export = cbMIDIYM2612.Checked;
 
-            setting.midiOut.lstMidiOutInfo = new List<midiOutInfo[]>();
+            setting.midiOut.lstMidiOutInfo = new List<MidiOutInfo[]>();
 
             foreach (DataGridView d in dgv)
             {
                 if (d.Rows.Count > 0)
                 {
-                    List<midiOutInfo> lstMoi = new List<midiOutInfo>();
+                    List<MidiOutInfo> lstMoi = new List<MidiOutInfo>();
                     for (i = 0; i < d.Rows.Count; i++)
                     {
-                        midiOutInfo moi = new midiOutInfo();
+                        MidiOutInfo moi = new MidiOutInfo();
                         moi.id = (int)d.Rows[i].Cells[0].Value;
                         moi.isVST = (bool)d.Rows[i].Cells[1].Value;
                         moi.fileName = (string)d.Rows[i].Cells[2].Value;
@@ -1781,8 +1776,7 @@ namespace MDPlayer.form
             setting.pmdDotNET.usePPZ8 = cbPMDUsePPZ8.Checked;
             setting.pmdDotNET.driverArguments = tbPMDDriverArguments.Text;
             setting.pmdDotNET.usePPSDRVUseInterfaceDefaultFreq = rbPMDUsePPSDRVFreqDefault.Checked;
-            int nn;
-            if (!int.TryParse(tbPMDPPSDRVFreq.Text, out nn)) nn = 2000;
+            if (!int.TryParse(tbPMDPPSDRVFreq.Text, out int nn)) nn = 2000;
             setting.pmdDotNET.PPSDRVManualFreq = nn;
             if (!int.TryParse(tbPMDPPSDRVManualWait.Text, out nn)) nn = 1;
             nn = Math.Min(Math.Max(nn, 0), 100);
@@ -2243,52 +2237,52 @@ namespace MDPlayer.form
         }
         #endregion
 
-        private void cbUseMIDIKeyboard_CheckedChanged(object sender, EventArgs e)
+        private void CbUseMIDIKeyboard_CheckedChanged(object sender, EventArgs e)
         {
             gbMIDIKeyboard.Enabled = cbUseMIDIKeyboard.Checked;
         }
 
-        private void rbWaveOut_CheckedChanged(object sender, EventArgs e)
+        private void RbWaveOut_CheckedChanged(object sender, EventArgs e)
         {
             lblLatency.Enabled = true;
             lblLatencyUnit.Enabled = true;
             cmbLatency.Enabled = true;
         }
 
-        private void rbDirectSoundOut_CheckedChanged(object sender, EventArgs e)
+        private void RbDirectSoundOut_CheckedChanged(object sender, EventArgs e)
         {
             lblLatency.Enabled = true;
             lblLatencyUnit.Enabled = true;
             cmbLatency.Enabled = true;
         }
 
-        private void rbWasapiOut_CheckedChanged(object sender, EventArgs e)
+        private void RbWasapiOut_CheckedChanged(object sender, EventArgs e)
         {
             lblLatency.Enabled = true;
             lblLatencyUnit.Enabled = true;
             cmbLatency.Enabled = true;
         }
 
-        private void rbAsioOut_CheckedChanged(object sender, EventArgs e)
+        private void RbAsioOut_CheckedChanged(object sender, EventArgs e)
         {
             lblLatency.Enabled = false;
             lblLatencyUnit.Enabled = false;
             cmbLatency.Enabled = false;
         }
 
-        private void cbUseLoopTimes_CheckedChanged(object sender, EventArgs e)
+        private void CbUseLoopTimes_CheckedChanged(object sender, EventArgs e)
         {
             tbLoopTimes.Enabled = cbUseLoopTimes.Checked;
             lblLoopTimes.Enabled = cbUseLoopTimes.Checked;
         }
 
-        private void btnOpenSettingFolder_Click(object sender, EventArgs e)
+        private void BtnOpenSettingFolder_Click(object sender, EventArgs e)
         {
             string fullPath = Common.settingFilePath;
             System.Diagnostics.Process.Start(fullPath);
         }
 
-        private void btnDataPath_Click(object sender, EventArgs e)
+        private void BtnDataPath_Click(object sender, EventArgs e)
         {
             FolderBrowserDialog fbd = new FolderBrowserDialog();
             fbd.Description = "フォルダーを指定してください。";
@@ -2303,7 +2297,7 @@ namespace MDPlayer.form
 
         }
 
-        private void btnImageResourcePath_Click(object sender, EventArgs e)
+        private void BtnImageResourcePath_Click(object sender, EventArgs e)
         {
             OpenFileDialog ofd = new OpenFileDialog();
             ofd.Filter = "Zip file(*.zip)|*.zip";
@@ -2318,7 +2312,7 @@ namespace MDPlayer.form
             tbResourceFile.Text = ofd.FileName;
         }
 
-        private void btnSearchPath_Click(object sender, EventArgs e)
+        private void BtnSearchPath_Click(object sender, EventArgs e)
         {
             FolderBrowserDialog fbd = new FolderBrowserDialog();
             fbd.Description = "フォルダーを指定してください。";
@@ -2333,18 +2327,18 @@ namespace MDPlayer.form
 
         }
 
-        private void cbUseGetInst_CheckedChanged(object sender, EventArgs e)
+        private void CbUseGetInst_CheckedChanged(object sender, EventArgs e)
         {
             lblInstFormat.Enabled = cbUseGetInst.Checked;
             cmbInstFormat.Enabled = cbUseGetInst.Checked;
         }
 
-        private void cbDumpSwitch_CheckedChanged(object sender, EventArgs e)
+        private void CbDumpSwitch_CheckedChanged(object sender, EventArgs e)
         {
             gbDump.Enabled = cbDumpSwitch.Checked;
         }
 
-        private void btnDumpPath_Click(object sender, EventArgs e)
+        private void BtnDumpPath_Click(object sender, EventArgs e)
         {
             FolderBrowserDialog fbd = new FolderBrowserDialog();
             fbd.Description = "フォルダーを指定してください。";
@@ -2359,7 +2353,7 @@ namespace MDPlayer.form
 
         }
 
-        private void btnResetPosition_Click(object sender, EventArgs e)
+        private void BtnResetPosition_Click(object sender, EventArgs e)
         {
             DialogResult res = MessageBox.Show("表示位置を全てリセットします。よろしいですか。(現在開いているウィンドウの位置はリセットできません。)", "確認", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
             if (res == DialogResult.No) return;
@@ -2367,12 +2361,12 @@ namespace MDPlayer.form
             setting.location = new Setting.Location();
         }
 
-        private void cbUseMIDIExport_CheckedChanged(object sender, EventArgs e)
+        private void CbUseMIDIExport_CheckedChanged(object sender, EventArgs e)
         {
             gbMIDIExport.Enabled = cbUseMIDIExport.Checked;
         }
 
-        private void btnMIDIOutputPath_Click(object sender, EventArgs e)
+        private void BtnMIDIOutputPath_Click(object sender, EventArgs e)
         {
             FolderBrowserDialog fbd = new FolderBrowserDialog();
             fbd.Description = "フォルダーを指定してください。";
@@ -2386,7 +2380,7 @@ namespace MDPlayer.form
             tbMIDIOutputPath.Text = fbd.SelectedPath;
         }
 
-        private void btnWavPath_Click(object sender, EventArgs e)
+        private void BtnWavPath_Click(object sender, EventArgs e)
         {
             FolderBrowserDialog fbd = new FolderBrowserDialog();
             fbd.Description = "フォルダーを指定してください。";
@@ -2400,12 +2394,12 @@ namespace MDPlayer.form
             tbWavPath.Text = fbd.SelectedPath;
         }
 
-        private void cbWavSwitch_CheckedChanged(object sender, EventArgs e)
+        private void CbWavSwitch_CheckedChanged(object sender, EventArgs e)
         {
             gbWav.Enabled = cbWavSwitch.Checked;
         }
 
-        private void btVST_Click(object sender, EventArgs e)
+        private void BtVST_Click(object sender, EventArgs e)
         {
             OpenFileDialog ofd = new OpenFileDialog();
             ofd.Filter = "VST Pluginファイル(*.dll)|*.dll|すべてのファイル(*.*)|*.*";
@@ -2435,7 +2429,7 @@ namespace MDPlayer.form
 
         }
 
-        private void btnAddMIDIout_Click(object sender, EventArgs e)
+        private void BtnAddMIDIout_Click(object sender, EventArgs e)
         {
             if (dgvMIDIoutPallet.SelectedRows == null || dgvMIDIoutPallet.SelectedRows.Count < 1) return;
 
@@ -2457,7 +2451,7 @@ namespace MDPlayer.form
             }
         }
 
-        private void btnSubMIDIout_Click(object sender, EventArgs e)
+        private void BtnSubMIDIout_Click(object sender, EventArgs e)
         {
             int p = tbcMIDIoutList.SelectedIndex;
 
@@ -2469,7 +2463,7 @@ namespace MDPlayer.form
             }
         }
 
-        private void btnUP_Click(object sender, EventArgs e)
+        private void BtnUP_Click(object sender, EventArgs e)
         {
             int p = tbcMIDIoutList.SelectedIndex;
 
@@ -2486,7 +2480,7 @@ namespace MDPlayer.form
             }
         }
 
-        private void btnDOWN_Click(object sender, EventArgs e)
+        private void BtnDOWN_Click(object sender, EventArgs e)
         {
             int p = tbcMIDIoutList.SelectedIndex;
 
@@ -2503,7 +2497,7 @@ namespace MDPlayer.form
             }
         }
 
-        private void btnAddVST_Click(object sender, EventArgs e)
+        private void BtnAddVST_Click(object sender, EventArgs e)
         {
             OpenFileDialog ofd = new OpenFileDialog();
             ofd.Filter = "VST Pluginファイル(*.dll)|*.dll|すべてのファイル(*.*)|*.*";
@@ -2526,7 +2520,7 @@ namespace MDPlayer.form
                 return;
             }
 
-            vstInfo s = Audio.getVSTInfo(ofd.FileName);
+            vstInfo s = Audio.GetVSTInfo(ofd.FileName);
             if (s == null) return;
 
             setting.vst.DefaultPath = Path.GetDirectoryName(ofd.FileName);
@@ -2543,7 +2537,7 @@ namespace MDPlayer.form
 
         }
 
-        private void btnSIDKernal_Click(object sender, EventArgs e)
+        private void BtnSIDKernal_Click(object sender, EventArgs e)
         {
             OpenFileDialog ofd = new OpenFileDialog();
             ofd.Filter = "すべてのファイル(*.*)|*.*";
@@ -2559,7 +2553,7 @@ namespace MDPlayer.form
             tbSIDKernal.Text = ofd.FileName;
         }
 
-        private void btnSIDBasic_Click(object sender, EventArgs e)
+        private void BtnSIDBasic_Click(object sender, EventArgs e)
         {
             OpenFileDialog ofd = new OpenFileDialog();
             ofd.Filter = "すべてのファイル(*.*)|*.*";
@@ -2575,7 +2569,7 @@ namespace MDPlayer.form
             tbSIDBasic.Text = ofd.FileName;
         }
 
-        private void btnSIDCharacter_Click(object sender, EventArgs e)
+        private void BtnSIDCharacter_Click(object sender, EventArgs e)
         {
             OpenFileDialog ofd = new OpenFileDialog();
             ofd.Filter = "すべてのファイル(*.*)|*.*";
@@ -2591,7 +2585,7 @@ namespace MDPlayer.form
             tbSIDCharacter.Text = ofd.FileName;
         }
 
-        private void btnBeforeSend_Default_Click(object sender, EventArgs e)
+        private void BtnBeforeSend_Default_Click(object sender, EventArgs e)
         {
             Setting.MidiOut mo = new Setting.MidiOut();
             tbBeforeSend_GMReset.Text = mo.GMReset;
@@ -2600,65 +2594,65 @@ namespace MDPlayer.form
             tbBeforeSend_Custom.Text = mo.Custom;
         }
 
-        private void frmSetting_Load(object sender, EventArgs e)
+        private void FrmSetting_Load(object sender, EventArgs e)
         {
 
         }
 
-        private void cbUseKeyBoardHook_CheckedChanged(object sender, EventArgs e)
+        private void CbUseKeyBoardHook_CheckedChanged(object sender, EventArgs e)
         {
             gbUseKeyBoardHook.Enabled = cbUseKeyBoardHook.Checked;
         }
 
-        private void btStopClr_Click(object sender, EventArgs e)
+        private void BtStopClr_Click(object sender, EventArgs e)
         {
             lblStopKey.Text = "(None)";
             btStopClr.Enabled = false;
         }
 
-        private void btPauseClr_Click(object sender, EventArgs e)
+        private void BtPauseClr_Click(object sender, EventArgs e)
         {
             lblPauseKey.Text = "(None)";
             btPauseClr.Enabled = false;
         }
 
-        private void btFadeoutClr_Click(object sender, EventArgs e)
+        private void BtFadeoutClr_Click(object sender, EventArgs e)
         {
             lblFadeoutKey.Text = "(None)";
             btFadeoutClr.Enabled = false;
         }
 
-        private void btPrevClr_Click(object sender, EventArgs e)
+        private void BtPrevClr_Click(object sender, EventArgs e)
         {
             lblPrevKey.Text = "(None)";
             btPrevClr.Enabled = false;
         }
 
-        private void btSlowClr_Click(object sender, EventArgs e)
+        private void BtSlowClr_Click(object sender, EventArgs e)
         {
             lblSlowKey.Text = "(None)";
             btSlowClr.Enabled = false;
         }
 
-        private void btPlayClr_Click(object sender, EventArgs e)
+        private void BtPlayClr_Click(object sender, EventArgs e)
         {
             lblPlayKey.Text = "(None)";
             btPlayClr.Enabled = false;
         }
 
-        private void btFastClr_Click(object sender, EventArgs e)
+        private void BtFastClr_Click(object sender, EventArgs e)
         {
             lblFastKey.Text = "(None)";
             btFastClr.Enabled = false;
         }
 
-        private void btNextClr_Click(object sender, EventArgs e)
+        private void BtNextClr_Click(object sender, EventArgs e)
         {
             lblNextKey.Text = "(None)";
             btNextClr.Enabled = false;
         }
 
-        private void btStopSet_Click(object sender, EventArgs e)
+        private void BtStopSet_Click(object sender, EventArgs e)
         {
 
             lblKey = lblStopKey;
@@ -2673,11 +2667,11 @@ namespace MDPlayer.form
             lblNotice = lblKeyBoardHookNotice;
             lblKeyBoardHookNotice.Visible = true;
 
-            frmMain.keyHookMeth = keyHookMeth;
+            frmMain.keyHookMeth = KeyHookMeth;
 
         }
 
-        private void btPauseSet_Click(object sender, EventArgs e)
+        private void BtPauseSet_Click(object sender, EventArgs e)
         {
             lblKey = lblPauseKey;
             btSet = btPauseSet;
@@ -2691,11 +2685,11 @@ namespace MDPlayer.form
             lblNotice = lblKeyBoardHookNotice;
             lblKeyBoardHookNotice.Visible = true;
 
-            frmMain.keyHookMeth = keyHookMeth;
+            frmMain.keyHookMeth = KeyHookMeth;
 
         }
 
-        private void btFadeoutSet_Click(object sender, EventArgs e)
+        private void BtFadeoutSet_Click(object sender, EventArgs e)
         {
             lblKey = lblFadeoutKey;
             btSet = btFadeoutSet;
@@ -2709,10 +2703,10 @@ namespace MDPlayer.form
             lblNotice = lblKeyBoardHookNotice;
             lblKeyBoardHookNotice.Visible = true;
 
-            frmMain.keyHookMeth = keyHookMeth;
+            frmMain.keyHookMeth = KeyHookMeth;
         }
 
-        private void btPrevSet_Click(object sender, EventArgs e)
+        private void BtPrevSet_Click(object sender, EventArgs e)
         {
             lblKey = lblPrevKey;
             btSet = btPrevSet;
@@ -2726,10 +2720,10 @@ namespace MDPlayer.form
             lblNotice = lblKeyBoardHookNotice;
             lblKeyBoardHookNotice.Visible = true;
 
-            frmMain.keyHookMeth = keyHookMeth;
+            frmMain.keyHookMeth = KeyHookMeth;
         }
 
-        private void btSlowSet_Click(object sender, EventArgs e)
+        private void BtSlowSet_Click(object sender, EventArgs e)
         {
             lblKey = lblSlowKey;
             btSet = btSlowSet;
@@ -2743,10 +2737,10 @@ namespace MDPlayer.form
             lblNotice = lblKeyBoardHookNotice;
             lblKeyBoardHookNotice.Visible = true;
 
-            frmMain.keyHookMeth = keyHookMeth;
+            frmMain.keyHookMeth = KeyHookMeth;
         }
 
-        private void btPlaySet_Click(object sender, EventArgs e)
+        private void BtPlaySet_Click(object sender, EventArgs e)
         {
             lblKey = lblPlayKey;
             btSet = btPlaySet;
@@ -2760,10 +2754,10 @@ namespace MDPlayer.form
             lblNotice = lblKeyBoardHookNotice;
             lblKeyBoardHookNotice.Visible = true;
 
-            frmMain.keyHookMeth = keyHookMeth;
+            frmMain.keyHookMeth = KeyHookMeth;
         }
 
-        private void btFastSet_Click(object sender, EventArgs e)
+        private void BtFastSet_Click(object sender, EventArgs e)
         {
             lblKey = lblFastKey;
             btSet = btFastSet;
@@ -2777,10 +2771,10 @@ namespace MDPlayer.form
             lblNotice = lblKeyBoardHookNotice;
             lblKeyBoardHookNotice.Visible = true;
 
-            frmMain.keyHookMeth = keyHookMeth;
+            frmMain.keyHookMeth = KeyHookMeth;
         }
 
-        private void btNextSet_Click(object sender, EventArgs e)
+        private void BtNextSet_Click(object sender, EventArgs e)
         {
             lblKey = lblNextKey;
             btSet = btNextSet;
@@ -2794,10 +2788,10 @@ namespace MDPlayer.form
             lblNotice = lblKeyBoardHookNotice;
             lblKeyBoardHookNotice.Visible = true;
 
-            frmMain.keyHookMeth = keyHookMeth;
+            frmMain.keyHookMeth = KeyHookMeth;
         }
 
-        private void btUmvSet_Click(object sender, EventArgs e)
+        private void BtUmvSet_Click(object sender, EventArgs e)
         {
             lblKey = lblUmvKey;
             btSet = btUmvSet;
@@ -2811,16 +2805,16 @@ namespace MDPlayer.form
             lblNotice = lblKeyBoardHookNotice;
             lblKeyBoardHookNotice.Visible = true;
 
-            frmMain.keyHookMeth = keyHookMeth;
+            frmMain.keyHookMeth = KeyHookMeth;
         }
 
-        private void btUmvClr_Click(object sender, EventArgs e)
+        private void BtUmvClr_Click(object sender, EventArgs e)
         {
             lblUmvKey.Text = "(None)";
             btUmvClr.Enabled = false;
         }
 
-        private void btDmvSet_Click(object sender, EventArgs e)
+        private void BtDmvSet_Click(object sender, EventArgs e)
         {
             lblKey = lblDmvKey;
             btSet = btDmvSet;
@@ -2834,16 +2828,16 @@ namespace MDPlayer.form
             lblNotice = lblKeyBoardHookNotice;
             lblKeyBoardHookNotice.Visible = true;
 
-            frmMain.keyHookMeth = keyHookMeth;
+            frmMain.keyHookMeth = KeyHookMeth;
         }
 
-        private void btDmvClr_Click(object sender, EventArgs e)
+        private void BtDmvClr_Click(object sender, EventArgs e)
         {
             lblDmvKey.Text = "(None)";
             btDmvClr.Enabled = false;
         }
 
-        private void btRmvSet_Click(object sender, EventArgs e)
+        private void BtRmvSet_Click(object sender, EventArgs e)
         {
             lblKey = lblRmvKey;
             btSet = btRmvSet;
@@ -2857,16 +2851,16 @@ namespace MDPlayer.form
             lblNotice = lblKeyBoardHookNotice;
             lblKeyBoardHookNotice.Visible = true;
 
-            frmMain.keyHookMeth = keyHookMeth;
+            frmMain.keyHookMeth = KeyHookMeth;
         }
 
-        private void btRmvClr_Click(object sender, EventArgs e)
+        private void BtRmvClr_Click(object sender, EventArgs e)
         {
             lblRmvKey.Text = "(None)";
             btRmvClr.Enabled = false;
         }
 
-        private void btUpcSet_Click(object sender, EventArgs e)
+        private void BtUpcSet_Click(object sender, EventArgs e)
         {
             lblKey = lblUpcKey;
             btSet = btUpcSet;
@@ -2880,16 +2874,16 @@ namespace MDPlayer.form
             lblNotice = lblKeyBoardHookNotice;
             lblKeyBoardHookNotice.Visible = true;
 
-            frmMain.keyHookMeth = keyHookMeth;
+            frmMain.keyHookMeth = KeyHookMeth;
         }
 
-        private void btUpcClr_Click(object sender, EventArgs e)
+        private void BtUpcClr_Click(object sender, EventArgs e)
         {
             lblUpcKey.Text = "(None)";
             btUpcClr.Enabled = false;
         }
 
-        private void btDpcSet_Click(object sender, EventArgs e)
+        private void BtDpcSet_Click(object sender, EventArgs e)
         {
             lblKey = lblDpcKey;
             btSet = btDpcSet;
@@ -2903,16 +2897,16 @@ namespace MDPlayer.form
             lblNotice = lblKeyBoardHookNotice;
             lblKeyBoardHookNotice.Visible = true;
 
-            frmMain.keyHookMeth = keyHookMeth;
+            frmMain.keyHookMeth = KeyHookMeth;
         }
 
-        private void btDpcClr_Click(object sender, EventArgs e)
+        private void BtDpcClr_Click(object sender, EventArgs e)
         {
             lblDpcKey.Text = "(None)";
             btDpcClr.Enabled = false;
         }
 
-        private void btPpcSet_Click(object sender, EventArgs e)
+        private void BtPpcSet_Click(object sender, EventArgs e)
         {
             lblKey = lblPpcKey;
             btSet = btPpcSet;
@@ -2926,10 +2920,10 @@ namespace MDPlayer.form
             lblNotice = lblKeyBoardHookNotice;
             lblKeyBoardHookNotice.Visible = true;
 
-            frmMain.keyHookMeth = keyHookMeth;
+            frmMain.keyHookMeth = KeyHookMeth;
         }
 
-        private void btPpcClr_Click(object sender, EventArgs e)
+        private void BtPpcClr_Click(object sender, EventArgs e)
         {
             lblPpcKey.Text = "(None)";
             btPpcClr.Enabled = false;
@@ -2943,12 +2937,12 @@ namespace MDPlayer.form
 
 
 
-        public static Label lblKey = null;
-        public static Label lblNotice = null;
-        public static Button btSet = null;
-        public static Button btClr = null;
-        public static Button btOK = null;
-        public static void keyHookMeth(HongliangSoft.Utilities.Gui.KeyboardHookedEventArgs e)
+        public static Label lblKey;
+        public static Label lblNotice;
+        public static Button btSet;
+        public static Button btClr;
+        public static Button btOK;
+        public static void KeyHookMeth(HongliangSoft.Utilities.Gui.KeyboardHookedEventArgs e)
         {
             if (e.UpDown != HongliangSoft.Utilities.Gui.KeyboardUpDown.Up) return;
 
@@ -2963,17 +2957,17 @@ namespace MDPlayer.form
 
         }
 
-        private void frmSetting_FormClosed(object sender, FormClosedEventArgs e)
+        private void FrmSetting_FormClosed(object sender, FormClosedEventArgs e)
         {
 
-            if (frmMain.keyHookMeth == keyHookMeth)
+            if (frmMain.keyHookMeth == KeyHookMeth)
             {
                 frmMain.keyHookMeth = null;
             }
 
         }
 
-        private void llOpenGithub_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        private void LlOpenGithub_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
             llOpenGithub.LinkVisited = true;
             ProcessStartInfo pi = new()
@@ -2984,49 +2978,49 @@ namespace MDPlayer.form
             Process.Start(pi);
         }
 
-        private void rbPMDManual_CheckedChanged(object sender, EventArgs e)
+        private void RbPMDManual_CheckedChanged(object sender, EventArgs e)
         {
             gbPMDManual.Enabled = rbPMDManual.Checked;
         }
 
-        private void btnPMDResetCompilerArhguments_Click(object sender, EventArgs e)
+        private void BtnPMDResetCompilerArhguments_Click(object sender, EventArgs e)
         {
             tbPMDCompilerArguments.Text = "/v /C";
         }
 
-        private void btnPMDResetDriverArguments_Click(object sender, EventArgs e)
+        private void BtnPMDResetDriverArguments_Click(object sender, EventArgs e)
         {
             tbPMDDriverArguments.Text = "";
         }
 
-        private void cbPMDUsePPSDRV_CheckedChanged(object sender, EventArgs e)
+        private void CbPMDUsePPSDRV_CheckedChanged(object sender, EventArgs e)
         {
             gbPPSDRV.Enabled = cbPMDUsePPSDRV.Checked;
         }
 
-        private void cbPMDSetManualVolume_CheckedChanged(object sender, EventArgs e)
+        private void CbPMDSetManualVolume_CheckedChanged(object sender, EventArgs e)
         {
             gbPMDSetManualVolume.Enabled = cbPMDSetManualVolume.Checked;
         }
 
-        private void rbPMDUsePPSDRVManualFreq_CheckedChanged(object sender, EventArgs e)
+        private void RbPMDUsePPSDRVManualFreq_CheckedChanged(object sender, EventArgs e)
         {
             tbPMDPPSDRVFreq.Enabled = rbPMDUsePPSDRVManualFreq.Checked;
         }
 
-        private void btnPMDPPSDRVManualWait_Click(object sender, EventArgs e)
+        private void BtnPMDPPSDRVManualWait_Click(object sender, EventArgs e)
         {
             tbPMDPPSDRVManualWait.Text = "1";
         }
 
-        private void tbPMDPPSDRVFreq_Click(object sender, EventArgs e)
+        private void TbPMDPPSDRVFreq_Click(object sender, EventArgs e)
         {
-            rbPMDUsePPSDRVManualFreq_CheckedChanged(null, null);
+            RbPMDUsePPSDRVManualFreq_CheckedChanged(null, null);
         }
 
-        private void tbPMDPPSDRVFreq_MouseClick(object sender, MouseEventArgs e)
+        private void TbPMDPPSDRVFreq_MouseClick(object sender, MouseEventArgs e)
         {
-            rbPMDUsePPSDRVManualFreq_CheckedChanged(null, null);
+            RbPMDUsePPSDRVManualFreq_CheckedChanged(null, null);
         }
 
         private void groupBox20_Enter(object sender, EventArgs e)
