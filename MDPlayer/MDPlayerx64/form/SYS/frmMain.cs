@@ -15,6 +15,7 @@ using MDPlayerx64;
 using System;
 
 using System.Xml;
+using System.Runtime.CompilerServices;
 
 namespace MDPlayer.form
 {
@@ -127,6 +128,7 @@ namespace MDPlayer.form
         private bool remoteBusy = false;
         private List<string[]> remoteReq = new();
 
+		private double speedRatio = 1.0;
         public frmMain()
         {
             log.debug = this.setting.debug.logDebug;
@@ -5035,11 +5037,11 @@ namespace MDPlayer.form
             {
                 string title = gd3.TrackName;
                 string usedChips = gd3.UsedChips;
-                newInfo = string.Format("MDPlayer - [{0}] {1}", usedChips, title);
+                newInfo = string.Format("MDPlayer - [{0}] {1} (play speed {2:f3}x)", usedChips, title, speedRatio);
             }
             else
             {
-                newInfo = "MDPlayer";
+                newInfo = string.Format("MDPlayer - (play speed {0:f3}x)", speedRatio);
             }
 
             try
@@ -5178,6 +5180,11 @@ namespace MDPlayer.form
 
             if (frmRegTest != null && !frmRegTest.isClosed) { frmRegTest.screenDrawParams(); frmRegTest.update(); } else frmRegTest = null;
 
+        }
+
+        private string GetTitle()
+        {
+            return this.Text;
         }
 
         private void SetTitle(string newInfo)
@@ -5319,6 +5326,8 @@ namespace MDPlayer.form
 
         public void Play()
         {
+            speedRatio = 1.0;
+            Audio.Speed(speedRatio);
 
             if (Audio.IsPaused)
             {
@@ -5450,6 +5459,8 @@ namespace MDPlayer.form
                         return;
                     }
                 }
+
+                speedRatio = 1.0;
 
                 for (int chipID = 0; chipID < 2; chipID++)
                 {
@@ -5700,6 +5711,17 @@ namespace MDPlayer.form
             }
 
             Audio.Slow();
+        }
+
+        public void Speed()
+        {
+
+            if (Audio.Stopped)
+            {
+                return;
+            }
+
+            Audio.Speed(speedRatio);
         }
 
         private void PlayMode()
@@ -9905,6 +9927,43 @@ namespace MDPlayer.form
             bool Ctrl = (Control.ModifierKeys & Keys.Control) != 0;
             bool Alt = (Control.ModifierKeys & Keys.Alt) != 0;
             Setting.KeyBoardHook.HookKeyInfo info;
+
+            if (k == "Right")
+            {
+                double addValue = 0.001;
+                if (Shift){
+                    addValue *= 10;
+                }
+                if (Ctrl)
+                {
+                    addValue *= 100;
+                }
+                speedRatio += addValue;
+                Speed();
+            }
+
+            if (k == "Left")
+            {
+                double addValue = 0.001;
+                if (Shift)
+                {
+                    addValue *= 10;
+                }
+                if (Ctrl)
+                {
+                    addValue *= 100;
+                }
+                speedRatio -= addValue;
+                if (speedRatio < 0.0f) {
+                    speedRatio = 0.0f;
+                }
+                Speed();
+            }
+
+            if (k == "NumPad0") {
+                speedRatio = 1.0;
+                Speed();
+            }
 
             info = setting.keyBoardHook.Stop;
             if (info.Key == k && info.Shift == Shift && info.Ctrl == Ctrl && info.Alt == Alt)

@@ -7552,6 +7552,13 @@ namespace MDPlayer
 
         }
 
+        public static void Speed(double value)
+        {
+            vgmSpeed = value;
+            DriverVirtual.vgmSpeed = vgmSpeed;
+            if (DriverReal != null) DriverReal.vgmSpeed = vgmSpeed;
+        }
+
         public static bool IsPaused
         {
             get
