@@ -5035,8 +5035,8 @@ namespace MDPlayer.form
             GD3 gd3 = Audio.GetGD3();
             if (gd3 != null)
             {
-                string title = gd3.TrackName;
-                string usedChips = gd3.UsedChips;
+                string title = Common.EscSeqFilter(gd3.TrackName);
+                string usedChips = Common.EscSeqFilter(gd3.UsedChips);
                 newInfo = string.Format("MDPlayer - [{0}] {1} (play speed {2:f3}x)", usedChips, title, speedRatio);
             }
             else
@@ -5897,7 +5897,7 @@ namespace MDPlayer.form
                 return buf;
             }
 
-            if (ext == ".opi" || ext == ".ovi" || ext == ".ozi")
+            if (ext == ".mpi" || ext == ".mvi" || ext == ".mzi" || ext == ".opi" || ext == ".ovi" || ext == ".ozi")
             {
                 format = EnmFileFormat.FMP;
                 return buf;
@@ -7327,8 +7327,8 @@ namespace MDPlayer.form
             string patch_Name = "MDPlayer_{0}";
             if (gd3 != null)
             {
-                string pn = gd3.TrackName;
-                if (string.IsNullOrEmpty(pn)) pn = gd3.TrackNameJ;
+                string pn = Common.EscSeqFilter(gd3.TrackName);
+                if (string.IsNullOrEmpty(pn)) pn = Common.EscSeqFilter(gd3.TrackNameJ);
                 if (!string.IsNullOrEmpty(pn))
                 {
                     patch_Name = pn + "_{0}";
@@ -9922,6 +9922,8 @@ namespace MDPlayer.form
                 return;
             }
 
+            if (!setting.keyBoardHook.UseKeyBoardHook) return;
+
             string k = e.KeyCode.ToString();
             bool Shift = (Control.ModifierKeys & Keys.Shift) != 0;
             bool Ctrl = (Control.ModifierKeys & Keys.Control) != 0;
@@ -10609,5 +10611,6 @@ namespace MDPlayer.form
         {
             setting.other.WavSwitch = tsmiOutputwavFile.Checked;
         }
+
     }
 }

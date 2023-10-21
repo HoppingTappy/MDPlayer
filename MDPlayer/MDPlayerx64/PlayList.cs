@@ -392,6 +392,9 @@ namespace MDPlayer
                 case EnmFileFormat.M:
                     AddFileM(ref index, mc, entry);
                     break;
+                case EnmFileFormat.FMP:
+                    AddFileFMP(ref index, mc, entry);
+                    break;
                 case EnmFileFormat.RCP:
                     AddFileRCP(ref index, mc, entry);
                     break;

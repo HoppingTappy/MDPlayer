@@ -11,6 +11,7 @@ namespace MDPlayer.Driver.FMP.Nise98
     {
         private Register286 regs;
         private Memory98 mem;
+        private fileTemp fileTemp;
         private short paragraphsSize;
         private short paragraphsSizeSeg;
         private short freeBlockSeg;
@@ -21,21 +22,32 @@ namespace MDPlayer.Driver.FMP.Nise98
         private myEncoding enc;
         private int InDOSFLAGAdr = 0x11000;
 
-        private string filename = "";
-        private int filePtr = 0;
-        private int fileSize = 0;
+        public class filestatus
+        {
+            public string name = "";
+            public int ptr = 0;
+            public int size = 0;
+            public string path = "";
+            public int handle = 0;
+            public int mode = 0;
+            public List<byte> lstBuf=new List<byte>();
+        }
+        private List<filestatus> files = new List<filestatus>();
+        private int fileHandler = 10;
         private string filePath = "";
+
         private int allocateMemStartAdress = 0x9_0000;
         private int allocateMemSize;
 
         public byte returnCode { get; private set; } = 0x00;
         public bool programTerminate { get; set; } = false;
 
-        public NiseDos(Register286 regs, Memory98 mem)
+        public NiseDos(Register286 regs, Memory98 mem,fileTemp fileTemp)
         {
             enc = new myEncoding();
             this.regs = regs;
             this.mem = mem;
+            this.fileTemp = fileTemp;
 
             MakeSYSVARS();
 
@@ -77,14 +89,16 @@ namespace MDPlayer.Driver.FMP.Nise98
                 if (cnt == 11) break;
             }
 
+            int PSPAdr = startSegment<<4;
+
             //PSP直前に存在するMCB
-            mem.PokeB(PSPStartAddress - 0x10 + 0, (byte)'Z');
-            mem.PokeW(PSPStartAddress - 0x10 + 1, PSPStartAddress >> 4);
-            mem.PokeW(PSPStartAddress - 0x10 + 3, unchecked((short)0xffff));
+            mem.PokeB(PSPAdr - 0x10 + 0, (byte)'Z');
+            mem.PokeW(PSPAdr - 0x10 + 1, PSPStartAddress >> 4);
+            mem.PokeW(PSPAdr - 0x10 + 3, unchecked((short)0xffff));
 
             //環境変数のセグメント0x0100 -> 実アドレス0x0_1000(適当)
             int envPtr = 0x0_1000;
-            mem.PokeW(PSPStartAddress + 0x2c, (short)(envPtr >> 4));
+            mem.PokeW(PSPAdr + 0x2c, (short)(envPtr >> 4));
             byte[] env = new byte[] { (byte)'P', (byte)'V', (byte)'I', (byte)'=', (byte)'.', 0, 0, 1, 0 };
             int p = 0;
             foreach (byte c in env)
@@ -127,6 +141,10 @@ namespace MDPlayer.Driver.FMP.Nise98
         {
             switch (imm8)
             {
+                case 0x18:
+                    Log.WriteLine(musicDriverInterface.LogLevel.DEBUG, "<NiseDos>INT18h AH:${0:X02}", regs.AH);
+                    INT18();
+                    break;
                 case 0x21:
                     Log.WriteLine(musicDriverInterface.LogLevel.DEBUG, "<NiseDos>INT21h AH:${0:X02}", regs.AH);
                     INT21();
@@ -151,12 +169,15 @@ namespace MDPlayer.Driver.FMP.Nise98
 
                     regs.SP -= 2;
                     mem.PokeW(regs.SS_SP, regs.FLAG);
+                    //regs.SP -= 2;
+                    //mem.PokeW(regs.SS_SP, regs.DS);
                     regs.SP -= 2;
                     mem.PokeW(regs.SS_SP, regs.CS);
                     regs.SP -= 2;
                     mem.PokeW(regs.SS_SP, regs.IP);
                     regs.IP = ip;
                     regs.CS = cs;
+                    //regs.DS = cs;
 
                     break;
             }
@@ -167,7 +188,7 @@ namespace MDPlayer.Driver.FMP.Nise98
             Log.WriteLine(musicDriverInterface.LogLevel.DEBUG, "<NiseDos>LoadRunner");
             int ofs;
             int ptr = (StartSegment << 4);
-            LoadImage(prog, ptr + (IsCom ? 0x100 : 0x100));
+            LoadImage(prog, ptr + 0x100);
 
             if (IsCom)
             {
@@ -205,7 +226,8 @@ namespace MDPlayer.Driver.FMP.Nise98
                 regs.CS = regs.DS = (short)(mem.PeekW(ptr + 0x16) + StartSegment + 0x10);
                 regs.DS -= 0x10;
                 int relocOfs = mem.PeekW(ptr + 0x18);
-                int relocSize = headerSize - relocOfs;
+                //int relocSize = headerSize - relocOfs;
+                int relocSize = mem.PeekW(ptr + 0x06) * 4;// headerSize - relocOfs - 8;
                 for (int i = 0; i < relocSize; i += 4)
                 {
                     ushort rOfs = (ushort)mem.PeekW(ptr + relocOfs + i + 0);
@@ -216,7 +238,8 @@ namespace MDPlayer.Driver.FMP.Nise98
                 }
                 for (int i = 0; i < prog.Length - headerSize; i++)
                 {
-                    mem.PokeB(ptr + i, prog[headerSize + i]);
+                    byte b = mem.PeekB(ptr + i + headerSize);
+                    mem.PokeB(ptr + i, b);// prog[headerSize + i]);
                 }
                 ptr -= 0x100;
 
@@ -250,6 +273,26 @@ namespace MDPlayer.Driver.FMP.Nise98
         }
 
 
+        private void INT18()
+        {
+            List<byte> msg;
+            string text;
+            byte b = 0;
+            int cnt;
+            filestatus fnd;
+            switch (regs.AH)
+            {
+                case 0x04:
+                    Log.WriteLine(musicDriverInterface.LogLevel.DEBUG, "<NiseDos>  (98)KEY BOARD press check");
+                    byte KeyGroup = regs.AL;
+                    regs.AH = 0x00;//何も押されてないよ
+                    break;
+                default:
+                    throw new NotImplementedException(string.Format("AH:${0:X02}", regs.AH));
+
+            }
+        }
+
 
         private void INT21()
         {
@@ -257,6 +300,10 @@ namespace MDPlayer.Driver.FMP.Nise98
             string text;
             byte b = 0;
             int cnt;
+            filestatus fnd;
+            filestatus fs;
+            string filename;
+
             switch (regs.AH)
             {
                 case 0x02:
@@ -264,7 +311,7 @@ namespace MDPlayer.Driver.FMP.Nise98
                     b = regs.DL;
                     msg.Add(b);
                     text = enc.GetStringFromSjisArray(msg.ToArray());
-                    Log.Write(musicDriverInterface.LogLevel.INFO, text);//通常のコンソール出力
+                    log.Write(text);//通常のコンソール出力
                     break;
                 case 0x09:
                     msg = new List<byte>();
@@ -277,7 +324,7 @@ namespace MDPlayer.Driver.FMP.Nise98
                         cnt++;
                     } while (true);
                     text = enc.GetStringFromSjisArray(msg.ToArray());
-                    Log.Write(musicDriverInterface.LogLevel.INFO, text);//通常のコンソール出力
+                    log.Write(text);//通常のコンソール出力
                     break;
                 case 0x19:
                     Log.WriteLine(musicDriverInterface.LogLevel.DEBUG, "<NiseDos>  Get Current Default Drive");
@@ -309,6 +356,37 @@ namespace MDPlayer.Driver.FMP.Nise98
                     regs.BX = mem.PeekW(regs.AL * 4 + 0);
                     regs.ES = mem.PeekW(regs.AL * 4 + 2);
                     break;
+                case 0x3c:
+                    Log.WriteLine(musicDriverInterface.LogLevel.DEBUG, "<NiseDos>  Create File Using Handle");
+                    short attribute = regs.CX;
+                    msg = new List<byte>();
+                    cnt = 0;
+                    do
+                    {
+                        b = mem.PeekB(regs.DS_DX + cnt);
+                        if ((char)b == '\0') break;
+                        msg.Add(b);
+                        cnt++;
+                    } while (true);
+
+                    filename = enc.GetStringFromSjisArray(msg.ToArray());
+                    Log.WriteLine(musicDriverInterface.LogLevel.DEBUG, filename);
+
+                    fs = new filestatus();
+                    files.Add(fs);
+                    fs.name = Path.GetFileName(filename);
+                    fs.ptr = 0;
+                    fs.path = Path.GetDirectoryName(filename);
+                    fs.handle = fileHandler++;
+                    fs.mode = 1;
+                    fs.lstBuf = new List<byte>();
+                    SetPath(fs.path);
+                    MakeDummyMCB();
+
+                    regs.CF = false;
+                    regs.AX = (short)fs.handle;//file handle
+
+                    break;
                 case 0x3d:
                     Log.WriteLine(musicDriverInterface.LogLevel.DEBUG, "<NiseDos>  FILE OPEN");
                     msg = new List<byte>();
@@ -320,14 +398,21 @@ namespace MDPlayer.Driver.FMP.Nise98
                         msg.Add(b);
                         cnt++;
                     } while (true);
+
                     filename = enc.GetStringFromSjisArray(msg.ToArray());
                     Log.WriteLine(musicDriverInterface.LogLevel.DEBUG, filename);
-                    filePtr = 0;
 
-                    if (CheckFileExist())
+                    if (CheckFileExist(filename,out string fndFilename))
                     {
                         regs.CF = false;
-                        regs.AX = 1;//file handle
+                        fs = new filestatus();
+                        files.Add(fs);
+                        fs.name = Path.GetFileName(fndFilename);
+                        fs.ptr = 0;
+                        fs.path = Path.GetDirectoryName(fndFilename);
+                        fs.handle = fileHandler++;
+                        SetPath(fs.path);
+                        regs.AX = (short)fs.handle;//file handle
                         MakeDummyMCB();
                     }
                     else
@@ -337,27 +422,50 @@ namespace MDPlayer.Driver.FMP.Nise98
                     }
                     break;
                 case 0x3e:
-                    Log.WriteLine(musicDriverInterface.LogLevel.DEBUG, "<NiseDos>  FILE CLOSE handle={0:X02}", regs.BX);
-                    filename = "";
-                    filePtr = -1;
-                    //return
-                    regs.CF = false;
-
+                    Log.WriteLine(musicDriverInterface.LogLevel.DEBUG, "<NiseDos>  FILE CLOSE handle={0:X02}",regs.BX);
+                    fnd = SearchFileStatus(regs.BX);
+                    regs.CF = true;
+                    try
+                    {
+                        if (fnd != null)
+                        {
+                            files.Remove(fnd);
+                            if (fnd.mode == 1)
+                            {
+                                string wFn=Path.Combine(fnd.path,fnd.name);
+                                fileTemp.WriteTemp(wFn, fnd.lstBuf.ToArray());
+                                //File.WriteAllBytes(wFn, fnd.lstBuf.ToArray());
+                            }
+                            regs.CF = false;
+                        }
+                    }
+                    catch
+                    {
+                        regs.CF = true;
+                    }
                     break;
                 case 0x3f:
-                    Log.WriteLine(musicDriverInterface.LogLevel.DEBUG, "<NiseDos>  FILE READ handle={0:X02}", regs.BX);
-                    if (string.IsNullOrEmpty(filename))
+                    Log.WriteLine(musicDriverInterface.LogLevel.DEBUG, "<NiseDos>  FILE READ handle={0:X02}",regs.BX);
+
+                    fnd = SearchFileStatus(regs.BX);
+                    if (fnd == null)
                     {
                         regs.CF = true;
                         break;
                     }
-                    byte[] buf = ReadAllByte();
-                    fileSize = buf.Length;
-                    int size = Math.Min((ushort)regs.CX, buf.Length - filePtr);
+                    if (string.IsNullOrEmpty(fnd.name))
+                    {
+                        regs.CF = true;
+                        break;
+                    }
+
+                    byte[] buf = ReadAllByte(fnd);
+                    fnd.size = buf.Length;
+                    int size = Math.Min((ushort)regs.CX, buf.Length - fnd.ptr);
                     byte[] rbuf = new byte[size];
-                    Array.Copy(buf, filePtr, rbuf, 0, size);
+                    Array.Copy(buf, fnd.ptr, rbuf, 0, size);
                     LoadImage(rbuf, regs.DS_DX);
-                    filePtr += size;
+                    fnd.ptr += size;
 
                     //return
                     regs.AX = (short)size;
@@ -370,16 +478,40 @@ namespace MDPlayer.Driver.FMP.Nise98
                     //BX = file handle
                     //CX = number of bytes to write
                     //DS: DX->data to write
-                    msg = new List<byte>();
-                    int c = 0;
-                    while (c < regs.CX)
+
+                    fnd = SearchFileStatus(regs.BX);
+                    if (fnd == null)
                     {
-                        b = mem.PeekB(regs.DS_DX + c);
-                        msg.Add(b);
-                        c++;
+                        msg = new List<byte>();
+                        int c = 0;
+                        while (c < regs.CX)
+                        {
+                            b = mem.PeekB(regs.DS_DX + c);
+                            msg.Add(b);
+                            c++;
+                        }
+                        text = enc.GetStringFromSjisArray(msg.ToArray());
+                        log.Write(text);//通常のコンソール出力
+
+                        //出力:
+                        //ERROR
+                        regs.CF = true;
+                        break;
                     }
-                    text = enc.GetStringFromSjisArray(msg.ToArray());
-                    Log.Write(musicDriverInterface.LogLevel.INFO, text);//通常のコンソール出力
+
+                    if (fnd.mode == 1)
+                    {
+                        int c = 0;
+                        while (c < regs.CX)
+                        {
+                            b = mem.PeekB(regs.DS_DX + c);
+                            fnd.lstBuf.Add(b);
+                            c++;
+                        }
+                        Log.WriteLine(musicDriverInterface.LogLevel.DEBUG, "<NiseDos>  WRITE buff length:{0:d}", c);
+                        regs.CF = false;
+                        break;
+                    }
 
                     //出力:
                     //ERROR
@@ -387,13 +519,20 @@ namespace MDPlayer.Driver.FMP.Nise98
                     break;
                 case 0x42:
                     Log.WriteLine(musicDriverInterface.LogLevel.DEBUG, "<NiseDos>  SEEK FILE POINTER handle={0:X02}", regs.BX);
+                    fnd = SearchFileStatus(regs.BX);
+                    if (fnd == null)
+                    {
+                        regs.CF = true;
+                        break;
+                    }
+
                     int d = (regs.CX << 4) + regs.DX;
-                    if (regs.AL == 0) filePtr = d;
-                    else if (regs.AL == 1) filePtr += d;
-                    else if (regs.AL == 2) filePtr = fileSize - 1 + d;
-                    regs.CF = false;
-                    regs.DX = (short)((filePtr >> 4) & 0xf000);
-                    regs.AX = (short)(filePtr & 0xffff);
+                    if (regs.AL == 0) fnd.ptr = d;
+                    else if (regs.AL == 1) fnd.ptr += d;
+                    else if (regs.AL == 2) fnd.ptr = fnd.size - 1+d;
+                    regs.CF= false;
+                    regs.DX = (short)((fnd.ptr >> 4) & 0xf000);
+                    regs.AX = (short)(fnd.ptr & 0xffff);
                     break;
                 case 0x43:
                     Log.WriteLine(musicDriverInterface.LogLevel.DEBUG, "<NiseDos>  Get/Set File Attributes");
@@ -433,7 +572,19 @@ namespace MDPlayer.Driver.FMP.Nise98
                     regs.ES = 0x1000;
                     regs.BX = 0x0100;
                     break;
-                default:
+                case 0x57:
+                    Log.WriteLine(musicDriverInterface.LogLevel.DEBUG, "<NiseDos>  Get/Set File Date and Time Using Handle");
+                    if (regs.AL == 0x00)
+                    {
+                        regs.CX = 0b00000_000000_00000;//hh5bit_mm6bit_ss5bit
+                        regs.DX = 0b0000000_0000_00000;//yy7bit_MM4bit_dd5bit
+                    }
+                    else
+                    {
+                        ;
+                    }
+                    break;
+                default: 
                     throw new NotImplementedException(string.Format("AH:${0:X02}", regs.AH));
 
             }
@@ -465,8 +616,7 @@ namespace MDPlayer.Driver.FMP.Nise98
 
 
 
-        private Dictionary<byte, Action> dicHookINT = new Dictionary<byte, Action>();
-        private List<string> searchPath;
+        private Dictionary<byte, Action> dicHookINT=new Dictionary<byte, Action>();
 
         public void SetHookINT(byte intnum, Action action)
         {
@@ -492,51 +642,54 @@ namespace MDPlayer.Driver.FMP.Nise98
             filePath = v;
         }
 
-        private byte[] ReadAllByte()
+        private byte[] ReadAllByte(filestatus fs)
         {
-            string fn = Path.Combine(filePath, filename);
-            if (!File.Exists(fn))
-            {
-                foreach (string sp in searchPath)
-                {
-                    fn = Path.Combine(sp, filename);
-                    if (File.Exists(fn)) break;
-                }
-            }
+            string fn = Path.Combine(fs.path, fs.name);
+            if(fileTemp.ExistTemp(fn))
+                return fileTemp.ReadTemp(fn);
 
             return File.ReadAllBytes(fn);
         }
 
-        private bool CheckFileExist()
+        private bool CheckFileExist(string filename,out string fndFilename)
         {
-            string fn = Path.Combine(filePath, filename);
-            if(File.Exists(fn)) return true;
-            foreach(string sp in searchPath)
+            if(File.Exists(filename) || fileTemp.ExistTemp(filename))
             {
-                fn = Path.Combine(sp, filename);
-                if (File.Exists(fn)) return true;
+                fndFilename = filename;
+                return true;
             }
+            string fn = Path.Combine(filePath, filename);
+            if (File.Exists(fn) || fileTemp.ExistTemp(fn))
+            {
+                fndFilename = fn;
+                return true;
+            }
+
+            fndFilename = "";
             return false;
         }
 
-        public byte[] LoadData(string filename)
+        public byte[] LoadData(string fn)
         {
-            string fn = Path.Combine(filePath, filename);
-            if (!File.Exists(fn))
-            {
-                foreach (string sp in searchPath)
-                {
-                    fn = Path.Combine(sp, filename);
-                    if (File.Exists(fn)) break;
-                }
-            }
+            fn = Path.Combine(filePath, fn);
+            if (fileTemp.ExistTemp(fn))
+                return fileTemp.ReadTemp(fn);
 
             return File.ReadAllBytes(fn);
         }
 
-        internal void SetSearchPath(List<string> searchPaths)
+        public filestatus SearchFileStatus(int handle)
         {
-            this.searchPath = searchPaths;
+            foreach (filestatus fs in files)
+            {
+                if (fs.handle == regs.BX)
+                {
+                    return fs;
+                }
+            }
+            return null;
+
         }
+
     }
 }

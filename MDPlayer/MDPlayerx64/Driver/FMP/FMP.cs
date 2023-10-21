@@ -9,6 +9,7 @@ using musicDriverInterface;
 using static MDSound.fm._ssg_callbacks;
 using MDPlayer.Driver.MNDRV;
 using System.Text.RegularExpressions;
+using System.Net;
 
 namespace MDPlayer.Driver.FMP
 {
@@ -19,13 +20,15 @@ namespace MDPlayer.Driver.FMP
         private Nise98.Nise98 nise98 = new();
         private Register286 regs;
         private myEncoding enc = new myEncoding();
-        private string searchPath="";
+        private string searchPath = "";
         private List<string> searchPaths = null;
+        private fileTemp ft = null;
 
         public string PlayingFileName { get; set; }
 
-        public FMP()
+        public FMP(fileTemp ft)
         {
+            this.ft = ft;
         }
 
         public override GD3 getGD3Info(byte[] buf, uint vgmGd3)
@@ -38,7 +41,6 @@ namespace MDPlayer.Driver.FMP
                 {
                     uint ptr = Common.getLE16(buf, 0) + 4;//4 'FMC'+version(1byte)
                     string comment = Common.getNRDString(buf, ref ptr);
-                    comment = Regex.Replace(comment, "\\u001b\\[[0-9]*m", "");
                     ret.TrackName = comment;
                     ret.TrackNameJ = ret.TrackName;
 
@@ -59,7 +61,7 @@ namespace MDPlayer.Driver.FMP
             {
                 this.searchPath = searchPath;
                 //環境変数"PVI"を取得する
-                string pvi="";
+                string pvi = "";
                 try
                 {
                     pvi = Environment.GetEnvironmentVariable("PVI", System.EnvironmentVariableTarget.User);
@@ -84,6 +86,7 @@ namespace MDPlayer.Driver.FMP
 
         public override bool init(byte[] vgmBuf, ChipRegister chipRegister, EnmModel model, EnmChip[] useChip, uint latency, uint waitTime)
         {
+            GD3 = getGD3Info(vgmBuf, 0);
             this.chipRegister = chipRegister;
             LoopCounter = 0;
             vgmCurLoop = 0;
@@ -116,14 +119,33 @@ namespace MDPlayer.Driver.FMP
                 {
                     vgmSpeedCounter -= 1.0;
 
+                    Counter++;
+                    vgmFrameCounter++;
+
                     nise98.Runtimer();
                     if (!nise98.IntTimer()) continue;
                     regs.SS = unchecked((short)0xE000);
                     regs.SP = 0x0000;
                     nise98.CallRunfunctionCall(0x14);
 
-                    Counter++;
-                    vgmFrameCounter++;
+                    //演奏チェック
+                    regs.AX = 0x0004;
+                    regs.SS = unchecked((short)0xE000);
+                    regs.SP = 0x0000;
+                    nise98.CallRunfunctionCall(0xd2);
+                    if (regs.AX == 0)
+                        Stopped = true;
+
+                    //内部ワークアドレス取得し、曲ループ回数をチェックする
+                    regs.AX = 0x1104;
+                    regs.SS = unchecked((short)0xE000);
+                    regs.SP = 0x0000;
+                    nise98.CallRunfunctionCall(0xd2);
+                    int ptr = ((ushort)0x2000 << 4) + (ushort)regs.AX;
+                    int FmpSloop_c = nise98.GetMem().PeekB(ptr + 0x17);
+                    vgmCurLoop = (uint)FmpSloop_c;
+
+
                 }
 
                 //vgmCurLoop = mm.ReadUInt16(reg.a6 + dw.LOOP_COUNTER);
@@ -139,10 +161,9 @@ namespace MDPlayer.Driver.FMP
         {
             var fileNameFMP = "FMP.COM";
             var fileNamePPZ8 = "PPZ8.COM";
+            nise98.Init(null, OPNAWrite, ft, Nise98.Nise98.enmOngenBoardType.SpeakBoard);//.PC9801_86B);//.SpeakBoard);//.PC9801_26K);
 
-            nise98.Init(null, OPNAWrite, Nise98.Nise98.enmOngenBoardType.SpeakBoard);//.PC9801_86B);//.SpeakBoard);//.PC9801_26K);
-
-            nise98.GetDos().SetSearchPath(searchPaths);
+            //nise98.GetDos().SetSearchPath(searchPaths);
 
             //FMPの常駐
             Log.level = musicDriverInterface.LogLevel.INFO;
@@ -165,7 +186,7 @@ namespace MDPlayer.Driver.FMP
 
         private void SetPPZ8PCMData(int bank, int mode, byte[][] pcmdata)
         {
-            chipRegister.PPZ8LoadPcm(0, (byte)bank, (byte)mode, pcmdata,model);
+            chipRegister.PPZ8LoadPcm(0, (byte)bank, (byte)mode, pcmdata, model);
         }
 
         private void SetPPZ8Data(int port, int adr, int data)
@@ -177,7 +198,7 @@ namespace MDPlayer.Driver.FMP
         {
             byte cn = (byte)(dat.port >> 8);
             byte port = (byte)((byte)dat.port == 0x8a ? 0 : 1);
-            chipRegister.setYM2608Register(0, port, (byte)dat.address, (byte)dat.data, model);
+            chipRegister?.setYM2608Register(0, port, (byte)dat.address, (byte)dat.data, model);
         }
 
         private void FMPLoadAndPlayFileAL2(NiseDos dos, Register286 regs)
@@ -192,8 +213,30 @@ namespace MDPlayer.Driver.FMP
             regs.DX = 0x0000;
             regs.SS = unchecked((short)0xE000);
             regs.SP = 0x0000;
-            nise98.CallRunfunctionCall(0xd2, true, true, true, 10_000_000_000, 0_000);
-            Log.WriteLine( musicDriverInterface.LogLevel.DEBUG, "return CF={0} code={1:X02}", regs.CF, regs.AL);
+            nise98.CallRunfunctionCall(0xd2);//, true, true, true, 10_000_000_000, 0_000);
+            Log.WriteLine(musicDriverInterface.LogLevel.DEBUG, "return CF={0} code={1:X02}", regs.CF, regs.AL);
+        }
+
+        public bool Compile(string playingFileName)
+        {
+            var fileNameFMP = "FMP.COM";
+            var fileNameFMC = "FMC.EXE";
+            int rc = 0;
+
+            nise98.Init(null, OPNAWrite, ft, Nise98.Nise98.enmOngenBoardType.SpeakBoard);//.PC9801_86B);//.SpeakBoard);//.PC9801_26K);
+
+            //FMPの常駐
+            Log.level = musicDriverInterface.LogLevel.INFO;
+            nise98.LoadRun(fileNameFMP, "s -s", 0x2000);
+            regs = nise98.GetRegisters();
+
+            //FMCの実行
+            nise98.GetDos().programTerminate = false;
+            if ((rc = nise98.LoadRun(fileNameFMC, playingFileName, 0x3000
+                //, true, true, true, 3_000_000, 0
+                )) != 0) return false;
+
+            return true;
         }
 
     }

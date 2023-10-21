@@ -3641,7 +3641,6 @@ namespace MDPlayer.Driver.FMP.Nise98
                     regs.eRegs[rm] = (short)EW;
                     break;
             }
-            regs.eRegs[reg] = (short)GW;
 
         }
 
@@ -4073,20 +4072,13 @@ namespace MDPlayer.Driver.FMP.Nise98
                 //MOVSの場合は単純リピート
                 //REPNEはあり得ない(と思う為未対処
 
-                if (regs.CX == 0)
+                regs.CX--;
+                if (regs.CX == 0)// || ((repType == 0 && !regs.ZF) || (repType != 0 && regs.ZF)))
                 {
                     repSW = false;
                 }
                 else
-                {
-                    regs.CX--;
-                    if (regs.CX == 0)// || ((repType == 0 && !regs.ZF) || (repType != 0 && regs.ZF)))
-                    {
-                        repSW = false;
-                    }
-                    else
-                        regs.IP--;
-                }
+                    regs.IP--;
             }
         }
 
@@ -4105,20 +4097,14 @@ namespace MDPlayer.Driver.FMP.Nise98
             {
                 //MOVSの場合は単純リピート
                 //REPNEはあり得ない(と思う為未対処
-                if (regs.CX == 0)
+
+                regs.CX--;
+                if (regs.CX == 0)// || ((repType == 0 && !regs.ZF) || (repType != 0 && regs.ZF)))
                 {
                     repSW = false;
                 }
                 else
-                {
-                    regs.CX--;
-                    if (regs.CX == 0)// || ((repType == 0 && !regs.ZF) || (repType != 0 && regs.ZF)))
-                    {
-                        repSW = false;
-                    }
-                    else
-                        regs.IP--;
-                }
+                    regs.IP--;
             }
         }
 
@@ -4150,20 +4136,13 @@ namespace MDPlayer.Driver.FMP.Nise98
 
             if (repSW)
             {
-                if (regs.CX == 0)
+                regs.CX--;
+                if (regs.CX == 0 || ((repType == 0 && !regs.ZF) || (repType != 0 && regs.ZF)))
                 {
                     repSW = false;
                 }
                 else
-                {
-                    regs.CX--;
-                    if (regs.CX == 0 || ((repType == 0 && !regs.ZF) || (repType != 0 && regs.ZF)))
-                    {
-                        repSW = false;
-                    }
-                    else
-                        regs.IP--;
-                }
+                    regs.IP--;
             }
         }
 
@@ -4195,20 +4174,13 @@ namespace MDPlayer.Driver.FMP.Nise98
 
             if (repSW)
             {
-                if (regs.CX == 0)
+                regs.CX--;
+                if (regs.CX == 0 || ((repType == 0 && !regs.ZF) || (repType != 0 && regs.ZF)))
                 {
                     repSW = false;
                 }
                 else
-                {
-                    regs.CX--;
-                    if (regs.CX == 0 || ((repType == 0 && !regs.ZF) || (repType != 0 && regs.ZF)))
-                    {
-                        repSW = false;
-                    }
-                    else
-                        regs.IP--;
-                }
+                    regs.IP--;
             }
         }
 
@@ -4227,20 +4199,13 @@ namespace MDPlayer.Driver.FMP.Nise98
                 //STOSの場合は単純リピート
                 //REPNEはあり得ない(と思う為未対処
 
-                if (regs.CX == 0)
+                regs.CX--;
+                if (regs.CX == 0)// || ((repType == 0 && !regs.ZF) || (repType != 0 && regs.ZF)))
                 {
                     repSW = false;
                 }
                 else
-                {
-                    regs.CX--;
-                    if (regs.CX == 0)// || ((repType == 0 && !regs.ZF) || (repType != 0 && regs.ZF)))
-                    {
-                        repSW = false;
-                    }
-                    else
-                        regs.IP--;
-                }
+                    regs.IP--;
             }
         }
 
@@ -4259,20 +4224,13 @@ namespace MDPlayer.Driver.FMP.Nise98
                 //STOSの場合は単純リピート
                 //REPNEはあり得ない(と思う為未対処
 
-                if (regs.CX == 0)
+                regs.CX--;
+                if (regs.CX == 0)// || ((repType == 0 && !regs.ZF) || (repType != 0 && regs.ZF)))
                 {
                     repSW = false;
                 }
                 else
-                {
-                    regs.CX--;
-                    if (regs.CX == 0)// || ((repType == 0 && !regs.ZF) || (repType != 0 && regs.ZF)))
-                    {
-                        repSW = false;
-                    }
-                    else
-                        regs.IP--;
-                }
+                    regs.IP--;
             }
         }
 
@@ -4290,20 +4248,13 @@ namespace MDPlayer.Driver.FMP.Nise98
             {
                 //LODSの場合は単純リピート
                 //REPNEはあり得ない(と思う為未対処
-                if (regs.CX == 0)
+                regs.CX--;
+                if (regs.CX == 0 || ((repType == 0 && !regs.ZF) || (repType != 0 && regs.ZF)))
                 {
                     repSW = false;
                 }
                 else
-                {
-                    regs.CX--;
-                    if (regs.CX == 0 || ((repType == 0 && !regs.ZF) || (repType != 0 && regs.ZF)))
-                    {
-                        repSW = false;
-                    }
-                    else
-                        regs.IP--;
-                }
+                    regs.IP--;
             }
         }
 
@@ -4322,20 +4273,13 @@ namespace MDPlayer.Driver.FMP.Nise98
                 //LODSの場合は単純リピート
                 //REPNEはあり得ない(と思う為未対処
 
-                if (regs.CX == 0)
+                regs.CX--;
+                if (regs.CX == 0)// || ((repType == 0 && !regs.ZF) || (repType != 0 && regs.ZF)))
                 {
                     repSW = false;
                 }
                 else
-                {
-                    regs.CX--;
-                    if (regs.CX == 0)// || ((repType == 0 && !regs.ZF) || (repType != 0 && regs.ZF)))
-                    {
-                        repSW = false;
-                    }
-                    else
-                        regs.IP--;
-                }
+                    regs.IP--;
             }
         }
 
@@ -4367,20 +4311,13 @@ namespace MDPlayer.Driver.FMP.Nise98
 
             if (repSW)
             {
-                if (regs.CX == 0)
+                regs.CX--;
+                if (regs.CX == 0 || ((repType == 0 && !regs.ZF) || (repType != 0 && regs.ZF)))
                 {
                     repSW = false;
                 }
                 else
-                {
-                    regs.CX--;
-                    if (regs.CX == 0 || ((repType == 0 && !regs.ZF) || (repType != 0 && regs.ZF)))
-                    {
-                        repSW = false;
-                    }
-                    else
-                        regs.IP--;
-                }
+                    regs.IP--;
             }
         }
 

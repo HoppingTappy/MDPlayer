@@ -1,4 +1,5 @@
-﻿using MDPlayer.Driver.SID;
+﻿using MDPlayer.Driver.FMP.Nise98;
+using MDPlayer.Driver.SID;
 using MDPlayer.form;
 using MDSound;
 using MDSound.np.chip;
@@ -484,7 +485,7 @@ namespace MDPlayer
 
                 music.format = EnmFileFormat.FMP;
                 uint index = 0;
-                GD3 gd3 = new Driver.FMP.FMP().getGD3Info(buf, index);
+                GD3 gd3 = new Driver.FMP.FMP(null).getGD3Info(buf, index);
                 music.title = gd3.TrackName == "" ? Path.GetFileName(file) : gd3.TrackName;
                 music.titleJ = gd3.TrackName == "" ? Path.GetFileName(file) : gd3.TrackNameJ;
                 music.game = gd3.GameName;
@@ -970,6 +971,9 @@ namespace MDPlayer
                 int TCmillisecond = (int)(sec * 100.0);
                 music.duration = string.Format("{0:D2}:{1:D2}:{2:D2}", TCminutes, TCsecond, TCmillisecond);
             }
+
+            //ESCシーケンス除去
+            music = Common.EscSeqFilter(music);
 
             musics.Add(music);
             return musics;
@@ -1506,14 +1510,17 @@ namespace MDPlayer
             }
             if (Audio.Setting.YM2151Type == null || Audio.Setting.YM2151Type.Length < 2 || (Audio.Setting.YM2151Type[0].realChipInfo != null && Audio.Setting.YM2151Type[0].realChipInfo.Length < 2))
             {
-                Audio.Setting.YM2151Type = new Setting.ChipType2[] { new Setting.ChipType2(), new Setting.ChipType2() };
+                Setting.ChipType2[] ct = new Setting.ChipType2[] { new Setting.ChipType2(), new Setting.ChipType2() };
                 for (int i = 0; i < 2; i++)
                 {
-                    Audio.Setting.YM2151Type[i].realChipInfo = new Setting.ChipType2.RealChipInfo[] { new Setting.ChipType2.RealChipInfo(), new Setting.ChipType2.RealChipInfo() };
-                    Audio.Setting.YM2151Type[i].UseEmu = new bool[3];
-                    Audio.Setting.YM2151Type[i].UseEmu[0] = true;
-                    Audio.Setting.YM2151Type[i].UseReal = new bool[2];
+                    ct[i].realChipInfo = new Setting.ChipType2.RealChipInfo[] { new Setting.ChipType2.RealChipInfo(), new Setting.ChipType2.RealChipInfo() };
+                    ct[i].UseEmu = new bool[3];
+                    ct[i].UseEmu[0] = true;
+                    ct[i].UseReal = new bool[2];
+                    if (Audio.Setting.YM2151Type != null && Audio.Setting.YM2151Type.Length > i && Audio.Setting.YM2151Type[i] != null)
+                        ct[i].exchgPAN = Audio.Setting.YM2151Type[i].exchgPAN;
                 }
+                Audio.Setting.YM2151Type = ct;
             }
             if (Audio.Setting.YM2203Type == null || Audio.Setting.YM2203Type.Length < 2)
             {
@@ -2167,7 +2174,24 @@ namespace MDPlayer
 
             if (PlayingFileFormat == EnmFileFormat.FMP)
             {
-                DriverVirtual = new Driver.FMP.FMP()
+                fileTemp ft = new fileTemp(setting);
+                string ext =Path.GetExtension(PlayingFileName);
+                if (!string.IsNullOrEmpty(ext))
+                {
+                    ext = ext.ToLower();
+                    if(ext.Length>3&& ext[1] == 'm')
+                    {
+                        //compile
+                        if(!(new Driver.FMP.FMP(ft).Compile(PlayingFileName))) return false;
+                        PlayingFileName = Path.ChangeExtension(
+                            PlayingFileName
+                            , ext == ".mpi" ? ".opi" : (ext == ".mvi" ? ".ovi" : ".ozi"));
+                        vgmBuf = ft.ReadTemp(PlayingFileName);
+                        //vgmBuf = File.ReadAllBytes(PlayingFileName);
+                    }
+                }
+
+                DriverVirtual = new Driver.FMP.FMP(ft)
                 {
                     setting = setting
                 };
@@ -2175,13 +2199,13 @@ namespace MDPlayer
                 DriverReal = null;
                 if (setting.outputDevice.DeviceType != Common.DEV_Null && !setting.YM2608Type[0].UseEmu[0])
                 {
-                    DriverReal = new Driver.FMP.FMP()
+                    DriverReal = new Driver.FMP.FMP(ft)
                     {
                         setting = setting
                     };
                     ((Driver.FMP.FMP)DriverReal).PlayingFileName = PlayingFileName;
                 }
-                return OxiPlay_FMP(setting);
+                return OxiPlay_FMP(setting, ft);
             }
 
             if (PlayingFileFormat == EnmFileFormat.NRT)
@@ -3052,6 +3076,9 @@ namespace MDPlayer
                     try { mds.ChangeYM2610_PSGMode(1, 1); } catch { }
                 }
 
+                DriverVirtual.SetYM2151Hosei(Driver.MucomDotNET.OPMbaseclock);
+                DriverReal?.SetYM2151Hosei(Driver.MucomDotNET.OPMbaseclock);
+
                 //Play
 
                 Paused = false;
@@ -3247,7 +3274,7 @@ namespace MDPlayer
 
         }
 
-        public static bool OxiPlay_FMP(Setting setting)
+        public static bool OxiPlay_FMP(Setting setting,fileTemp ft)
         {
 
             try
@@ -3349,7 +3376,10 @@ namespace MDPlayer
                 chipRegister.setYM2608SSGVolume(1, setting.balance.GimicOPNAVolume, EnmModel.RealModel);
 
                 ((Driver.FMP.FMP)DriverVirtual).SetSearchPath(setting.FileSearchPathList);
-                ((Driver.FMP.FMP)DriverReal).SetSearchPath(setting.FileSearchPathList);
+                if (DriverReal != null)
+                {
+                    ((Driver.FMP.FMP)DriverReal).SetSearchPath(setting.FileSearchPathList);
+                }
 
                 if (!DriverVirtual.init(vgmBuf, chipRegister, EnmModel.VirtualModel, new EnmChip[] { EnmChip.YM2608 }
                     , (uint)(setting.outputDevice.SampleRate * setting.LatencyEmulation / 1000)

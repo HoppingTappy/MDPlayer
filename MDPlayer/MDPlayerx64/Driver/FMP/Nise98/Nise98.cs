@@ -17,6 +17,7 @@ namespace MDPlayer.Driver.FMP.Nise98
         private NiseInt08Timer int08Timer = null;
         private NiseDos dos = null;
         private NisePPZ8 ppz8 = null;
+        private fileTemp fileTemp = null;
 
         private fmStatus fmReg088 = null;
         private fmStatus fmReg188 = null;
@@ -89,14 +90,15 @@ namespace MDPlayer.Driver.FMP.Nise98
             }
         }
 
-        public void Init(Action<string, object[]> msgWrite, Action<ChipDatum> opnaWrite, enmOngenBoardType ongen = enmOngenBoardType.PC9801_86B)
+        public void Init(Action<string, object[]> msgWrite, Action<ChipDatum> opnaWrite,fileTemp fileTemp, enmOngenBoardType ongen = enmOngenBoardType.PC9801_86B)
         {
             Log.WriteLine(musicDriverInterface.LogLevel.DEBUG, "<Nise98>Init");
 
             this.opnaWrite = opnaWrite;
+            this.fileTemp = fileTemp;
             regs = new Register286();
             mem = new Memory98(16 * 64 * 1024);
-            dos = new NiseDos(regs, mem);
+            dos = new NiseDos(regs, mem,fileTemp);
             cpu = new Nise286(this);
             int08Timer = new NiseInt08Timer(cpu);
             ppz8 = new NisePPZ8(this);
@@ -558,7 +560,6 @@ namespace MDPlayer.Driver.FMP.Nise98
             return dos.returnCode;
         }
 
-
         public void CallRunfunctionCall(byte intnumber, bool dispReg = false, bool useStepCounter = false, bool dispStepCounter = false,
     long MaxStepCounter = 100_000_000, long StartStepCounterForDispStep = 0)
         {
@@ -566,6 +567,9 @@ namespace MDPlayer.Driver.FMP.Nise98
             UserInt ui = new UserInt();
             ui.intNum = intnumber;
             UserINT(ui);
+            //regs.IF=false;
+            cpu.w_mmsk = 0xff;
+            cpu.w_smsk = 0xff;
             dos.programTerminate = false;
 
             functionCallTimes++;
@@ -580,11 +584,11 @@ namespace MDPlayer.Driver.FMP.Nise98
                     if (step < StartStepCounterForDispStep) continue;
                 }
 
-                //if (dispReg)
-                //{
-                //    regs = GetRegisters();
-                //    DispRegs(regs);
-                //}
+                if (dispReg)
+                {
+                    regs = GetRegisters();
+                    DispRegs(regs);
+                }
 
                 //if (dispStepCounter) Log.WriteLine(musicDriverInterface.LogLevel.TRACE, "functionCalls:{0} STEP:{1}\r\n", functionCallTimes, step);
 

@@ -2,6 +2,8 @@
 using System.IO.Compression;
 using System.Reflection;
 using System.Text;
+using System.Text.RegularExpressions;
+using static MDPlayer.PlayList;
 
 namespace MDPlayer
 {
@@ -616,16 +618,45 @@ namespace MDPlayer
 
             return xoutStream.ToArray();
         }
+
+
+        public static string EscSeqFilter(string src)
+        {
+            if (src == null) return null;
+            src = Regex.Replace(src, "\\u001b\\[[0-9\\;]*[ABCDJHfm]", "");
+            src = Regex.Replace(src, "\\u001b", "");
+
+            return src;
+        }
+
+        public static PlayList.Music EscSeqFilter(PlayList.Music music)
+        {
+            music.title = Common.EscSeqFilter(music.title);
+            music.titleJ = Common.EscSeqFilter(music.titleJ);
+            music.game = Common.EscSeqFilter(music.game);
+            music.gameJ = Common.EscSeqFilter(music.gameJ);
+            music.composer = Common.EscSeqFilter(music.composer);
+            music.composerJ = Common.EscSeqFilter(music.composerJ);
+            music.vgmby = Common.EscSeqFilter(music.vgmby);
+            music.converted = Common.EscSeqFilter(music.converted);
+            music.notes = Common.EscSeqFilter(music.notes);
+
+            return music;
+        }
+
         public static int StrToInt(string str)
         {
             int v;
             var r = int.TryParse(str, out v);
-            if (r == false) {
+            if (r == false)
+            {
                 v = Convert.ToInt32(str, 16);
             }
             return v;
         }
     }
+
+
 
     public enum LogLevel : int
     {
