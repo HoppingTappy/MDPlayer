@@ -48,6 +48,8 @@
             dgvInfo.Rows.Add("UsedChips", Common.EscSeqFilter(gd3.UsedChips));
             dgvInfo.ClearSelection();
 
+            parent.OpenPicWindow(gd3.pic);
+ 
             if (gd3.Lyrics == null)
             {
                 timer.Enabled = false;

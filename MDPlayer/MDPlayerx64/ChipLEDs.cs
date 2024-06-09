@@ -109,6 +109,8 @@
         public byte SecPPSDRV = 0;
         public byte SecP86 = 0;
         public byte SecQsnd = 0;
+        public byte TrdMID = 0;
+        public byte ForMID = 0;
 
     }
 }

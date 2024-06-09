@@ -2,13 +2,15 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net6.0-windows</TargetFramework>
+    <TargetFramework>net8.0-windows7.0</TargetFramework>
     <Nullable>disable</Nullable>
     <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
     <Platforms>x64</Platforms>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
     <ApplicationIcon>Resources\Feli128.ico</ApplicationIcon>
+<PublishAot>true</PublishAot>
+<PublishTrimmed>false</PublishTrimmed>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -45,7 +47,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="NAudio" Version="2.1.0" />
+    <PackageReference Include="NAudio" Version="2.2.1" />
     <PackageReference Include="VST.NET2-Host" Version="2.1.0" />
   </ItemGroup>
 
@@ -56,6 +58,9 @@
     <Reference Include="musicDriverInterface">
       <HintPath>lib\musicDriverInterface.dll</HintPath>
     </Reference>
+    <Reference Include="NiseC86ctl">
+      <HintPath>lib\NiseC86ctl.dll</HintPath>
+    </Reference>
     <Reference Include="RealChipCtlWrap64">
       <HintPath>lib\RealChipCtlWrap64.dll</HintPath>
     </Reference>
@@ -65,6 +70,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Update="form\KB\PCM\frmK054539.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="form\KB\PCM\frmGA20.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Update="Properties\Resources.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
@@ -137,6 +148,12 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="lib\musicDriverInterface.pdb">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="lib\Nefarius.Drivers.WinUSB.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="lib\NiseC86ctl.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="lib\RealChipCtlWrap64.dll">

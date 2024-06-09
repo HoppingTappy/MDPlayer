@@ -36,38 +36,37 @@ namespace MDPlayer.form
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmDMG));
-            this.pbScreen = new System.Windows.Forms.PictureBox();
-            ((System.ComponentModel.ISupportInitialize)(this.pbScreen)).BeginInit();
-            this.SuspendLayout();
+            pbScreen = new PictureBox();
+            ((System.ComponentModel.ISupportInitialize)pbScreen).BeginInit();
+            SuspendLayout();
             // 
             // pbScreen
             // 
-            this.pbScreen.BackColor = System.Drawing.SystemColors.ControlDarkDark;
-            //this.pbScreen.Image =   Resources.planeDMG;
-            this.pbScreen.Location = new System.Drawing.Point(0, 0);
-            this.pbScreen.Name = "pbScreen";
-            this.pbScreen.Size = new System.Drawing.Size(336, 72);
-            this.pbScreen.TabIndex = 2;
-            this.pbScreen.TabStop = false;
-            this.pbScreen.MouseClick += new System.Windows.Forms.MouseEventHandler(this.pbScreen_MouseClick);
+            pbScreen.BackColor = SystemColors.ControlDarkDark;
+            pbScreen.Location = new Point(0, 0);
+            pbScreen.Margin = new Padding(4, 4, 4, 4);
+            pbScreen.Name = "pbScreen";
+            pbScreen.Size = new Size(392, 90);
+            pbScreen.TabIndex = 2;
+            pbScreen.TabStop = false;
+            pbScreen.MouseClick += pbScreen_MouseClick;
             // 
             // frmDMG
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.BackColor = System.Drawing.SystemColors.ControlDarkDark;
-            this.ClientSize = new System.Drawing.Size(336, 72);
-            this.Controls.Add(this.pbScreen);
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
-            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-            this.MaximizeBox = false;
-            this.Name = "frmDMG";
-            this.Text = "DMG";
-            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.frmDMG_FormClosed);
-            this.Load += new System.EventHandler(this.frmDMG_Load);
-            ((System.ComponentModel.ISupportInitialize)(this.pbScreen)).EndInit();
-            this.ResumeLayout(false);
-
+            AutoScaleMode = AutoScaleMode.None;
+            BackColor = SystemColors.ControlDarkDark;
+            ClientSize = new Size(392, 90);
+            Controls.Add(pbScreen);
+            FormBorderStyle = FormBorderStyle.FixedSingle;
+            Icon = (Icon)resources.GetObject("$this.Icon");
+            Margin = new Padding(5, 5, 5, 5);
+            MaximizeBox = false;
+            Name = "frmDMG";
+            Text = "DMG";
+            FormClosed += frmDMG_FormClosed;
+            Load += frmDMG_Load;
+            ((System.ComponentModel.ISupportInitialize)pbScreen).EndInit();
+            ResumeLayout(false);
         }
 
         #endregion

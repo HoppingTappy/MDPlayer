@@ -96,13 +96,14 @@ namespace MDPlayer.form
                 //但しchをクリックした場合はマスク反転
                 if (px < 8)
                 {
-                    for (ch = 0; ch < 14; ch++)
+                    for (ch = 0; ch < 20; ch++)
                     {
                         if (ch >= 9 && ch <= 11) continue;
+                        if (ch == 12) continue;
 
                         c = ch;
-                        if (ch == 12) c = 13;
                         if (ch == 13) c = 12;
+                        if (ch > 13) c = ch - 1;
 
                         if (newParam.channels[c].mask == true)
                             parent.ResetChannelMask(EnmChip.YM2610, chipID, ch);
@@ -124,6 +125,13 @@ namespace MDPlayer.form
             {
                 if (e.Button == MouseButtons.Left)
                 {
+
+                    if (ch == 12)
+                    {
+                        ch = 14 + (Math.Max(px - 4, 0)) / 60;
+                        c = ch - 1;
+                    }
+
                     //マスク
                     if (newParam.channels[c].mask == true)
                         parent.ResetChannelMask(EnmChip.YM2610, chipID, ch);
@@ -132,7 +140,7 @@ namespace MDPlayer.form
                     return;
                 }
 
-                for (ch = 0; ch < 14; ch++) parent.ResetChannelMask(EnmChip.YM2610, chipID, ch);
+                for (ch = 0; ch < 20; ch++) parent.ResetChannelMask(EnmChip.YM2610, chipID, ch);
                 return;
             }
 
@@ -145,7 +153,7 @@ namespace MDPlayer.form
             if (instCh < 6)
             {
                 //クリップボードに音色をコピーする
-                parent.GetInstCh(EnmChip.YM2610, instCh, chipID);
+                parent.GetInstCh(EnmChip.YM2610, instCh, chipID, newParam.channels[instCh].note);
             }
         }
 
@@ -206,8 +214,11 @@ namespace MDPlayer.form
                 d = 99;
                 DrawBuff.VolumeYM2610Rhythm(frameBuffer, y, 2, ref d, 0, tp);
             }
-            bool? f = true;
-            DrawBuff.ChYM2610Rhythm(frameBuffer, 0, ref f, false, tp);
+            for (int y = 0; y < 6; y++)
+            {
+                bool? f = true;
+                DrawBuff.ChYM2610Rhythm(frameBuffer, y, ref f, false, tp);
+            }
         }
 
         private static byte[] md = new byte[]
@@ -335,7 +346,7 @@ namespace MDPlayer.form
                     ff /= 1038f;
 
                     if ((fmKeyYM2610[2] & 0x10) != 0 && ((m & 0x10) != 0))
-                        n = Math.Min(Math.Max(Common.searchYM2608Adpcm(ff) - 1, 0), 95);
+                        n = Math.Min(Math.Max(Common.searchYM2608Adpcm(ff) , 0), 95);
 
                     int v = ((m & 0x10) != 0) ? YM2610Register[p][0x40 + c] : 127;
                     newParam.channels[2].volumeL = Math.Min(Math.Max((int)((127 - v) / 127.0 * ((YM2610Register[0][0xb4 + 2] & 0x80) != 0 ? 1 : 0) * YM2610Ch3SlotVol[0] / 80.0), 0), 19);
@@ -443,7 +454,7 @@ namespace MDPlayer.form
             delta = (YM2610Register[0][0x1a] << 8) | YM2610Register[0][0x19];
             newParam.channels[12].freq = delta;
             frq = (float)(delta / 9447.0f);//Delta=9447 at freq=8kHz
-            newParam.channels[12].note = (YM2610Register[0][0x10] & 0x80) != 0 ? (Common.searchYM2608Adpcm(frq) - 1) : -1;
+            newParam.channels[12].note = (YM2610Register[0][0x10] & 0x80) != 0 ? (Common.searchYM2608Adpcm(frq) - 0) : -1;
             if ((YM2610Register[0][0x11] & 0xc0) == 0)
             {
                 newParam.channels[12].note = -1;
@@ -567,7 +578,8 @@ namespace MDPlayer.form
                 DrawBuff.PanYM2610Rhythm(frameBuffer, c, ref oyc.pan, nyc.pan, ref oyc.pantp, tp);
                 DrawBuff.font4Int2(frameBuffer, c * 4 * 15 + 9, 26 * 4, 0, 0, ref oyc.volumeRL, nyc.volumeRL);
             }
-            DrawBuff.ChYM2610Rhythm(frameBuffer, 0, ref oldParam.channels[13].mask, newParam.channels[13].mask, tp);
+            for (int c = 0; c < 6; c++)
+                DrawBuff.ChYM2610Rhythm(frameBuffer, c, ref oldParam.channels[13 + c].mask, newParam.channels[13 + c].mask, tp);
 
             DrawBuff.font4Hex12Bit(frameBuffer, 85 * 4, 30 * 4, 0, ref oldParam.timerA, newParam.timerA);
             DrawBuff.font4HexByte(frameBuffer, 85 * 4, 32 * 4, 0, ref oldParam.timerB, newParam.timerB);

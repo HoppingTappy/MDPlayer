@@ -1,9 +1,11 @@
 ﻿using musicDriverInterface;
 using System;
 using System.Collections.Generic;
+using System.IO.Compression;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static MDPlayer.PlayList;
 
 namespace MDPlayer.Driver.FMP.Nise98
 {
@@ -38,6 +40,10 @@ namespace MDPlayer.Driver.FMP.Nise98
 
         private int allocateMemStartAdress = 0x9_0000;
         private int allocateMemSize;
+        private Dictionary<byte, Action> dicHookINT = new Dictionary<byte, Action>();
+        private string playingArcFile;
+        private List<string> searchPath;
+
 
         public byte returnCode { get; private set; } = 0x00;
         public bool programTerminate { get; set; } = false;
@@ -616,8 +622,6 @@ namespace MDPlayer.Driver.FMP.Nise98
 
 
 
-        private Dictionary<byte, Action> dicHookINT=new Dictionary<byte, Action>();
-
         public void SetHookINT(byte intnum, Action action)
         {
             if (dicHookINT.ContainsKey(intnum))
@@ -644,11 +648,17 @@ namespace MDPlayer.Driver.FMP.Nise98
 
         private byte[] ReadAllByte(filestatus fs)
         {
-            string fn = Path.Combine(fs.path, fs.name);
-            if(fileTemp.ExistTemp(fn))
-                return fileTemp.ReadTemp(fn);
+            try
+            {
+                string fn = Path.Combine(fs.path, fs.name);
+                if (fileTemp.ExistTemp(fn))
+                    return fileTemp.ReadTemp(fn);
+                if(File.Exists(fn))
+                    return File.ReadAllBytes(fn);
+            }
+            catch { }
 
-            return File.ReadAllBytes(fn);
+            return ReadAllByteFromArcFile(fs.name);
         }
 
         private bool CheckFileExist(string filename,out string fndFilename)
@@ -665,8 +675,72 @@ namespace MDPlayer.Driver.FMP.Nise98
                 return true;
             }
 
+            if (searchPath.Count > 0)
+            {
+                string f = Path.GetFileName(fn);
+                foreach (string fp in searchPath)
+                {
+                    string sfn = Path.Combine(fp, f);
+                    log.Write(LogLevel.Information, "Search File: {0}", sfn);
+                    if (File.Exists(sfn))
+                    {
+                        fndFilename = sfn;
+                        return true;
+                    }
+                }
+            }
+
+            if (playingArcFileExist(filename))
+            {
+                fndFilename = fn;
+                return true;
+            }
+
             fndFilename = "";
             return false;
+        }
+
+        private bool playingArcFileExist(string fn)
+        {
+            if (playingArcFile == "") return false;
+            if (!File.Exists(playingArcFile)) return false;
+
+            try
+            {
+                using (ZipArchive archive = ZipFile.OpenRead(playingArcFile))
+                {
+                    foreach (ZipArchiveEntry ent in archive.Entries)
+                    {
+                        if (ent.Name == fn)
+                            return true;
+                    }
+                }
+            }
+            catch
+            {
+
+            }
+
+            return false;
+        }
+
+        private byte[] ReadAllByteFromArcFile(string fs)
+        {
+            if (playingArcFile == "") return null;
+            if (!File.Exists(playingArcFile)) return null;
+
+            using (ZipArchive archive = ZipFile.OpenRead(playingArcFile))
+            {
+                foreach (ZipArchiveEntry ent in archive.Entries)
+                {
+                    if (ent.Name != Path.GetFileName(fs)) continue;
+                    MemoryStream ms = new();
+                    ent.Open().CopyTo(ms);
+                    return ms.ToArray();
+                }
+            }
+
+            return null;
         }
 
         public byte[] LoadData(string fn)
@@ -675,7 +749,26 @@ namespace MDPlayer.Driver.FMP.Nise98
             if (fileTemp.ExistTemp(fn))
                 return fileTemp.ReadTemp(fn);
 
-            return File.ReadAllBytes(fn);
+            if (File.Exists(fn))
+                return File.ReadAllBytes(fn);
+
+            if (searchPath.Count > 0)
+            {
+                string f = Path.GetFileName(fn);
+                foreach (string fp in searchPath)
+                {
+                    string sfn = Path.Combine(fp, f);
+                    log.Write(LogLevel.Information, "Search File: {0}", sfn);
+                    if (File.Exists(sfn))
+                    {
+                        byte[] b = File.ReadAllBytes(sfn);
+                        log.Write(LogLevel.Information, "read data size: {0}", b.Length);
+                        return b;
+                    }
+                }
+            }
+
+            return ReadAllByteFromArcFile(fn);
         }
 
         public filestatus SearchFileStatus(int handle)
@@ -691,5 +784,14 @@ namespace MDPlayer.Driver.FMP.Nise98
 
         }
 
+        public void SetArcFile(string playingArcFileName)
+        {
+            this.playingArcFile = playingArcFileName;
+        }
+
+        internal void SetSearchPath(List<string> searchPaths)
+        {
+            this.searchPath= searchPaths;
+        }
     }
 }

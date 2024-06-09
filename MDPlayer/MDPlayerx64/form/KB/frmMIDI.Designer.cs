@@ -34,43 +34,38 @@ namespace MDPlayer.form
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmMIDI));
-            this.pbScreen = new System.Windows.Forms.PictureBox();
-            ((System.ComponentModel.ISupportInitialize)(this.pbScreen)).BeginInit();
-            this.SuspendLayout();
+            pbScreen = new PictureBox();
+            ((System.ComponentModel.ISupportInitialize)pbScreen).BeginInit();
+            SuspendLayout();
             // 
             // pbScreen
             // 
-#if X64
-            //this.pbScreen.Image = Resources.planeMIDI_GM;
-#else
-            //this.pbScreen.Image = global::MDPlayer.Properties.Resources.planeMIDI_GM;
-#endif
-            this.pbScreen.Location = new System.Drawing.Point(0, 0);
-            this.pbScreen.Name = "pbScreen";
-            this.pbScreen.Size = new System.Drawing.Size(440, 352);
-            this.pbScreen.TabIndex = 0;
-            this.pbScreen.TabStop = false;
-            this.pbScreen.MouseClick += new System.Windows.Forms.MouseEventHandler(this.pbScreen_MouseClick);
+            pbScreen.Location = new Point(0, 0);
+            pbScreen.Margin = new Padding(4, 4, 4, 4);
+            pbScreen.Name = "pbScreen";
+            pbScreen.Size = new Size(513, 440);
+            pbScreen.TabIndex = 0;
+            pbScreen.TabStop = false;
+            pbScreen.MouseClick += pbScreen_MouseClick;
             // 
             // frmMIDI
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(440, 352);
-            this.Controls.Add(this.pbScreen);
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
-            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-            this.MaximizeBox = false;
-            this.Name = "frmMIDI";
-            this.Text = "MIDI";
-            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.frmMIDI_FormClosed);
-            this.Load += new System.EventHandler(this.frmMIDI_Load);
-            ((System.ComponentModel.ISupportInitialize)(this.pbScreen)).EndInit();
-            this.ResumeLayout(false);
-
+            AutoScaleMode = AutoScaleMode.None;
+            ClientSize = new Size(513, 440);
+            Controls.Add(pbScreen);
+            FormBorderStyle = FormBorderStyle.FixedSingle;
+            Icon = (Icon)resources.GetObject("$this.Icon");
+            Margin = new Padding(5, 5, 5, 5);
+            MaximizeBox = false;
+            Name = "frmMIDI";
+            Text = "MIDI";
+            FormClosed += frmMIDI_FormClosed;
+            Load += frmMIDI_Load;
+            ((System.ComponentModel.ISupportInitialize)pbScreen).EndInit();
+            ResumeLayout(false);
         }
 
-#endregion
+        #endregion
 
         public System.Windows.Forms.PictureBox pbScreen;
     }

@@ -35,8 +35,6 @@
             // 
             // pbScreen
             // 
-            //pbScreen.Image = MDPlayerx64.Properties.Resources.planeK053260;
-            //pbScreen.InitialImage = MDPlayerx64.Properties.Resources.planeK053260;
             pbScreen.Location = new Point(0, 0);
             pbScreen.Margin = new Padding(4);
             pbScreen.Name = "pbScreen";
@@ -47,8 +45,7 @@
             // 
             // frmK053260
             // 
-            AutoScaleDimensions = new SizeF(7F, 15F);
-            AutoScaleMode = AutoScaleMode.Font;
+            AutoScaleMode = AutoScaleMode.None;
             BackColor = SystemColors.ControlDarkDark;
             ClientSize = new Size(486, 92);
             Controls.Add(pbScreen);

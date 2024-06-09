@@ -2199,7 +2199,7 @@
                         uint YM2610Bclock = GetLE32(0x4c);
                         if (YM2610Bclock != 0)
                         {
-                            YM2610ClockValue = YM2610Bclock & 0x3fffffff;
+                            YM2610ClockValue = YM2610Bclock & 0x3fff_ffff;
                             YM2610DualChipFlag = (YM2610Bclock & 0x40000000) != 0;
                             if (YM2610DualChipFlag) chips.Add("YM2610/Bx2");
                             else chips.Add("YM2610/B");
@@ -2756,6 +2756,7 @@
         public string VGMBy = "";
         public string Version = "";
         public string UsedChips = "";
+        public System.Drawing.Image pic = null;
 
         public List<Tuple<int, int, string>> Lyrics = null;
     }

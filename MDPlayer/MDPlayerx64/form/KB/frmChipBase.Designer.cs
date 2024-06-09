@@ -29,23 +29,22 @@
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmChipBase));
-            this.SuspendLayout();
+            SuspendLayout();
             // 
             // frmChipBase
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.BackColor = System.Drawing.SystemColors.ControlDarkDark;
-            this.ClientSize = new System.Drawing.Size(329, 57);
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
-            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-            this.MaximizeBox = false;
-            this.Name = "frmChipBase";
-            this.Text = "frmChipBase";
-            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.frmChipBase_FormClosed);
-            this.Load += new System.EventHandler(this.frmChipBase_Load);
-            this.ResumeLayout(false);
-
+            AutoScaleMode = AutoScaleMode.None;
+            BackColor = SystemColors.ControlDarkDark;
+            ClientSize = new Size(384, 71);
+            FormBorderStyle = FormBorderStyle.FixedSingle;
+            Icon = (Icon)resources.GetObject("$this.Icon");
+            Margin = new Padding(5, 5, 5, 5);
+            MaximizeBox = false;
+            Name = "frmChipBase";
+            Text = "frmChipBase";
+            FormClosed += frmChipBase_FormClosed;
+            Load += frmChipBase_Load;
+            ResumeLayout(false);
         }
 
         #endregion

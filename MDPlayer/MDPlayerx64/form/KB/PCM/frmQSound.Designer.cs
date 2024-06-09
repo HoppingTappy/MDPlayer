@@ -34,39 +34,38 @@ namespace MDPlayer.form
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmQSound));
-            this.pbScreen = new System.Windows.Forms.PictureBox();
-            ((System.ComponentModel.ISupportInitialize)(this.pbScreen)).BeginInit();
-            this.SuspendLayout();
+            pbScreen = new PictureBox();
+            ((System.ComponentModel.ISupportInitialize)pbScreen).BeginInit();
+            SuspendLayout();
             // 
             // pbScreen
             // 
-            this.pbScreen.BackColor = System.Drawing.SystemColors.ControlDarkDark;
-            //this.pbScreen.Image = Resources.planeQSound;
-            this.pbScreen.Location = new System.Drawing.Point(0, 0);
-            this.pbScreen.Name = "pbScreen";
-            this.pbScreen.Size = new System.Drawing.Size(440, 177);
-            this.pbScreen.TabIndex = 2;
-            this.pbScreen.TabStop = false;
-            this.pbScreen.MouseClick += new System.Windows.Forms.MouseEventHandler(this.pbScreen_MouseClick);
+            pbScreen.BackColor = SystemColors.ControlDarkDark;
+            pbScreen.Location = new Point(0, 0);
+            pbScreen.Margin = new Padding(4, 4, 4, 4);
+            pbScreen.Name = "pbScreen";
+            pbScreen.Size = new Size(513, 221);
+            pbScreen.TabIndex = 2;
+            pbScreen.TabStop = false;
+            pbScreen.MouseClick += pbScreen_MouseClick;
             // 
             // frmQSound
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.BackColor = System.Drawing.SystemColors.ControlDarkDark;
-            this.ClientSize = new System.Drawing.Size(440, 177);
-            this.Controls.Add(this.pbScreen);
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
-            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-            this.MaximizeBox = false;
-            this.Name = "frmQSound";
-            this.Text = "QSound";
-            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.frmQSound_FormClosed);
-            this.Load += new System.EventHandler(this.frmQSound_Load);
-            this.Resize += new System.EventHandler(this.frmQSound_Resize);
-            ((System.ComponentModel.ISupportInitialize)(this.pbScreen)).EndInit();
-            this.ResumeLayout(false);
-
+            AutoScaleMode = AutoScaleMode.None;
+            BackColor = SystemColors.ControlDarkDark;
+            ClientSize = new Size(513, 221);
+            Controls.Add(pbScreen);
+            FormBorderStyle = FormBorderStyle.FixedSingle;
+            Icon = (Icon)resources.GetObject("$this.Icon");
+            Margin = new Padding(5, 5, 5, 5);
+            MaximizeBox = false;
+            Name = "frmQSound";
+            Text = "QSound";
+            FormClosed += frmQSound_FormClosed;
+            Load += frmQSound_Load;
+            Resize += frmQSound_Resize;
+            ((System.ComponentModel.ISupportInitialize)pbScreen).EndInit();
+            ResumeLayout(false);
         }
 
         #endregion

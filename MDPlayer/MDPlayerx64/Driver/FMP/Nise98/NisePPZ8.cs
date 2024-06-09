@@ -148,16 +148,21 @@ namespace MDPlayer.Driver.FMP.Nise98
                 case 0x0b://change PCM FNUM
                     setPPZ8Data(11, regs.AL, ((ushort)regs.DX << 16) + (ushort)regs.CX);
                     break;
+                case 0x0e://set loop point
+                    setPPZ8Data(14 + regs.AL * 0x100, ((ushort)regs.DX << 16) + (ushort)regs.CX, ((ushort)regs.DI << 16) + (ushort)regs.SI);
+                    break;
                 case 0x12://Disable interrupt
                     break;
                 case 0x13://change pan
                     setPPZ8Data(19, regs.AL, regs.DX);
                     break;
+                case 0x14://再生レート設定
+                    break;
                 case 0x15://元データ周波数設定
                     setPPZ8Data(21, regs.AL, regs.DX);
                     break;
                 case 0x16:
-                    setPPZ8Data(22, 0, 15);// regs.AL);
+                    setPPZ8Data(22, 0, regs.AL);
                     break;
                 case 0x17:
                     //temporarySeg = (ushort)regs.ES;
@@ -166,6 +171,10 @@ namespace MDPlayer.Driver.FMP.Nise98
                 case 0x18:
                     setPPZ8Data(24, regs.AL, 0);
                     emuADPCM = regs.AL;
+                    break;
+                case 0x19://常駐解除許可、禁止設定
+                    break;
+                case 0x1a://FIFOバッファの変更
                     break;
                 default:
                     throw new NotImplementedException();

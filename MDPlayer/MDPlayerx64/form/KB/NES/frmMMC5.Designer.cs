@@ -34,37 +34,36 @@ namespace MDPlayer.form
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmMMC5));
-            this.pbScreen = new System.Windows.Forms.PictureBox();
-            ((System.ComponentModel.ISupportInitialize)(this.pbScreen)).BeginInit();
-            this.SuspendLayout();
+            pbScreen = new PictureBox();
+            ((System.ComponentModel.ISupportInitialize)pbScreen).BeginInit();
+            SuspendLayout();
             // 
             // pbScreen
             // 
-            //this.pbScreen.Image = Resources.planeMMC5;
-            this.pbScreen.Location = new System.Drawing.Point(0, 0);
-            this.pbScreen.Name = "pbScreen";
-            this.pbScreen.Size = new System.Drawing.Size(286, 40);
-            this.pbScreen.TabIndex = 0;
-            this.pbScreen.TabStop = false;
-            this.pbScreen.MouseClick += new System.Windows.Forms.MouseEventHandler(this.pbScreen_MouseClick);
+            pbScreen.Location = new Point(0, 0);
+            pbScreen.Margin = new Padding(4, 4, 4, 4);
+            pbScreen.Name = "pbScreen";
+            pbScreen.Size = new Size(334, 50);
+            pbScreen.TabIndex = 0;
+            pbScreen.TabStop = false;
+            pbScreen.MouseClick += pbScreen_MouseClick;
             // 
             // frmMMC5
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(286, 40);
-            this.Controls.Add(this.pbScreen);
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
-            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-            this.MaximizeBox = false;
-            this.Name = "frmMMC5";
-            this.Text = "MMC5";
-            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.frmMMC5_FormClosed);
-            this.Load += new System.EventHandler(this.frmMMC5_Load);
-            this.Resize += new System.EventHandler(this.frmMMC5_Resize);
-            ((System.ComponentModel.ISupportInitialize)(this.pbScreen)).EndInit();
-            this.ResumeLayout(false);
-
+            AutoScaleMode = AutoScaleMode.None;
+            ClientSize = new Size(334, 50);
+            Controls.Add(pbScreen);
+            FormBorderStyle = FormBorderStyle.FixedSingle;
+            Icon = (Icon)resources.GetObject("$this.Icon");
+            Margin = new Padding(5, 5, 5, 5);
+            MaximizeBox = false;
+            Name = "frmMMC5";
+            Text = "MMC5";
+            FormClosed += frmMMC5_FormClosed;
+            Load += frmMMC5_Load;
+            Resize += frmMMC5_Resize;
+            ((System.ComponentModel.ISupportInitialize)pbScreen).EndInit();
+            ResumeLayout(false);
         }
 
         #endregion

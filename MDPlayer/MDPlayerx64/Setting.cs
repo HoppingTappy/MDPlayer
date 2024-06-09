@@ -2,6 +2,7 @@
 using System.Xml.Serialization;
 #if X64
 using MDPlayerx64.Properties;
+using Microsoft.VisualBasic;
 #else
 using MDPlayer.Properties;
 #endif
@@ -786,6 +787,20 @@ namespace MDPlayer
             }
         }
 
+        private PlayList _playList = new();
+        public PlayList playList
+        {
+            get
+            {
+                return _playList;
+            }
+
+            set
+            {
+                _playList = value;
+            }
+        }
+
         public KeyBoardHook keyBoardHook { get => _keyBoardHook; set => _keyBoardHook = value; }
         public bool unuseRealChip { get; set; }
 
@@ -1561,6 +1576,7 @@ namespace MDPlayer
             public bool AdjustTLParam { get; set; } = false;
             public string ResourceFile { get; set; } = null;
             public bool SaveCompiledFile { get; set; } = false;
+            public bool TappyMode { get;  set; }=true;
 
             public Other Copy()
             {
@@ -1591,7 +1607,8 @@ namespace MDPlayer
                     NonRenderingForPause = this.NonRenderingForPause,
                     AdjustTLParam = this.AdjustTLParam,
                     ResourceFile = this.ResourceFile,
-                    SaveCompiledFile = this.SaveCompiledFile
+                    SaveCompiledFile = this.SaveCompiledFile,
+                    TappyMode=this.TappyMode,
                 };
 
                 return other;
@@ -2743,6 +2760,56 @@ namespace MDPlayer
                 }
             }
 
+            private Point _PPic = Point.Empty;
+            public Point PPic
+            {
+                get
+                {
+                    if (_PPic.X < 0 || _PPic.Y < 0)
+                    {
+                        return new Point(0, 0);
+                    }
+                    return _PPic;
+                }
+
+                set
+                {
+                    _PPic = value;
+                }
+            }
+
+            private Point _SPic = Point.Empty;
+            public Point SPic
+            {
+                get
+                {
+                    if (_SPic.X < 0 || _SPic.Y < 0)
+                    {
+                        return new Point(0, 0);
+                    }
+                    return _SPic;
+                }
+
+                set
+                {
+                    _SPic = value;
+                }
+            }
+
+            private bool _OPic = false;
+            public bool OPic
+            {
+                get
+                {
+                    return _OPic;
+                }
+
+                set
+                {
+                    _OPic = value;
+                }
+            }
+
             private Point _PPlayList = Point.Empty;
             public Point PPlayList
             {
@@ -3124,6 +3191,64 @@ namespace MDPlayer
                 }
             }
 
+            private Point[] _PosGA20 = new Point[2] { Point.Empty, Point.Empty };
+            public Point[] PosGA20
+            {
+                get
+                {
+                    return _PosGA20;
+                }
+
+                set
+                {
+                    _PosGA20 = value;
+                }
+            }
+
+            private bool[] _OpenGA20 = new bool[2] { false, false };
+            public bool[] OpenGA20
+            {
+                get
+                {
+                    return _OpenGA20;
+                }
+
+                set
+                {
+                    _OpenGA20 = value;
+                }
+            }
+
+
+            private Point[] _PosK054539 = new Point[2] { Point.Empty, Point.Empty };
+            public Point[] PosK054539
+            {
+                get
+                {
+                    return _PosK054539;
+                }
+
+                set
+                {
+                    _PosK054539 = value;
+                }
+            }
+
+            private bool[] _OpenK054539 = new bool[2] { false, false };
+            public bool[] OpenK054539
+            {
+                get
+                {
+                    return _OpenK054539;
+                }
+
+                set
+                {
+                    _OpenK054539 = value;
+                }
+            }
+
+
             private Point[] _PosMultiPCM = new Point[2] { Point.Empty, Point.Empty };
             public Point[] PosMultiPCM
             {
@@ -3447,7 +3572,7 @@ namespace MDPlayer
                 }
             }
 
-            private Point[] _PosMIDI = new Point[2] { Point.Empty, Point.Empty };
+            private Point[] _PosMIDI = new Point[4] { Point.Empty, Point.Empty, Point.Empty, Point.Empty };
             public Point[] PosMIDI
             {
                 get
@@ -3461,7 +3586,7 @@ namespace MDPlayer
                 }
             }
 
-            private bool[] _OpenMIDI = new bool[2] { false, false };
+            private bool[] _OpenMIDI = new bool[4] { false, false, false, false };
             public bool[] OpenMIDI
             {
                 get
@@ -4073,6 +4198,9 @@ namespace MDPlayer
                     Main = this.Main.Copy(),
                     PInfo = this.PInfo,
                     OInfo = this.OInfo,
+                    PPic = this.PPic,
+                    SPic = this.SPic,
+                    OPic = this.OPic,
                     PPlayList = this.PPlayList,
                     OPlayList = this.OPlayList,
                     PPlayListWH = this.PPlayListWH,
@@ -4097,6 +4225,10 @@ namespace MDPlayer
                     OpenYMZ280B = this.OpenYMZ280B,
                     PosC352 = this.PosC352,
                     OpenC352 = this.OpenC352,
+                    PosGA20 = this.PosGA20,
+                    OpenGA20 = this.OpenGA20,
+                    PosK054539 = this.PosK054539,
+                    OpenK054539 = this.OpenK054539,
                     PosQSound = this.PosQSound,
                     OpenQSound = this.OpenQSound,
                     PosYm2151 = this.PosYm2151,
@@ -4156,6 +4288,14 @@ namespace MDPlayer
                     ChipSelect = this.ChipSelect
                 };
 
+                if (PosMIDI.Length < 3)
+                {
+                    PosMIDI = new Point[4] { PosMIDI[0], PosMIDI[1], Point.Empty, Point.Empty };
+                }
+                if (OpenMIDI.Length < 3)
+                {
+                    OpenMIDI = new bool[4] { OpenMIDI[0], OpenMIDI[1], false,false };
+                }
                 return Location;
             }
         }
@@ -4613,6 +4753,9 @@ namespace MDPlayer
             public HookKeyInfo Upc { get => _Upc; set => _Upc = value; }
             public HookKeyInfo Dpc { get => _Dpc; set => _Dpc = value; }
             public HookKeyInfo Ppc { get => _Ppc; set => _Ppc = value; }
+            public HookKeyInfo Sd { get => _Sd; set => _Sd = value; }
+            public HookKeyInfo Su { get => _Su; set => _Su = value; }
+            public HookKeyInfo Sr { get => _Sr; set => _Sr = value; }
             private HookKeyInfo _Stop = new();
             private HookKeyInfo _Pause = new();
             private HookKeyInfo _Fadeout = new();
@@ -4627,6 +4770,9 @@ namespace MDPlayer
             private HookKeyInfo _Upc = new();
             private HookKeyInfo _Dpc = new();
             private HookKeyInfo _Ppc = new();
+            private HookKeyInfo _Sd = new();
+            private HookKeyInfo _Su = new();
+            private HookKeyInfo _Sr = new();
 
             public KeyBoardHook Copy()
             {
@@ -4646,7 +4792,10 @@ namespace MDPlayer
                     Rmv = this.Rmv.Copy(),
                     Upc = this.Upc.Copy(),
                     Dpc = this.Dpc.Copy(),
-                    Ppc = this.Ppc.Copy()
+                    Ppc = this.Ppc.Copy(),
+                    Sd = this.Sd.Copy(),
+                    Su = this.Su.Copy(),
+                    Sr = this.Sr.Copy(),
                 };
 
                 return keyBoard;
@@ -5224,6 +5373,51 @@ namespace MDPlayer
             }
         }
 
+        [Serializable]
+        public class PlayList
+        {
+            public bool isJP { get; set; } = false;
+            public int cwExt { get; set; } = -1;
+            public int cwType { get; set; } = -1;
+            public int cwTitle { get; set; } = -1;
+            public int cwTitleJ { get; set; } = -1;
+            public int cwFilename { get; set; } = -1;
+            public int cwGame { get; set; } = -1;
+            public int cwGameJ { get; set; } = -1;
+            public int cwComposer { get; set; } = -1;
+            public int cwComposerJ { get; set; } = -1;
+            public int cwVGMby { get; set; } = -1;
+            public int cwRelease { get; set; } = -1;
+            public int cwNotes { get; set; } = -1;
+            public int cwDuration { get; set; } = -1;
+            public int cwVersion { get; set; } = -1;
+            public int cwUseChips { get; set; } = -1;
+
+            public PlayList Copy()
+            {
+                PlayList p = new PlayList()
+                {
+                    isJP = this.isJP,
+                    cwExt = this.cwExt,
+                    cwType = this.cwType,
+                    cwTitle = this.cwTitle,
+                    cwTitleJ = this.cwTitleJ,
+                    cwFilename = this.cwFilename,
+                    cwGame = this.cwGame,
+                    cwGameJ = this.cwGameJ,
+                    cwComposer = this.cwComposer,
+                    cwComposerJ = this.cwComposerJ,
+                    cwVGMby = this.cwVGMby,
+                    cwRelease = this.cwRelease,
+                    cwNotes = this.cwNotes,
+                    cwDuration = this.cwDuration,
+                    cwVersion = this.cwVersion,
+                    cwUseChips = this.cwUseChips
+                };
+
+                return p;
+            }
+        }
 
         //多音源対応
         [Serializable]
@@ -5436,7 +5630,7 @@ namespace MDPlayer
 
                         UseWait = this.UseWait,
                         UseWaitBoost = this.UseWaitBoost,
-                        OnlyPCMEmulation = this.OnlyPCMEmulation
+                        OnlyPCMEmulation = this.OnlyPCMEmulation,
                     };
 
                     return ret;
@@ -5484,6 +5678,21 @@ namespace MDPlayer
             private bool[] _useRealChipAutoAdjust = null;
             public bool[] UseRealChipAutoAdjust { get => _useRealChipAutoAdjust; set => _useRealChipAutoAdjust = value; }
 
+            //YM2149モードにするか
+            private bool _YM2149mode = false;
+            public bool YM2149mode
+            {
+                get
+                {
+                    return _YM2149mode;
+                }
+
+                set
+                {
+                    _YM2149mode = value;
+                }
+            }
+
 
             public ChipType2 Copy()
             {
@@ -5516,6 +5725,7 @@ namespace MDPlayer
                 ct.UseRealChipFreqDiff = this.UseRealChipFreqDiff;
                 ct.UseRealChipAutoAdjust = this.UseRealChipAutoAdjust;
                 ct.exchgPAN = this.exchgPAN;
+                ct.YM2149mode = this.YM2149mode;
 
                 return ct;
             }
@@ -5668,6 +5878,7 @@ namespace MDPlayer
             setting.nukedOPN2 = this.nukedOPN2.Copy();
             setting.autoBalance = this.autoBalance.Copy();
             setting.pmdDotNET = this.pmdDotNET.Copy();
+            setting.playList = this.playList.Copy();
 
             setting.keyBoardHook = this.keyBoardHook.Copy();
 
@@ -5706,7 +5917,22 @@ namespace MDPlayer
                 if (!File.Exists(fullPath)) { return new Setting(); }
                 XmlSerializer serializer = new(typeof(Setting), typeof(Setting).GetNestedTypes());
                 using StreamReader sr = new(fullPath, new UTF8Encoding(false));
-                return (Setting)serializer.Deserialize(sr);
+
+                Setting sett= (Setting)serializer.Deserialize(sr); 
+
+                ////調整処理
+
+                //MIDI鍵盤用配列拡張
+                if (sett.location.PosMIDI.Length < 3)
+                {
+                    sett.location.PosMIDI = new Point[4] { sett.location.PosMIDI[0], sett.location.PosMIDI[1], Point.Empty, Point.Empty };
+                }
+                if (sett.location.OpenMIDI.Length < 3)
+                {
+                    sett.location.OpenMIDI = new bool[4] { sett.location.OpenMIDI[0], sett.location.OpenMIDI[1], false, false };
+                }
+
+                return sett;
             }
             catch (Exception ex)
             {

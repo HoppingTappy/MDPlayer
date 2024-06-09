@@ -29,50 +29,51 @@
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmRegTest));
-            this.pbScreen = new System.Windows.Forms.PictureBox();
-            this.panel1 = new System.Windows.Forms.Panel();
-            ((System.ComponentModel.ISupportInitialize)(this.pbScreen)).BeginInit();
-            this.panel1.SuspendLayout();
-            this.SuspendLayout();
+            pbScreen = new PictureBox();
+            panel1 = new Panel();
+            ((System.ComponentModel.ISupportInitialize)pbScreen).BeginInit();
+            panel1.SuspendLayout();
+            SuspendLayout();
             // 
             // pbScreen
             // 
-            this.pbScreen.Location = new System.Drawing.Point(0, 0);
-            this.pbScreen.Name = "pbScreen";
-            this.pbScreen.Size = new System.Drawing.Size(181, 73);
-            this.pbScreen.TabIndex = 0;
-            this.pbScreen.TabStop = false;
-            this.pbScreen.MouseClick += new System.Windows.Forms.MouseEventHandler(this.pbScreen_MouseClick);
+            pbScreen.Location = new Point(0, 0);
+            pbScreen.Margin = new Padding(4, 4, 4, 4);
+            pbScreen.Name = "pbScreen";
+            pbScreen.Size = new Size(211, 91);
+            pbScreen.TabIndex = 0;
+            pbScreen.TabStop = false;
+            pbScreen.MouseClick += pbScreen_MouseClick;
             // 
             // panel1
             // 
-            this.panel1.AutoScroll = true;
-            this.panel1.Controls.Add(this.pbScreen);
-            this.panel1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.panel1.Location = new System.Drawing.Point(0, 0);
-            this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(320, 151);
-            this.panel1.TabIndex = 1;
+            panel1.AutoScroll = true;
+            panel1.Controls.Add(pbScreen);
+            panel1.Dock = DockStyle.Fill;
+            panel1.Location = new Point(0, 0);
+            panel1.Margin = new Padding(4, 4, 4, 4);
+            panel1.Name = "panel1";
+            panel1.Size = new Size(373, 189);
+            panel1.TabIndex = 1;
             // 
             // frmRegTest
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.BackColor = System.Drawing.SystemColors.ControlDarkDark;
-            this.ClientSize = new System.Drawing.Size(320, 151);
-            this.Controls.Add(this.panel1);
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.Sizable;
-            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-            this.MaximumSize = new System.Drawing.Size(1024, 1024);
-            this.Name = "frmRegTest";
-            this.Text = "RegDump";
-            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.frmRegTest_FormClosed);
-            this.Load += new System.EventHandler(this.frmRegTest_Load);
-            this.Resize += new System.EventHandler(this.fmrRegTest_Resize);
-            ((System.ComponentModel.ISupportInitialize)(this.pbScreen)).EndInit();
-            this.panel1.ResumeLayout(false);
-            this.ResumeLayout(false);
-
+            AutoScaleMode = AutoScaleMode.None;
+            BackColor = SystemColors.ControlDarkDark;
+            ClientSize = new Size(373, 189);
+            Controls.Add(panel1);
+            FormBorderStyle = FormBorderStyle.Sizable;
+            Icon = (Icon)resources.GetObject("$this.Icon");
+            Margin = new Padding(6, 6, 6, 6);
+            MaximumSize = new Size(1192, 1270);
+            Name = "frmRegTest";
+            Text = "RegDump";
+            FormClosed += frmRegTest_FormClosed;
+            Load += frmRegTest_Load;
+            Resize += fmrRegTest_Resize;
+            ((System.ComponentModel.ISupportInitialize)pbScreen).EndInit();
+            panel1.ResumeLayout(false);
+            ResumeLayout(false);
         }
 
         #endregion

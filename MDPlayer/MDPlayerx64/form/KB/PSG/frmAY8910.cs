@@ -9,7 +9,9 @@ namespace MDPlayer.form
     public partial class frmAY8910 : frmChipBase
     {
 
-        public frmAY8910(frmMain frm, int chipID, int zoom, MDChipParams.AY8910 newParam, MDChipParams.AY8910 oldParam) : base(frm, chipID, zoom, newParam)
+        //private MDChipParams.AY8910 oldParam = new MDChipParams.AY8910();
+
+        public frmAY8910(frmMain frm, int chipID, int zoom, MDChipParams.AY8910 newParam) : base(frm, chipID, zoom, newParam)
         {
             InitializeComponent();
 
@@ -17,7 +19,7 @@ namespace MDPlayer.form
             this.chipID = chipID;
             this.zoom = zoom;
             this.newParam = newParam;
-            this.oldParam = oldParam;
+            oldParam = new MDChipParams.AY8910();
 
             frameBuffer.Add(this.pbScreen, ResMng.ImgDic["planeAY8910"], null, zoom);
 
@@ -194,8 +196,8 @@ namespace MDPlayer.form
                 : parent.setting.AY8910Type[1].realChipInfo[0].SoundLocation;
             int tp = !AY8910Type ? 0 : (AY8910SoundLocation < 0 ? 2 : 1);
 
-            screenInitAY8910(frameBuffer, tp);
-            update();
+            //screenInitAY8910(frameBuffer, tp);
+            //update();
         }
 
         private void pbScreen_MouseClick(object sender, MouseEventArgs e)

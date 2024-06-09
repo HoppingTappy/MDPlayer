@@ -9,7 +9,7 @@ namespace MDPlayer.Driver.FMP.Nise98
     public class myEncoding : iEncoding
     {
         private static Lazy<myEncoding> defaultEncoding;
-        private Encoding sjis;
+        public Encoding sjis;
 
         static myEncoding()
         {

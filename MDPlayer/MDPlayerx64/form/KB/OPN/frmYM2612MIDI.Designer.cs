@@ -33,66 +33,63 @@ namespace MDPlayer.form
         /// </summary>
         private void InitializeComponent()
         {
-            this.components = new System.ComponentModel.Container();
+            components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmYM2612MIDI));
-            this.pbScreen = new System.Windows.Forms.PictureBox();
-            this.cmsMIDIKBD = new System.Windows.Forms.ContextMenuStrip(this.components);
-            this.ctsmiCopy = new System.Windows.Forms.ToolStripMenuItem();
-            this.ctsmiPaste = new System.Windows.Forms.ToolStripMenuItem();
-            ((System.ComponentModel.ISupportInitialize)(this.pbScreen)).BeginInit();
-            this.cmsMIDIKBD.SuspendLayout();
-            this.SuspendLayout();
+            pbScreen = new PictureBox();
+            cmsMIDIKBD = new ContextMenuStrip(components);
+            ctsmiCopy = new ToolStripMenuItem();
+            ctsmiPaste = new ToolStripMenuItem();
+            ((System.ComponentModel.ISupportInitialize)pbScreen).BeginInit();
+            cmsMIDIKBD.SuspendLayout();
+            SuspendLayout();
             // 
             // pbScreen
             // 
-            //this.pbScreen.Image = Resources.planeYM2612MIDI;
-            this.pbScreen.Location = new System.Drawing.Point(0, 0);
-            this.pbScreen.Name = "pbScreen";
-            this.pbScreen.Size = new System.Drawing.Size(320, 184);
-            this.pbScreen.TabIndex = 0;
-            this.pbScreen.TabStop = false;
-            this.pbScreen.MouseClick += new System.Windows.Forms.MouseEventHandler(this.pbScreen_MouseClick);
+            pbScreen.Location = new Point(0, 0);
+            pbScreen.Margin = new Padding(4, 4, 4, 4);
+            pbScreen.Name = "pbScreen";
+            pbScreen.Size = new Size(373, 230);
+            pbScreen.TabIndex = 0;
+            pbScreen.TabStop = false;
+            pbScreen.MouseClick += pbScreen_MouseClick;
             // 
             // cmsMIDIKBD
             // 
-            this.cmsMIDIKBD.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.ctsmiCopy,
-            this.ctsmiPaste});
-            this.cmsMIDIKBD.Name = "cmsMIDIKBD";
-            this.cmsMIDIKBD.Size = new System.Drawing.Size(131, 48);
+            cmsMIDIKBD.Items.AddRange(new ToolStripItem[] { ctsmiCopy, ctsmiPaste });
+            cmsMIDIKBD.Name = "cmsMIDIKBD";
+            cmsMIDIKBD.Size = new Size(131, 48);
             // 
             // ctsmiCopy
             // 
-            this.ctsmiCopy.Name = "ctsmiCopy";
-            this.ctsmiCopy.Size = new System.Drawing.Size(130, 22);
-            this.ctsmiCopy.Text = "コピー(&C)";
-            this.ctsmiCopy.Click += new System.EventHandler(this.ctsmiCopy_Click);
+            ctsmiCopy.Name = "ctsmiCopy";
+            ctsmiCopy.Size = new Size(130, 22);
+            ctsmiCopy.Text = "コピー(&C)";
+            ctsmiCopy.Click += ctsmiCopy_Click;
             // 
             // ctsmiPaste
             // 
-            this.ctsmiPaste.Name = "ctsmiPaste";
-            this.ctsmiPaste.Size = new System.Drawing.Size(130, 22);
-            this.ctsmiPaste.Text = "貼り付け(&P)";
-            this.ctsmiPaste.Click += new System.EventHandler(this.ctsmiPaste_Click);
+            ctsmiPaste.Name = "ctsmiPaste";
+            ctsmiPaste.Size = new Size(130, 22);
+            ctsmiPaste.Text = "貼り付け(&P)";
+            ctsmiPaste.Click += ctsmiPaste_Click;
             // 
             // frmYM2612MIDI
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(320, 184);
-            this.Controls.Add(this.pbScreen);
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
-            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-            this.MaximizeBox = false;
-            this.Name = "frmYM2612MIDI";
-            this.Text = "MIDI(YM2612)";
-            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.frmYM2612MIDI_FormClosed);
-            this.Load += new System.EventHandler(this.frmYM2612MIDI_Load);
-            this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.frmYM2612MIDI_KeyDown);
-            ((System.ComponentModel.ISupportInitialize)(this.pbScreen)).EndInit();
-            this.cmsMIDIKBD.ResumeLayout(false);
-            this.ResumeLayout(false);
-
+            AutoScaleMode = AutoScaleMode.None;
+            ClientSize = new Size(373, 230);
+            Controls.Add(pbScreen);
+            FormBorderStyle = FormBorderStyle.FixedSingle;
+            Icon = (Icon)resources.GetObject("$this.Icon");
+            Margin = new Padding(5, 5, 5, 5);
+            MaximizeBox = false;
+            Name = "frmYM2612MIDI";
+            Text = "MIDI(YM2612)";
+            FormClosed += frmYM2612MIDI_FormClosed;
+            Load += frmYM2612MIDI_Load;
+            KeyDown += frmYM2612MIDI_KeyDown;
+            ((System.ComponentModel.ISupportInitialize)pbScreen).EndInit();
+            cmsMIDIKBD.ResumeLayout(false);
+            ResumeLayout(false);
         }
 
         #endregion

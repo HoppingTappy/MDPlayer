@@ -35,164 +35,153 @@ namespace MDPlayer.form
         /// </summary>
         private void InitializeComponent()
         {
-            this.components = new System.ComponentModel.Container();
+            components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmVisWave));
-            this.pictureBox1 = new System.Windows.Forms.PictureBox();
-            this.timer1 = new System.Windows.Forms.Timer(this.components);
-            this.toolStripContainer1 = new System.Windows.Forms.ToolStripContainer();
-            this.toolStrip1 = new System.Windows.Forms.ToolStrip();
-            this.tsbHeight1 = new System.Windows.Forms.ToolStripButton();
-            this.tsbHeight2 = new System.Windows.Forms.ToolStripButton();
-            this.tsbHeight3 = new System.Windows.Forms.ToolStripButton();
-            this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
-            this.tsbDispType1 = new System.Windows.Forms.ToolStripButton();
-            this.tsbDispType2 = new System.Windows.Forms.ToolStripButton();
-            this.tsbFFT = new System.Windows.Forms.ToolStripButton();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
-            this.toolStripContainer1.ContentPanel.SuspendLayout();
-            this.toolStripContainer1.TopToolStripPanel.SuspendLayout();
-            this.toolStripContainer1.SuspendLayout();
-            this.toolStrip1.SuspendLayout();
-            this.SuspendLayout();
+            pictureBox1 = new PictureBox();
+            timer1 = new System.Windows.Forms.Timer(components);
+            toolStripContainer1 = new ToolStripContainer();
+            toolStrip1 = new ToolStrip();
+            tsbHeight1 = new ToolStripButton();
+            tsbHeight2 = new ToolStripButton();
+            tsbHeight3 = new ToolStripButton();
+            toolStripSeparator1 = new ToolStripSeparator();
+            tsbDispType1 = new ToolStripButton();
+            tsbDispType2 = new ToolStripButton();
+            tsbFFT = new ToolStripButton();
+            ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
+            toolStripContainer1.ContentPanel.SuspendLayout();
+            toolStripContainer1.TopToolStripPanel.SuspendLayout();
+            toolStripContainer1.SuspendLayout();
+            toolStrip1.SuspendLayout();
+            SuspendLayout();
             // 
             // pictureBox1
             // 
-            this.pictureBox1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.pictureBox1.Location = new System.Drawing.Point(0, 0);
-            this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(224, 176);
-            this.pictureBox1.TabIndex = 0;
-            this.pictureBox1.TabStop = false;
+            pictureBox1.Dock = DockStyle.Fill;
+            pictureBox1.Location = new Point(0, 0);
+            pictureBox1.Margin = new Padding(4, 4, 4, 4);
+            pictureBox1.Name = "pictureBox1";
+            pictureBox1.Size = new Size(261, 226);
+            pictureBox1.TabIndex = 0;
+            pictureBox1.TabStop = false;
             // 
             // timer1
             // 
-            this.timer1.Enabled = true;
-            this.timer1.Interval = 10;
-            this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
+            timer1.Enabled = true;
+            timer1.Interval = 10;
+            timer1.Tick += timer1_Tick;
             // 
             // toolStripContainer1
             // 
             // 
             // toolStripContainer1.ContentPanel
             // 
-            this.toolStripContainer1.ContentPanel.Controls.Add(this.pictureBox1);
-            this.toolStripContainer1.ContentPanel.Size = new System.Drawing.Size(224, 176);
-            this.toolStripContainer1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.toolStripContainer1.Location = new System.Drawing.Point(0, 0);
-            this.toolStripContainer1.Name = "toolStripContainer1";
-            this.toolStripContainer1.Size = new System.Drawing.Size(224, 201);
-            this.toolStripContainer1.TabIndex = 1;
-            this.toolStripContainer1.Text = "toolStripContainer1";
+            toolStripContainer1.ContentPanel.Controls.Add(pictureBox1);
+            toolStripContainer1.ContentPanel.Margin = new Padding(4, 4, 4, 4);
+            toolStripContainer1.ContentPanel.Size = new Size(261, 226);
+            toolStripContainer1.Dock = DockStyle.Fill;
+            toolStripContainer1.Location = new Point(0, 0);
+            toolStripContainer1.Margin = new Padding(4, 4, 4, 4);
+            toolStripContainer1.Name = "toolStripContainer1";
+            toolStripContainer1.Size = new Size(261, 251);
+            toolStripContainer1.TabIndex = 1;
+            toolStripContainer1.Text = "toolStripContainer1";
             // 
             // toolStripContainer1.TopToolStripPanel
             // 
-            this.toolStripContainer1.TopToolStripPanel.Controls.Add(this.toolStrip1);
+            toolStripContainer1.TopToolStripPanel.Controls.Add(toolStrip1);
             // 
             // toolStrip1
             // 
-            this.toolStrip1.Dock = System.Windows.Forms.DockStyle.None;
-            this.toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.tsbHeight1,
-            this.tsbHeight2,
-            this.tsbHeight3,
-            this.toolStripSeparator1,
-            this.tsbDispType1,
-            this.tsbDispType2,
-            this.tsbFFT});
-            this.toolStrip1.Location = new System.Drawing.Point(3, 0);
-            this.toolStrip1.Name = "toolStrip1";
-            this.toolStrip1.Size = new System.Drawing.Size(187, 25);
-            this.toolStrip1.TabIndex = 0;
+            toolStrip1.Dock = DockStyle.None;
+            toolStrip1.Items.AddRange(new ToolStripItem[] { tsbHeight1, tsbHeight2, tsbHeight3, toolStripSeparator1, tsbDispType1, tsbDispType2, tsbFFT });
+            toolStrip1.Location = new Point(3, 0);
+            toolStrip1.Name = "toolStrip1";
+            toolStrip1.Size = new Size(156, 25);
+            toolStrip1.TabIndex = 0;
             // 
             // tsbHeight1
             // 
-            this.tsbHeight1.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.tsbHeight1.Image = ResMng.ImgDic["vHeight1"];
-            this.tsbHeight1.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.tsbHeight1.Name = "tsbHeight1";
-            this.tsbHeight1.Size = new System.Drawing.Size(23, 22);
-            this.tsbHeight1.Text = "Height x 0.3";
-            this.tsbHeight1.Click += new System.EventHandler(this.tsbHeight1_Click);
+            tsbHeight1.DisplayStyle = ToolStripItemDisplayStyle.Image;
+            tsbHeight1.ImageTransparentColor = Color.Magenta;
+            tsbHeight1.Name = "tsbHeight1";
+            tsbHeight1.Size = new Size(23, 22);
+            tsbHeight1.Text = "Height x 0.3";
+            tsbHeight1.Click += tsbHeight1_Click;
             // 
             // tsbHeight2
             // 
-            this.tsbHeight2.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.tsbHeight2.Image = ResMng.ImgDic["vHeight2"];
-            this.tsbHeight2.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.tsbHeight2.Name = "tsbHeight2";
-            this.tsbHeight2.Size = new System.Drawing.Size(23, 22);
-            this.tsbHeight2.Text = "Height x 1.0";
-            this.tsbHeight2.Click += new System.EventHandler(this.tsbHeight2_Click);
+            tsbHeight2.DisplayStyle = ToolStripItemDisplayStyle.Image;
+            tsbHeight2.ImageTransparentColor = Color.Magenta;
+            tsbHeight2.Name = "tsbHeight2";
+            tsbHeight2.Size = new Size(23, 22);
+            tsbHeight2.Text = "Height x 1.0";
+            tsbHeight2.Click += tsbHeight2_Click;
             // 
             // tsbHeight3
             // 
-            this.tsbHeight3.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.tsbHeight3.Image = ResMng.ImgDic["vHeight3"];
-            this.tsbHeight3.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.tsbHeight3.Name = "tsbHeight3";
-            this.tsbHeight3.Size = new System.Drawing.Size(23, 22);
-            this.tsbHeight3.Text = "Height x 3.0";
-            this.tsbHeight3.Click += new System.EventHandler(this.tsbHeight3_Click);
+            tsbHeight3.DisplayStyle = ToolStripItemDisplayStyle.Image;
+            tsbHeight3.ImageTransparentColor = Color.Magenta;
+            tsbHeight3.Name = "tsbHeight3";
+            tsbHeight3.Size = new Size(23, 22);
+            tsbHeight3.Text = "Height x 3.0";
+            tsbHeight3.Click += tsbHeight3_Click;
             // 
             // toolStripSeparator1
             // 
-            this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(6, 25);
+            toolStripSeparator1.Name = "toolStripSeparator1";
+            toolStripSeparator1.Size = new Size(6, 25);
             // 
             // tsbDispType1
             // 
-            this.tsbDispType1.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.tsbDispType1.Image = ResMng.ImgDic["vType1"];
-            this.tsbDispType1.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.tsbDispType1.Name = "tsbDispType1";
-            this.tsbDispType1.Size = new System.Drawing.Size(23, 22);
-            this.tsbDispType1.Text = "type 1";
-            this.tsbDispType1.Click += new System.EventHandler(this.tsbDispType1_Click);
+            tsbDispType1.DisplayStyle = ToolStripItemDisplayStyle.Image;
+            tsbDispType1.ImageTransparentColor = Color.Magenta;
+            tsbDispType1.Name = "tsbDispType1";
+            tsbDispType1.Size = new Size(23, 22);
+            tsbDispType1.Text = "type 1";
+            tsbDispType1.Click += tsbDispType1_Click;
             // 
             // tsbDispType2
             // 
-            this.tsbDispType2.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.tsbDispType2.Image = ResMng.ImgDic["vType2"];
-            this.tsbDispType2.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.tsbDispType2.Name = "tsbDispType2";
-            this.tsbDispType2.Size = new System.Drawing.Size(23, 22);
-            this.tsbDispType2.Text = "type 2";
-            this.tsbDispType2.Click += new System.EventHandler(this.tsbDispType2_Click);
+            tsbDispType2.DisplayStyle = ToolStripItemDisplayStyle.Image;
+            tsbDispType2.ImageTransparentColor = Color.Magenta;
+            tsbDispType2.Name = "tsbDispType2";
+            tsbDispType2.Size = new Size(23, 22);
+            tsbDispType2.Text = "type 2";
+            tsbDispType2.Click += tsbDispType2_Click;
             // 
             // tsbFFT
             // 
-            this.tsbFFT.CheckOnClick = true;
-            this.tsbFFT.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.tsbFFT.Image = ResMng.ImgDic["vType3"];
-            this.tsbFFT.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.tsbFFT.Name = "tsbFFT";
-            this.tsbFFT.Size = new System.Drawing.Size(23, 22);
-            this.tsbFFT.Text = "FFT";
-            this.tsbFFT.Click += new System.EventHandler(this.tsbFFT_Click);
+            tsbFFT.CheckOnClick = true;
+            tsbFFT.DisplayStyle = ToolStripItemDisplayStyle.Image;
+            tsbFFT.ImageTransparentColor = Color.Magenta;
+            tsbFFT.Name = "tsbFFT";
+            tsbFFT.Size = new Size(23, 22);
+            tsbFFT.Text = "FFT";
+            tsbFFT.Click += tsbFFT_Click;
             // 
             // frmVisWave
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(224, 201);
-            this.Controls.Add(this.toolStripContainer1);
-            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-            this.Name = "frmVisWave";
-            this.Opacity = 0.9D;
-            this.Text = "Visualizer";
-            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.frmVisWave_FormClosed);
-            this.Load += new System.EventHandler(this.frmVisWave_Load);
-            this.Shown += new System.EventHandler(this.frmVisWave_Shown);
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
-            this.toolStripContainer1.ContentPanel.ResumeLayout(false);
-            this.toolStripContainer1.TopToolStripPanel.ResumeLayout(false);
-            this.toolStripContainer1.TopToolStripPanel.PerformLayout();
-            this.toolStripContainer1.ResumeLayout(false);
-            this.toolStripContainer1.PerformLayout();
-            this.toolStrip1.ResumeLayout(false);
-            this.toolStrip1.PerformLayout();
-            this.ResumeLayout(false);
-
+            AutoScaleMode = AutoScaleMode.None;
+            ClientSize = new Size(261, 251);
+            Controls.Add(toolStripContainer1);
+            Icon = (Icon)resources.GetObject("$this.Icon");
+            Margin = new Padding(5, 5, 5, 5);
+            Name = "frmVisWave";
+            Opacity = 0.9D;
+            Text = "Visualizer";
+            FormClosed += frmVisWave_FormClosed;
+            Load += frmVisWave_Load;
+            Shown += frmVisWave_Shown;
+            ((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();
+            toolStripContainer1.ContentPanel.ResumeLayout(false);
+            toolStripContainer1.TopToolStripPanel.ResumeLayout(false);
+            toolStripContainer1.TopToolStripPanel.PerformLayout();
+            toolStripContainer1.ResumeLayout(false);
+            toolStripContainer1.PerformLayout();
+            toolStrip1.ResumeLayout(false);
+            toolStrip1.PerformLayout();
+            ResumeLayout(false);
         }
 
         #endregion

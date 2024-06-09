@@ -119,7 +119,8 @@ namespace MDPlayer.Driver.MuSICA
 
         private void Run(byte[] vgmBuf)
         {
-            var fileName = "KINROU5.DRV";
+            string crntDir = Path.GetDirectoryName(Application.ExecutablePath);
+            string fileName = Path.Combine(crntDir, "KINROU5.DRV");
             DollarCode = Encoding.ASCII.GetBytes(new[] { '$' })[0];
 
             z80 = new Z80Processor

@@ -303,7 +303,7 @@ namespace MDPlayer.Driver.FMP.Nise98
                 case 0xd2: GRP2_EB_CL(op); break;//x186
                 case 0xd3: GRP2_EW_CL(op); break;//x186
                 case 0xd4: AAM(); break;
-                case 0xd5: throw new NotImplementedException(op.ToString("X02"));
+                case 0xd5: AAD(); break;
                 case 0xd6: throw new NotImplementedException(op.ToString("X02"));//x286
                 case 0xd7: throw new NotImplementedException(op.ToString("X02"));
                 case 0xd8: throw new NotImplementedException(op.ToString("X02"));//x286
@@ -465,22 +465,22 @@ namespace MDPlayer.Driver.FMP.Nise98
             switch (rm)
             {
                 case 0:
-                    return (int)(seg + regs.BX + regs.SI);
+                    return (int)(seg + (ushort)(regs.BX + regs.SI));
                 case 1:
-                    return (int)(seg + regs.BX + regs.DI);
+                    return (int)(seg + (ushort)(regs.BX + regs.DI));
                 case 2:
-                    return (int)(seg + regs.BP + regs.SI);
+                    return (int)(seg + (ushort)(regs.BP + regs.SI));
                 case 3:
-                    return (int)(seg + regs.BP + regs.DI);
+                    return (int)(seg + (ushort)(regs.BP + regs.DI));
                 case 4:
-                    return (int)(seg + regs.SI);
+                    return (int)(seg + (ushort)regs.SI);
                 case 5:
-                    return (int)(seg + regs.DI);
+                    return (int)(seg + (ushort)regs.DI);
                 case 6:
                     UInt16 ptr = Fetchw();
-                    return (int)(seg + ptr);
+                    return (int)(seg + (ushort)ptr);
                 case 7:
-                    return (int)(seg + regs.BX);
+                    return (int)(seg + (ushort)regs.BX);
                 default:
                     throw new NotImplementedException();
             }
@@ -5253,6 +5253,21 @@ namespace MDPlayer.Driver.FMP.Nise98
             regs.AH = (byte)(a / imm8);
             regs.AL = (byte)(a % imm8);
             regs.SetSZPFw((ushort)regs.AX);
+            regs.AF = true;//TBD
+        }
+
+        //0xd5
+        private void AAD()
+        {
+            byte imm8 = Fetch();
+            if (imm8 != 0x0a)
+            {
+                throw new NotImplementedException();
+            }
+
+            regs.AL = (byte)(regs.AH * 0x0a + regs.AL);
+            regs.AH = 0;
+            regs.SetSZPFb(regs.AL);
             regs.AF = true;//TBD
         }
 

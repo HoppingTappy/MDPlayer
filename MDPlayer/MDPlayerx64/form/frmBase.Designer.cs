@@ -29,17 +29,16 @@ namespace MDPlayer.form
         /// </summary>
         private void InitializeComponent()
         {
-            this.SuspendLayout();
+            SuspendLayout();
             // 
             // frmBase
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(323, 303);
-            this.Name = "frmBase";
-            this.Text = "frmBase";
-            this.ResumeLayout(false);
-
+            AutoScaleMode = AutoScaleMode.None;
+            ClientSize = new Size(377, 379);
+            Margin = new Padding(4, 4, 4, 4);
+            Name = "frmBase";
+            Text = "frmBase";
+            ResumeLayout(false);
         }
 
         #endregion

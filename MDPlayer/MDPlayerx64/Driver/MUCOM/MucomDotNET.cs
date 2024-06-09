@@ -133,10 +133,13 @@ namespace MDPlayer.Driver
             {
                 if (partCount[0] > 0)
                 {
-                    uint n = 0;
+                    int n = 0;
                     for (int i = 0; i < partCount[0]; i++)
                     {
-                        n += pageCount[0][i];
+                        for (int j = 0; j < pageLength[0][i].Length; j++)
+                        {
+                            n += pageLength[0][i][j] > 1 ? 1 : 0;
+                        }
                     }
                     if (n > 0) ret[0] = EnmChip.YM2608;
                 }
@@ -146,10 +149,13 @@ namespace MDPlayer.Driver
             {
                 if (partCount[1] > 0)
                 {
-                    uint n = 0;
+                    int n = 0;
                     for (int i = 0; i < partCount[1]; i++)
                     {
-                        n += pageCount[1][i];
+                        for (int j = 0; j < pageLength[1][i].Length; j++)
+                        {
+                            n += pageLength[1][i][j] > 1 ? 1 : 0;
+                        }
                     }
                     if (n > 0) ret[1] = EnmChip.S_YM2608;
                 }
@@ -159,10 +165,13 @@ namespace MDPlayer.Driver
             {
                 if (partCount[2] > 0)
                 {
-                    uint n = 0;
+                    int n = 0;
                     for (int i = 0; i < partCount[2]; i++)
                     {
-                        n += pageCount[2][i];
+                        for (int j = 0; j < pageLength[2][i].Length; j++)
+                        {
+                            n += pageLength[2][i][j] > 1 ? 1 : 0;
+                        }
                     }
                     if (n > 0) ret[2] = EnmChip.YM2610;
                 }
@@ -172,10 +181,13 @@ namespace MDPlayer.Driver
             {
                 if (partCount[3] > 0)
                 {
-                    uint n = 0;
+                    int n = 0;
                     for (int i = 0; i < partCount[3]; i++)
                     {
-                        n += pageCount[3][i];
+                        for (int j = 0; j < pageLength[3][i].Length; j++)
+                        {
+                            n += pageLength[3][i][j] > 1 ? 1 : 0;
+                        }
                     }
                     if (n > 0) ret[3] = EnmChip.S_YM2610;
                 }
@@ -185,10 +197,13 @@ namespace MDPlayer.Driver
             {
                 if (partCount[4] > 0)
                 {
-                    uint n = 0;
+                    int n = 0;
                     for (int i = 0; i < partCount[4]; i++)
                     {
-                        n += pageCount[4][i];
+                        for (int j = 0; j < pageLength[4][i].Length; j++)
+                        {
+                            n += pageLength[4][i][j] > 1 ? 1 : 0;
+                        }
                     }
                     if (n > 0) ret[4] = EnmChip.YM2151;
                 }

@@ -76,9 +76,20 @@ namespace MDPlayer
                 fullPath = fileName;
             }
 
-            System.Xml.Serialization.XmlSerializer serializer = new(typeof(PlayList), typeof(PlayList).GetNestedTypes());
-            using StreamWriter sw = new(fullPath, false, new UTF8Encoding(false));
-            serializer.Serialize(sw, this);
+            try
+            {
+                System.Xml.Serialization.XmlSerializer serializer = new(typeof(PlayList), typeof(PlayList).GetNestedTypes());
+                using StreamWriter sw = new(fullPath, false, new UTF8Encoding(false));
+                serializer.Serialize(sw, this);
+            }
+            catch(Exception ex) 
+            { 
+                MessageBox.Show(
+                    "An error has occurred. The playlist will not be saved.\r\nMessage:\n"+ex.Message+"StackTrace:\n"+ex.StackTrace,
+                    "Error",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+            }
         }
 
         public void SaveM3U(string fileName)
@@ -317,6 +328,12 @@ namespace MDPlayer
                 case EnmFileFormat.FMP:
                     AddFileFMP(mc, entry);
                     break;
+                case EnmFileFormat.ZMS:
+                    AddFileZMS(mc, entry);
+                    break;
+                case EnmFileFormat.ZMD:
+                    AddFileZMD(mc, entry);
+                    break;
                 case EnmFileFormat.RCP:
                     AddFileRCP(mc, entry);
                     break;
@@ -328,6 +345,9 @@ namespace MDPlayer
                     break;
                 case EnmFileFormat.XGM:
                     AddFileXGM(mc, entry);
+                    break;
+                case EnmFileFormat.XGM2:
+                    AddFileXGM2(mc, entry);
                     break;
                 case EnmFileFormat.ZGM:
                     AddFileZGM(mc, entry);
@@ -395,6 +415,12 @@ namespace MDPlayer
                 case EnmFileFormat.FMP:
                     AddFileFMP(ref index, mc, entry);
                     break;
+                case EnmFileFormat.ZMS:
+                    AddFileZMS(ref index, mc, entry);
+                    break;
+                case EnmFileFormat.ZMD:
+                    AddFileZMD(ref index, mc, entry);
+                    break;
                 case EnmFileFormat.RCP:
                     AddFileRCP(ref index, mc, entry);
                     break;
@@ -406,6 +432,9 @@ namespace MDPlayer
                     break;
                 case EnmFileFormat.XGM:
                     AddFileXGM(ref index, mc, entry);
+                    break;
+                case EnmFileFormat.XGM2:
+                    AddFileXGM2(ref index, mc, entry);
                     break;
                 case EnmFileFormat.ZGM:
                     AddFileZGM(ref index, mc, entry);
@@ -653,6 +682,16 @@ namespace MDPlayer
             AddFilexxx(ref index, mc, entry);
         }
 
+        private void AddFileXGM2(Music mc, object entry = null)
+        {
+            AddFilexxx(mc, entry);
+        }
+
+        private void AddFileXGM2(ref int index, Music mc, object entry = null)
+        {
+            AddFilexxx(ref index, mc, entry);
+        }
+
         private void AddFileZGM(Music mc, object entry = null)
         {
             AddFilexxx(mc, entry);
@@ -739,6 +778,26 @@ namespace MDPlayer
         }
 
         private void AddFileFMP(ref int index, Music mc, object entry = null)
+        {
+            AddFilexxx(ref index, mc, entry);
+        }
+
+        private void AddFileZMS(Music mc, object entry = null)
+        {
+            AddFilexxx(mc, entry);
+        }
+
+        private void AddFileZMS(ref int index, Music mc, object entry = null)
+        {
+            AddFilexxx(ref index, mc, entry);
+        }
+
+        private void AddFileZMD(Music mc, object entry = null)
+        {
+            AddFilexxx(mc, entry);
+        }
+
+        private void AddFileZMD(ref int index, Music mc, object entry = null)
         {
             AddFilexxx(ref index, mc, entry);
         }

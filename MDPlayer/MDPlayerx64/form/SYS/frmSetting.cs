@@ -434,6 +434,8 @@ namespace MDPlayer.form
                     , ucSI.cmbAY8910P_Real
                     , null, null, null
                     , ucSI.rbAY8910P_Emu2);
+                ucSI.cbAY8910P_Emu2YMmode.Enabled = ucSI.rbAY8910P_Emu2.Checked;
+                ucSI.cbAY8910P_Emu2YMmode.Checked = setting.AY8910Type[0].YM2149mode;
 
                 SetRealParam(setting.AY8910Type[1]
                     , ucSI.rbAY8910S_Silent
@@ -442,6 +444,8 @@ namespace MDPlayer.form
                     , ucSI.cmbAY8910S_Real
                     , null, null, null
                     , ucSI.rbAY8910S_Emu2);
+                ucSI.cbAY8910S_Emu2YMmode.Enabled = ucSI.rbAY8910S_Emu2.Checked;
+                ucSI.cbAY8910S_Emu2YMmode.Checked = setting.AY8910Type[1].YM2149mode;
 
                 SetRealParam(setting.K051649Type[0]
                     , ucSI.rbK051649P_Silent
@@ -888,8 +892,18 @@ namespace MDPlayer.form
             lblPpcKey.Text = setting.keyBoardHook.Ppc.Key;
             btPpcClr.Enabled = (lblPpcKey.Text != "(None)" && !string.IsNullOrEmpty(lblPpcKey.Text));
 
+            lblSdKey.Text = setting.keyBoardHook.Sd.Key;
+            btSdClr.Enabled = (lblSdKey.Text != "(None)" && !string.IsNullOrEmpty(lblSdKey.Text));
+
+            lblSuKey.Text = setting.keyBoardHook.Su.Key;
+            btSuClr.Enabled = (lblSuKey.Text != "(None)" && !string.IsNullOrEmpty(lblSuKey.Text));
+
+            lblSrKey.Text = setting.keyBoardHook.Sr.Key;
+            btSrClr.Enabled = (lblSrKey.Text != "(None)" && !string.IsNullOrEmpty(lblSrKey.Text));
+
             cbExALL.Checked = setting.other.ExAll;
             cbNonRenderingForPause.Checked = setting.other.NonRenderingForPause;
+            cbTappyMode.Checked = setting.other.TappyMode;
 
 
 
@@ -1031,6 +1045,11 @@ namespace MDPlayer.form
                 }
             }
 
+            if (ChipType2.UseEmu[0])
+                rbEmu.Checked = true;
+            else
+                rbSilent.Checked = true;
+
             if (ChipType2.UseEmu.Length > 1 && ChipType2.UseEmu[1])
             {
                 rbEmu2.Checked = true;
@@ -1101,7 +1120,7 @@ namespace MDPlayer.form
             catch (Exception ex)
             {
                 log.ForcedWrite(ex);
-                MessageBox.Show(ex.Message);
+                MessageBox.Show(string.Format("Failed to open ASIO control panel.\r\nIf reopening it again does not work, please change the settings in another application.\r\nMessage:{0}", ex.Message));
             }
         }
 
@@ -1373,6 +1392,7 @@ namespace MDPlayer.form
                 , ucSI.rbAY8910P_Emu2
                 , null, null, null, null
                 );
+            setting.AY8910Type[0].YM2149mode = ucSI.cbAY8910P_Emu2YMmode.Checked;
 
             setting.AY8910Type[1] = new Setting.ChipType2();
             SetChipType2FromControls(
@@ -1384,6 +1404,7 @@ namespace MDPlayer.form
                 , ucSI.rbAY8910S_Emu2
                 , null, null, null, null
                 );
+            setting.AY8910Type[1].YM2149mode = ucSI.cbAY8910S_Emu2YMmode.Checked;
 
 
             setting.K051649Type = new Setting.ChipType2[2];
@@ -1617,6 +1638,7 @@ namespace MDPlayer.form
             setting.other.InitAlways = cbInitAlways.Checked;
             setting.other.EmptyPlayList = cbEmptyPlayList.Checked;
             setting.other.ExAll = cbExALL.Checked;
+            setting.other.TappyMode = cbTappyMode.Checked;
             setting.other.NonRenderingForPause = cbNonRenderingForPause.Checked;
             setting.other.AdjustTLParam = cbAdjustTLParam.Checked;
             setting.other.SaveCompiledFile = cbSaveCompiledFile.Checked;
@@ -1894,6 +1916,23 @@ namespace MDPlayer.form
             setting.keyBoardHook.Ppc.Alt = cbPpcAlt.Checked;
             setting.keyBoardHook.Ppc.Key = string.IsNullOrEmpty(lblPpcKey.Text) ? "(None)" : lblPpcKey.Text;
 
+            setting.keyBoardHook.Sd.Shift = false;
+            setting.keyBoardHook.Sd.Ctrl = false;
+            setting.keyBoardHook.Sd.Win = false;
+            setting.keyBoardHook.Sd.Alt = false;
+            setting.keyBoardHook.Sd.Key = string.IsNullOrEmpty(lblSdKey.Text) ? "(None)" : lblSdKey.Text;
+
+            setting.keyBoardHook.Su.Shift = false;
+            setting.keyBoardHook.Su.Ctrl = false;
+            setting.keyBoardHook.Su.Win = false;
+            setting.keyBoardHook.Su.Alt = false;
+            setting.keyBoardHook.Su.Key = string.IsNullOrEmpty(lblSuKey.Text) ? "(None)" : lblSuKey.Text;
+
+            setting.keyBoardHook.Sr.Shift = false;
+            setting.keyBoardHook.Sr.Ctrl = false;
+            setting.keyBoardHook.Sr.Win = false;
+            setting.keyBoardHook.Sr.Alt = false;
+            setting.keyBoardHook.Sr.Key = string.IsNullOrEmpty(lblSrKey.Text) ? "(None)" : lblSrKey.Text;
 
             this.DialogResult = DialogResult.OK;
             this.Close();
@@ -2287,7 +2326,18 @@ namespace MDPlayer.form
         private void BtnOpenSettingFolder_Click(object sender, EventArgs e)
         {
             string fullPath = Common.settingFilePath;
-            System.Diagnostics.Process.Start(fullPath);
+            try
+            {
+                Process.Start("explorer.exe", fullPath);
+            }
+            catch
+            {
+                MessageBox.Show(
+                    string.Format("設定ファイルを開くのに失敗しました。手動で以下のパスを開いてください\n{0}", fullPath),
+                    "エラー",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+            }
         }
 
         private void BtnDataPath_Click(object sender, EventArgs e)
@@ -2937,6 +2987,75 @@ namespace MDPlayer.form
             btPpcClr.Enabled = false;
         }
 
+        private void btnSdSet_Click(object sender, EventArgs e)
+        {
+            lblKey = lblSdKey;
+            btSet = btnSdSet;
+            btClr = btSdClr;
+            btOK = btnOK;
+            btnSdSet.Enabled = false;
+            btnOK.Enabled = false;
+            lblKey.Text = "入力待ち";
+            lblKey.ForeColor = System.Drawing.Color.Red;
+
+            lblNotice = lblKeyBoardHookNotice;
+            lblKeyBoardHookNotice.Visible = true;
+
+            frmMain.keyHookMeth = KeyHookMeth;
+        }
+
+        private void btnSuSet_Click(object sender, EventArgs e)
+        {
+            lblKey = lblSuKey;
+            btSet = btnSuSet;
+            btClr = btSuClr;
+            btOK = btnOK;
+            btnSuSet.Enabled = false;
+            btnOK.Enabled = false;
+            lblKey.Text = "入力待ち";
+            lblKey.ForeColor = System.Drawing.Color.Red;
+
+            lblNotice = lblKeyBoardHookNotice;
+            lblKeyBoardHookNotice.Visible = true;
+
+            frmMain.keyHookMeth = KeyHookMeth;
+        }
+
+        private void btSrSet_Click(object sender, EventArgs e)
+        {
+            lblKey = lblSrKey;
+            btSet = btSrSet;
+            btClr = btSrClr;
+            btOK = btnOK;
+            btSrSet.Enabled = false;
+            btnOK.Enabled = false;
+            lblKey.Text = "入力待ち";
+            lblKey.ForeColor = System.Drawing.Color.Red;
+
+            lblNotice = lblKeyBoardHookNotice;
+            lblKeyBoardHookNotice.Visible = true;
+
+            frmMain.keyHookMeth = KeyHookMeth;
+
+        }
+
+        private void btSdClr_Click(object sender, EventArgs e)
+        {
+            lblSdKey.Text = "(None)";
+            btSdClr.Enabled = false;
+        }
+
+        private void btSuClr_Click(object sender, EventArgs e)
+        {
+            lblSuKey.Text = "(None)";
+            btSuClr.Enabled = false;
+        }
+
+        private void btSrClr_Click(object sender, EventArgs e)
+        {
+            lblSrKey.Text = "(None)";
+            btSrClr.Enabled = false;
+        }
 
 
 

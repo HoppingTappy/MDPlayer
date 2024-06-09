@@ -45,7 +45,7 @@
             // 
             tbLog.BackColor = Color.Black;
             tbLog.Dock = DockStyle.Fill;
-            tbLog.Font = new Font("Consolas", 9F, FontStyle.Bold, GraphicsUnit.Point);
+            tbLog.Font = new Font("Consolas", 9F, FontStyle.Bold);
             tbLog.ForeColor = Color.SlateBlue;
             tbLog.Location = new Point(0, 24);
             tbLog.Multiline = true;
@@ -114,8 +114,7 @@
             // 
             // frmConsole
             // 
-            AutoScaleDimensions = new SizeF(7F, 15F);
-            AutoScaleMode = AutoScaleMode.Font;
+            AutoScaleMode = AutoScaleMode.None;
             ClientSize = new Size(800, 450);
             Controls.Add(tbLog);
             Controls.Add(menuStrip1);

@@ -77,7 +77,7 @@ namespace MDPlayer.form
             // 
             dataGridViewCellStyle1.Alignment = DataGridViewContentAlignment.TopRight;
             dataGridViewCellStyle1.BackColor = Color.Black;
-            dataGridViewCellStyle1.Font = new Font("Consolas", 6.75F, FontStyle.Bold, GraphicsUnit.Point);
+            dataGridViewCellStyle1.Font = new Font("Consolas", 6.75F, FontStyle.Bold);
             dataGridViewCellStyle1.ForeColor = Color.Lavender;
             clmKey.DefaultCellStyle = dataGridViewCellStyle1;
             clmKey.HeaderText = "Column1";
@@ -89,7 +89,7 @@ namespace MDPlayer.form
             // 
             clmVal.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
             dataGridViewCellStyle2.BackColor = Color.Black;
-            dataGridViewCellStyle2.Font = new Font("Consolas", 9F, FontStyle.Bold, GraphicsUnit.Point);
+            dataGridViewCellStyle2.Font = new Font("Consolas", 9F, FontStyle.Bold);
             dataGridViewCellStyle2.ForeColor = Color.SlateBlue;
             clmVal.DefaultCellStyle = dataGridViewCellStyle2;
             clmVal.HeaderText = "Column1";
@@ -111,14 +111,13 @@ namespace MDPlayer.form
             // 
             // frmInfo
             // 
-            AutoScaleDimensions = new SizeF(9F, 19F);
-            AutoScaleMode = AutoScaleMode.Font;
+            AutoScaleMode = AutoScaleMode.None;
             BackColor = Color.Black;
             BackgroundImageLayout = ImageLayout.None;
             ClientSize = new Size(520, 281);
             Controls.Add(rtbLyric);
             Controls.Add(dgvInfo);
-            Font = new Font("Consolas", 12F, FontStyle.Bold, GraphicsUnit.Point);
+            Font = new Font("Consolas", 12F, FontStyle.Bold);
             Icon = (Icon)resources.GetObject("$this.Icon");
             Margin = new Padding(5);
             MinimumSize = new Size(370, 320);

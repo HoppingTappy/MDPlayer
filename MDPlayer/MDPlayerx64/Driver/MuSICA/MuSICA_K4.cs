@@ -78,7 +78,8 @@ namespace MDPlayer.Driver.MuSICA
             this.vcdBin = vcdBin;
             this.bgmBin = null;
 
-            var fileName = "KINROU4.COM";
+            string crntDir = Path.GetDirectoryName(Application.ExecutablePath);
+            string fileName = Path.Combine(crntDir, "KINROU4.COM");
             DollarCode = Encoding.ASCII.GetBytes(new[] { '$' })[0];
 
             vdp = new MSXVDP();

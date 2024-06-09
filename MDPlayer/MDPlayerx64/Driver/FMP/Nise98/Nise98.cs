@@ -597,7 +597,7 @@ namespace MDPlayer.Driver.FMP.Nise98
                 //    if(regs.AL==0xf0|| regs.AL == 0xcd)
                 //    ;
                 //}
-                //if (regs.IP == 0x484d)// || regs.IP == 0x19c9 || regs.IP == 0x19d1)
+                //if (regs.IP == 0x4088)// || regs.IP == 0x19c9 || regs.IP == 0x19d1)
                 //{
                 //    ;
                 //}

@@ -49,8 +49,7 @@ namespace MDPlayer.form
             // 
             // frmPCM8
             // 
-            AutoScaleDimensions = new SizeF(7F, 15F);
-            AutoScaleMode = AutoScaleMode.Font;
+            AutoScaleMode = AutoScaleMode.None;
             BackColor = SystemColors.ControlDarkDark;
             ClientSize = new Size(179, 70);
             Controls.Add(pbScreen);
