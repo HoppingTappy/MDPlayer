@@ -1,5 +1,6 @@
 ﻿using NAudio.CoreAudioApi;
 using NAudio.Wave;
+using NAudio.Wave.Asio;
 
 namespace MDPlayer
 {
@@ -13,12 +14,15 @@ namespace MDPlayer
         private WasapiOut wasapiOut;
         private DirectSoundOut dsOut;
         private AsioOut asioOut;
+        private myAsioOut myAsioOut;
         private NullOut nullOut;
         private SineWaveProvider16 waveProvider;
 
         private static naudioCallBack callBack = null;
         private Setting setting = null;
         private SynchronizationContext syncContext = SynchronizationContext.Current;
+
+        private bool myAsioSw = true;
 
         public NAudioWrap(int sampleRate, naudioCallBack nCallBack)
         {
@@ -48,6 +52,8 @@ namespace MDPlayer
             dsOut = null;
             if (asioOut != null) asioOut.Dispose();
             asioOut = null;
+            if (myAsioOut != null) myAsioOut.Dispose();
+            myAsioOut = null;
             if (nullOut != null) ((IDisposable)nullOut).Dispose();
             nullOut = null;
 
@@ -129,10 +135,20 @@ namespace MDPlayer
                                 }
                                 i++;
                             }
-                            asioOut = new AsioOut(i);
-                            asioOut.PlaybackStopped += DeviceOut_PlaybackStopped;
-                            asioOut.Init(waveProvider);
-                            asioOut.Play();
+                            if (myAsioSw)
+                            {
+                                myAsioOut = new myAsioOut(i);
+                                myAsioOut.PlaybackStopped += DeviceOut_PlaybackStopped;
+                                myAsioOut.Init(waveProvider);
+                                myAsioOut.Play();
+                            }
+                            else
+                            {
+                                asioOut = new AsioOut(i);
+                                asioOut.PlaybackStopped += DeviceOut_PlaybackStopped;
+                                asioOut.Init(waveProvider);
+                                asioOut.Play();
+                            }
                         }
                         break;
 
@@ -229,6 +245,19 @@ namespace MDPlayer
                 asioOut = null;
             }
 
+            if (myAsioOut != null)
+            {
+                try
+                {
+                    //asioOut.Pause();
+                    myAsioOut.Stop();
+                    while (myAsioOut.PlaybackState != PlaybackState.Stopped) { System.Threading.Thread.Sleep(1); }
+                    myAsioOut.Dispose();
+                }
+                catch { }
+                myAsioOut = null;
+            }
+
             if (nullOut != null)
             {
                 try
@@ -282,6 +311,10 @@ namespace MDPlayer
             {
                 if (asioOut.PlaybackState != PlaybackState.Stopped) return asioOut.PlaybackState;
             }
+            if (myAsioOut != null)
+            {
+                if (myAsioOut.PlaybackState != PlaybackState.Stopped) return myAsioOut.PlaybackState;
+            }
             if (nullOut != null)
             {
                 if (nullOut.PlaybackState != PlaybackState.Stopped) return nullOut.PlaybackState;
@@ -292,9 +325,65 @@ namespace MDPlayer
 
         public int getAsioLatency()
         {
-            if (asioOut == null) return 0;
-
-            return asioOut.PlaybackLatency;
+            if (myAsioOut != null) return myAsioOut.PlaybackLatency;
+            if (asioOut != null) return asioOut.PlaybackLatency;
+            return 0;
         }
+
+
+
+
+
+        private long dmySamplePos;
+        private Asio64Bit dmyTimeStamp = new();
+        private long vSamplePos;
+        private long vLatestSampleCount;
+        private long rSamplePos;
+        private int latency;
+
+        private void GetNowSamplePosition(out long samplePos)
+        {
+            myAsioOut.basicDriver.GetSamplePosition(out dmySamplePos, ref dmyTimeStamp);
+            samplePos = (dmySamplePos / 0x1_0000_0000);
+            ////timeStamp = ((long)dmyTimeStamp.hi << 32) | (long)dmyTimeStamp.lo;
+            //timeStamp = (long)dmyTimeStamp.hi;
+        }
+
+        public void UpdateSamplePosition(int sampleCount)
+        {
+            if (myAsioOut == null) return;
+            GetNowSamplePosition(out vSamplePos);
+            vSamplePos = (dmySamplePos / 0x1_0000_0000);
+            vLatestSampleCount = sampleCount / 2;
+        }
+
+        public bool CheckLate()
+        {
+            if (myAsioOut == null) return true;
+            if (rSamplePos >= vSamplePos - latency)//rが遅れている場合は問答無用で処理
+                return true;
+            return false;
+        }
+
+        public bool CheckLate2()
+        {
+            if (myAsioOut == null) return false;
+            if (rSamplePos >= vSamplePos + vLatestSampleCount - latency)
+            {
+                return true;
+            }
+
+            rSamplePos++;
+            return false;
+        }
+
+        public void resetMyAsioOut()
+        {
+            if (myAsioOut == null) return;
+            long old = vSamplePos;
+            while (old == vSamplePos) { Thread.Sleep(0); }
+            rSamplePos = vSamplePos;
+        }
+
     }
 }

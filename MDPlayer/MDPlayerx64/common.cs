@@ -958,6 +958,7 @@ namespace MDPlayer
         , YM2609
         , ES5503
         , PCM8
+        , MPCMX68k
 
         , S_SN76489
         , S_YM2612
@@ -1011,6 +1012,7 @@ namespace MDPlayer
         , S_YM2609
         , S_ES5503
         , S_PCM8
+        , S_MPCMX68k
 
     }
 

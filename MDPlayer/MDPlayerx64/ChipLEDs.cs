@@ -21,6 +21,7 @@
         public byte PriOKI5 = 0;
         public byte PriOKI9 = 0;
         public byte PriPCM8 = 0;
+        public byte PriMPCMX68k = 0;
         public byte PriC140 = 0;
         public byte PriSPCM = 0;
         public byte PriAY10 = 0;
@@ -75,6 +76,7 @@
         public byte SecOKI5 = 0;
         public byte SecOKI9 = 0;
         public byte SecPCM8 = 0;
+        public byte SecMPCMX68k = 0;
         public byte SecC140 = 0;
         public byte SecSPCM = 0;
         public byte SecAY10 = 0;

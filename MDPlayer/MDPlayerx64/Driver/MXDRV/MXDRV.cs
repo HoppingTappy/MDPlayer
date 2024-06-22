@@ -20,6 +20,8 @@
 // ;  Command Line D:\FTOOL\dis.x -C2 --overwrite -7 -m 68040 -M -s8192 -e -g mxdrv17.x mxdrv17.dis 
 // ;          DIS version 2.75
 // ;=============================================
+using MDPlayer.Driver.ZMS.nise68;
+using MDSound;
 using System.Text;
 
 namespace MDPlayer.Driver.MXDRV
@@ -121,7 +123,7 @@ namespace MDPlayer.Driver.MXDRV
             return true;
         }
 
-        public bool Init(byte[] vgmBuf, ChipRegister chipRegister, EnmModel model, EnmChip[] useChip, uint latency, uint waitTime, MDSound.ym2151_x68sound mdxPCM)
+        public bool Init(byte[] vgmBuf, ChipRegister chipRegister, EnmModel model, EnmChip[] useChip, uint latency, uint waitTime, MDSound.ym2151_x68sound mdxPCM,PCM8PP pcm8pp)
         {
             this.vgmBuf = vgmBuf;
             this.chipRegister = chipRegister;
@@ -130,6 +132,7 @@ namespace MDPlayer.Driver.MXDRV
             this.latency = latency;
             this.waitTime = waitTime;
             this.mdxPCM = mdxPCM;
+            this.pcm8pp = pcm8pp;
 
             GD3 = getGD3Info(vgmBuf, 0);
             Counter = 0;
@@ -184,6 +187,7 @@ namespace MDPlayer.Driver.MXDRV
             for (UInt32 i = 0; i < pdxsize; i++) mm.Write(pdxPtr + i, pdx[i]);
 
             mdxPCM?.x68sound[0].MountMemory(mm.mm);
+            pcm8pp?.MountMemory(mm.mm);
 
             uint playtime = MXDRV_MeasurePlayTime(mdx, mdxsize, mdxPtr, pdx, pdxsize, pdxPtr, 1, depend.TRUE);
             //Console.WriteLine("({0}:{1:d02}) {2}", playtime / 1000 / 60, playtime / 1000 % 60, "");
@@ -395,7 +399,9 @@ namespace MDPlayer.Driver.MXDRV
         public string PlayingFileName = "";
         public Tuple<string, byte[]> ExtendFile = null;
         public int TimerA = 0, TimerB = 0;
-        MDSound.ym2151_x68sound mdxPCM = null;
+        public MDSound.ym2151_x68sound mdxPCM = null;
+        public MDSound.PCM8PP pcm8pp;
+        public int pcm8type = 0;
 
         //            //         .cpu    68040
         //            //         .include        D:\include/doscall.mac
@@ -973,7 +979,8 @@ namespace MDPlayer.Driver.MXDRV
             {
                 case 0x0000:
                     //x68Sound.Pcm8_Out((int)D0 & 0xff, A1, (int)D1, (int)D2);
-                    mdxPCM?.x68sound[0].X68Sound_Pcm8_Out((int)D0 & 0xff, null, A1, (int)D1, (int)D2);//指定チャンネル発音開始
+                    if (pcm8type == 0) mdxPCM?.x68sound[0].X68Sound_Pcm8_Out((int)D0 & 0xff, null, A1, (int)D1, (int)D2);//指定チャンネル発音開始
+                    else pcm8pp?.KeyOn((int)D0 & 0xff, A1, (int)(D1|0x0800), (int)D2);//指定チャンネル発音開始
                     ch = (int)((D0 & 0xff) % 8);
                     pcm8St[ch].tablePtr = A1;
                     pcm8St[ch].mode = D1;
@@ -989,7 +996,8 @@ namespace MDPlayer.Driver.MXDRV
                             pcm8St[ch].mode = 0;
                             pcm8St[ch].length = 0;
                             pcm8St[ch].Keyon = false;
-                            mdxPCM?.x68sound[0].X68Sound_Pcm8_Out((int)D0 & 0xff, null, 0, 0, 0);//指定チャンネル発音停止
+                            if (pcm8type == 0) mdxPCM?.x68sound[0].X68Sound_Pcm8_Out((int)D0 & 0xff, null, 0, 0, 0);//指定チャンネル発音停止
+                            else pcm8pp?.KeyOff((int)D0 & 0xff);//指定チャンネル発音停止
                             break;
                         case 0x0101:
                             mdxPCM?.x68sound[0].X68Sound_Pcm8_Abort();//全チャンネル発音停止
@@ -1003,6 +1011,8 @@ namespace MDPlayer.Driver.MXDRV
                             D0 = 1;
                             break;
                     }
+                    break;
+                default:
                     break;
             }
         }

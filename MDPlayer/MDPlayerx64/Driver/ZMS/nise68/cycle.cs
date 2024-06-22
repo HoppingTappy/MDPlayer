@@ -33,6 +33,7 @@ namespace MDPlayer.Driver.ZMS.nise68
         public static int[] OrEaDn_b = new int[] { 4, -1, 8, 8, 10, 12, 14, 12, 16, 12, 14, 8 };
         public static int[] OrEaDn_w = new int[] { 4, -1, 8, 8, 10, 12, 14, 12, 16, 12, 14, 8 };
         public static int[] OrEaDn_l = new int[] { 8, -1, 14, 14, 16, 18, 20, 18, 22, 18, 20, 14 };
+        public static int[] Eor_b = new int[] { 4, 12, 12, 14, 16, 18, 16, 20 };
         public static int[] Eor_w = new int[] { 4, 12, 12, 14, 16, 18, 16, 20 };
         public static int[] Eor_l = new int[] { 8, 20, 20, 22, 24, 26, 24, 28 };
         public static int[] Eori_b = new int[] { 8, 16, 16, 18, 20, 22, 20, 24 };

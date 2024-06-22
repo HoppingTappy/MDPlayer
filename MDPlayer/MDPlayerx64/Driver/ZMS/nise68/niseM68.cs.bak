@@ -1028,6 +1028,10 @@ namespace MDPlayer.Driver.ZMS.nise68
             {
                 return Cexg(n);
             }
+            if ((n & 0xf1c0) == 0xc1c0)
+            {
+                return Cmuls(n);
+            }
 
             int size = (n & 0x01c0) >> 6;
             switch (size)
@@ -2328,7 +2332,144 @@ namespace MDPlayer.Driver.ZMS.nise68
 
         private int Ceorb(ushort n)
         {
-            throw new NotImplementedException();
+#if DEBUG
+            string nimo = "EOR.b ";
+#endif
+
+            int cycle = 0;
+            int dm = (n & 0x0038) >> 3;
+            int dr = (n & 0x0007);
+            int sr = (n & 0x0e00) >> 9;
+
+            uint val = reg.GetDb(sr);
+#if DEBUG
+            nimo += string.Format("D{0},", sr);
+#endif
+
+
+            uint after = 0;
+            uint before;
+
+            UInt16 vw;
+            bool isA;
+            int ni;
+            bool isL;
+            UInt32 IX;
+            UInt32 ptr;
+
+            switch (dm)
+            {
+                case 0://Dn
+                    before = reg.GetDb(dr);
+                    after = val ^ before;
+                    reg.SetDb(dr, (byte)after);
+#if DEBUG
+                    nimo += string.Format("D{0}", dr);
+#endif
+
+                    cycle = cy.Eor_b[0];
+                    break;
+                case 2://(An)
+                    before = mem.PeekB(reg.A[dr]);
+                    after = val ^ before;
+                    mem.PokeB(reg.A[dr], (byte)after);
+#if DEBUG
+                    nimo += string.Format("(A{0})", dr);
+#endif
+
+                    cycle = cy.Eor_b[1];
+                    break;
+                case 3://(An)+
+                    before = mem.PeekB(reg.A[dr]);
+                    after = val ^ before;
+                    mem.PokeB(reg.A[dr], (byte)after);
+                    reg.A[dr] ++;
+#if DEBUG
+                    nimo += string.Format("(A{0})+", dr);
+#endif
+
+                    cycle = cy.Eor_b[2];
+                    break;
+                case 4://-(An)
+                    reg.A[dr] --;
+                    before = mem.PeekB(reg.A[dr]);
+                    after = val ^ before;
+                    mem.PokeB(reg.A[dr], (byte)after);
+#if DEBUG
+                    nimo += string.Format("-(A{0})", dr);
+#endif
+
+                    cycle = cy.Eor_b[3];
+                    break;
+                case 5://d16(An)
+                    Int16 d16 = (Int16)FetchW();
+                    before = mem.PeekB((UInt32)(reg.A[dr] + d16));
+                    after = val ^ before;
+                    mem.PokeB((UInt32)(reg.A[dr] + d16), (byte)after);
+#if DEBUG
+                    nimo += string.Format("${0:x04}(A{1})", d16, dr);
+#endif
+
+                    cycle = cy.Eor_b[4];
+                    break;
+                case 6://d8(An,IX)
+                    vw = FetchW();
+                    isA = (vw & 0x8000) != 0;
+                    ni = (vw & 0x7000) >> 12;
+                    isL = (vw & 0x0800) != 0;
+                    IX = (isA ? reg.A[ni] : reg.D[ni]);
+#if DEBUG
+                    nimo += string.Format("${0:x02}(A{1},{2}{3}.{4})", (byte)vw, dr, isA ? "A" : "D", ni, isL ? "l" : "w");
+#endif
+
+                    if (!isL) ptr = (UInt32)(reg.A[dr] + ((sbyte)(byte)vw) + (Int16)(UInt16)IX);
+                    else ptr = (UInt32)(reg.A[dr] + ((sbyte)(byte)vw) + IX);
+                    before = mem.PeekB(ptr);
+                    after = val ^ before;
+                    mem.PokeB(ptr, (byte)after);
+                    cycle = cy.Eor_b[5];
+                    break;
+                case 7://etc.
+                    switch (dr)
+                    {
+                        case 0://Abs.W
+                            ptr = (UInt32)(Int16)FetchW();
+#if DEBUG
+                            nimo += string.Format("${0:x04}", (Int16)ptr);
+#endif
+
+                            before = mem.PeekB(ptr);
+                            after = val ^ before;
+                            mem.PokeB(ptr, (byte)after);
+                            cycle = cy.Eor_b[6];
+                            break;
+                        case 1://Abs.L
+                            ptr = FetchL();
+#if DEBUG
+                            nimo += string.Format("${0:x08}", (Int32)ptr);
+#endif
+
+                            before = mem.PeekB(ptr);
+                            after = val ^ before;
+                            mem.PokeB(ptr, (byte)after);
+                            cycle = cy.Eor_b[7];
+                            break;
+                    }
+                    break;
+            }
+
+            //flag
+            //reg.X
+            reg.N = (after & 0x80) != 0;
+            reg.SetZ((byte)after);
+            reg.V = false;
+            reg.C = false;
+
+#if DEBUG
+            Log.WriteLine(LogLevel.Trace, nimo);
+#endif
+
+            return cycle;
         }
 
         private int Ceorw(ushort n)
@@ -2980,6 +3121,10 @@ namespace MDPlayer.Driver.ZMS.nise68
             {
                 return Cbset(n);
             }
+            if ((n & 0xf1c0) == 0x0180)
+            {
+                return Cbclr_Dn(n);
+            }
             throw new NotImplementedException("dummy");
         }
 
@@ -3480,6 +3625,168 @@ namespace MDPlayer.Driver.ZMS.nise68
                             ans = (dst & (1 << data)) == 0;
                             mem.PokeB(ptr, (byte)(dst | (byte)(1 << data)));
                             cycle = cy.Bset_i[7];
+                            break;
+                        default:
+                            throw new NotImplementedException();
+                    }
+                    break;
+                default:
+                    throw new NotImplementedException();
+            }
+
+
+            //flag
+            //reg.X
+            //reg.N
+            reg.Z = ans;
+            //reg.V
+            //reg.C
+
+#if DEBUG
+            Log.WriteLine(LogLevel.Trace, nimo);
+#endif
+
+            return cycle;
+        }
+        
+        private int Cbclr_Dn(ushort n)
+        {
+            int cycle;
+#if DEBUG
+            string nimo = "BCLR";
+#endif
+
+
+            int sr = (n & 0x0e00) >> 9;
+            int data = (int)reg.GetDl(sr);
+            int m = (n & 0x0038) >> 3;
+            int r = (n & 0x0007);
+
+#if DEBUG
+            if (m == 0) nimo += ".l ";
+#endif
+
+#if DEBUG
+            else nimo += ".b ";
+#endif
+
+
+#if DEBUG
+            nimo += string.Format("D{0},", sr);
+#endif
+
+
+            UInt32 dst = 0;
+
+            UInt16 vw;
+            bool isA;
+            int ni;
+            bool isL;
+            UInt32 IX;
+            UInt32 ptr;
+            Int16 d16;
+
+            //compute
+            bool ans;
+            if (m == 0) data %= 32;
+            else data %= 8;
+
+            switch (m)
+            {
+                case 0://Dn
+                    dst = reg.D[r];
+#if DEBUG
+                    nimo += string.Format("D{0}", r);
+#endif
+
+                    ans = (dst & (1 << data)) == 0;
+                    reg.D[r] = dst & (uint)~(1 << data);
+                    cycle = cy.Bclr_i[0];
+                    break;
+                case 2://(An)
+                    dst = mem.PeekB(reg.A[r]);
+#if DEBUG
+                    nimo += string.Format("(A{0})", r);
+#endif
+
+                    ans = (dst & (1 << data)) == 0;
+                    mem.PokeB(reg.A[r], (byte)(dst & (byte)~(1 << data)));
+                    cycle = cy.Bclr_i[1];
+                    break;
+                case 3://(An)+
+                    dst = mem.PeekB(reg.A[r]);
+#if DEBUG
+                    nimo += string.Format("(A{0})+", r);
+#endif
+
+                    ans = (dst & (1 << data)) == 0;
+                    mem.PokeB(reg.A[r], (byte)(dst & (byte)~(1 << data)));
+                    reg.A[r] += 1;
+                    cycle = cy.Bclr_i[2];
+                    break;
+                case 4://-(An)
+                    reg.A[r] -= 1;
+                    dst = mem.PeekB(reg.A[r]);
+#if DEBUG
+                    nimo += string.Format("-(A{0})", r);
+#endif
+
+                    ans = (dst & (1 << data)) == 0;
+                    mem.PokeB(reg.A[r], (byte)(dst & (byte)~(1 << data)));
+                    cycle = cy.Bclr_i[3];
+                    break;
+                case 5://d16(An)
+                    d16 = (Int16)FetchW();
+                    dst = mem.PeekB((UInt32)(reg.A[r] + d16));
+#if DEBUG
+                    nimo += string.Format("${0:x04}(A{1})", d16, r);
+#endif
+
+                    ans = (dst & (1 << data)) == 0;
+                    mem.PokeB((UInt32)(reg.A[r] + d16), (byte)(dst & (byte)~(1 << data)));
+                    cycle = cy.Bclr_i[4];
+                    break;
+                case 6://d8(An,IX)
+                    vw = FetchW();
+                    isA = (vw & 0x8000) != 0;
+                    ni = (vw & 0x7000) >> 12;
+                    isL = (vw & 0x0800) != 0;
+                    IX = (isA ? reg.A[ni] : reg.D[ni]);
+#if DEBUG
+                    nimo += string.Format("${0:x02}(A{1},{2}{3}.{4})", (byte)vw, r, isA ? "A" : "D", ni, isL ? "l" : "w");
+#endif
+
+                    if (!isL) ptr = (UInt32)(reg.A[r] + ((sbyte)(byte)vw) + (Int16)(UInt16)IX);
+                    else ptr = (UInt32)(reg.A[r] + ((sbyte)(byte)vw) + IX);
+                    dst = mem.PeekB(ptr);
+                    ans = (dst & (1 << data)) == 0;
+                    mem.PokeB(ptr, (byte)(dst & (byte)~(1 << data)));
+                    cycle = cy.Bclr_i[5];
+                    break;
+                case 7://etc.
+                    switch (r)
+                    {
+                        case 0://Abs.W
+                            ptr = (UInt32)(Int16)FetchW();
+#if DEBUG
+                            nimo += string.Format("${0:x04}", (Int16)ptr);
+#endif
+
+                            dst = mem.PeekB(ptr);
+                            ans = (dst & (1 << data)) == 0;
+                            mem.PokeB(ptr, (byte)(dst & (byte)~(1 << data)));
+                            cycle = cy.Bclr_i[6];
+                            break;
+                        case 1://Abs.L
+                            ptr = FetchL();
+#if DEBUG
+                            nimo += string.Format("${0:x08}", (Int32)ptr);
+#endif
+
+                            dst = (ushort)(short)(sbyte)mem.PeekB(ptr);
+                            ans = (dst & (1 << data)) == 0;
+                            mem.PokeB(ptr, (byte)(dst & (byte)~(1 << data)));
+                            cycle = cy.Bclr_i[7];
                             break;
                         default:
                             throw new NotImplementedException();
@@ -7478,7 +7785,7 @@ namespace MDPlayer.Driver.ZMS.nise68
         {
             UInt32 t = (UInt32)(n & 0xf);
 #if DEBUG
-            Log.WriteLine(LogLevel.Trace, "TRAP #{0:X02}", t);
+            Log.WriteLine(LogLevel.Trace2, "TRAP #{0:X02}", t);
 #endif
             t += 32;//vector32～
             t *= 4; //4byte
@@ -7497,7 +7804,7 @@ namespace MDPlayer.Driver.ZMS.nise68
         {
             UInt32 t = (UInt32)(n & 0xff);
 #if DEBUG
-            Log.WriteLine(LogLevel.Trace, "TRAP #{0:X02}", t);
+            Log.WriteLine(LogLevel.Trace2, "TRAP #{0:X02}", t);
 #endif
             t *= 4; //4byte
             reg.SRbk = reg.SR;
@@ -7507,6 +7814,22 @@ namespace MDPlayer.Driver.ZMS.nise68
             PushSSPw((UInt16)(reg.PC >> 16));
             PushSSPw(reg.SRbk);
             reg.PC = mem.PeekL(t);
+
+            return 34;//cycle
+        }
+
+        public int CtrapPtr(UInt32 n)
+        {
+#if DEBUG
+            Log.WriteLine(LogLevel.Trace2, "TRAP ${0:X08}", n);
+#endif
+            reg.SRbk = reg.SR;
+            reg.S = true;
+            reg.T = false;
+            PushSSPw((UInt16)reg.PC);
+            PushSSPw((UInt16)(reg.PC >> 16));
+            PushSSPw(reg.SRbk);
+            reg.PC = n;
 
             return 34;//cycle
         }
@@ -8969,7 +9292,135 @@ namespace MDPlayer.Driver.ZMS.nise68
 
         private int CsubbDn(ushort n)
         {
-            throw new NotImplementedException();
+#if DEBUG
+            string nimo = "SUB.b ";
+#endif
+
+
+            int cycle = 0;
+
+            int dr = (n & 0x0e00) >> 9;
+            int sm = (n & 0x0038) >> 3;
+            int sr = (n & 0x0007);
+
+            //src
+            UInt32 src = reg.GetDb(dr);
+#if DEBUG
+            nimo += string.Format("D{0},", dr);
+#endif
+
+
+            UInt32 dst = 0;
+            UInt32 ans = 0;
+
+            UInt16 vw;
+            bool isA;
+            int ni;
+            bool isL;
+            UInt32 IX;
+            UInt32 ptr;
+
+            cycle = sm;
+            switch (sm)
+            {
+                case 2://(An)
+#if DEBUG
+                    nimo += string.Format("(A{0})", sr);
+#endif
+
+                    dst = (UInt32)(Int16)mem.PeekB(reg.A[sr]);
+                    ans = (UInt32)((Int32)(sbyte)(byte)dst - (Int32)(sbyte)(byte)src);
+                    mem.PokeB(reg.A[sr], (byte)ans);
+                    break;
+                case 3://(An)+
+#if DEBUG
+                    nimo += string.Format("(A{0})+", sr);
+#endif
+
+                    dst = (UInt32)(Int16)mem.PeekB(reg.A[sr]);
+                    ans = (UInt32)((Int32)(sbyte)(byte)dst - (Int32)(sbyte)(byte)src);
+                    mem.PokeB(reg.A[sr], (byte)ans);
+                    reg.A[sr] += 1;
+                    break;
+                case 4://-(An)
+#if DEBUG
+                    nimo += string.Format("-(A{0})", sr);
+#endif
+
+                    reg.A[sr] -= 1;
+                    dst = (UInt32)(Int16)mem.PeekB(reg.A[sr]);
+                    ans = (UInt32)((Int32)(sbyte)(byte)dst - (Int32)(sbyte)(byte)src);
+                    mem.PokeB(reg.A[sr], (byte)ans);
+                    break;
+                case 5://d16(An)
+                    Int16 d16 = (Int16)FetchW();
+#if DEBUG
+                    nimo += string.Format("${0:x04}(A{1})", d16, sr);
+#endif
+
+                    dst = (UInt32)(Int16)mem.PeekB((UInt32)(reg.A[sr] + d16));
+                    ans = (UInt32)((Int32)(sbyte)(byte)dst - (Int32)(sbyte)(byte)src);
+                    mem.PokeB((UInt32)(reg.A[sr] + d16), (byte)ans);
+                    break;
+                case 6://d8(An,IX)
+                    vw = FetchW();
+                    isA = (vw & 0x8000) != 0;
+                    ni = (vw & 0x7000) >> 12;
+                    isL = (vw & 0x0800) != 0;
+                    IX = (isA ? reg.A[ni] : reg.D[ni]);
+#if DEBUG
+                    nimo += string.Format("${0:x02}(A{1},{2}{3}.{4})", (byte)vw, sr, isA ? "A" : "D", ni, isL ? "l" : "w");
+#endif
+
+                    if (!isL) ptr = (UInt32)(reg.A[sr] + ((sbyte)(byte)vw) + (Int16)(UInt16)IX);
+                    else ptr = (UInt32)(reg.A[sr] + ((sbyte)(byte)vw) + IX);
+                    dst = (UInt32)(Int16)mem.PeekB(ptr);
+                    ans = (UInt32)((Int32)(sbyte)(byte)dst - (Int32)(sbyte)(byte)src);
+                    mem.PokeB(ptr, (byte)ans);
+                    break;
+                case 7://etc.
+                    switch (sr)
+                    {
+                        case 0://Abs.W
+                            ptr = (UInt32)(Int16)FetchW();
+#if DEBUG
+                            nimo += string.Format("${0:x04}", (UInt16)ptr);
+#endif
+
+                            dst = (UInt32)(Int16)mem.PeekB(ptr);
+                            ans = (UInt32)((Int32)(sbyte)(byte)dst - (Int32)(sbyte)(byte)src);
+                            mem.PokeB(ptr, (byte)ans);
+                            break;
+                        case 1://Abs.L
+                            ptr = FetchL();
+#if DEBUG
+                            nimo += string.Format("${0:x08}", (UInt32)ptr);
+#endif
+
+                            dst = (UInt32)(Int16)mem.PeekB(ptr);
+                            ans = (UInt32)((Int32)(sbyte)(byte)dst - (Int32)(sbyte)(byte)src);
+                            mem.PokeB(ptr, (byte)ans);
+                            cycle = 8;
+                            break;
+                    }
+                    break;
+            }
+
+            //flag
+            reg.SetN((byte)ans);
+            reg.SetZ((byte)ans);
+            reg.SetVcmp((byte)src, (byte)dst, (byte)ans);
+            reg.SetCcmp((byte)src, (byte)dst, (byte)ans);
+            reg.X = reg.C;
+
+            //cycle
+            cycle = cy.Sub_bDn[cycle];
+
+#if DEBUG
+            Log.WriteLine(LogLevel.Trace, nimo);
+#endif
+
+            return cycle;
         }
 
         private int CsubwDn(ushort n)
@@ -9854,6 +10305,57 @@ namespace MDPlayer.Driver.ZMS.nise68
         private int Ccmpm_l(ushort n)
         {
             throw new NotImplementedException();
+        }
+
+        private int Cmuls(UInt16 n)
+        {
+
+            string nimo = "";
+#if DEBUG
+            nimo = "MULS.w ";
+#endif
+
+
+            int cycle = 0;
+
+            int dr = (n & 0x0e00) >> 9;
+            //int dm = (n & 0x01c0) >> 6;
+            int sm = (n & 0x0038) >> 3;
+            int sr = (n & 0x0007);
+
+            //src
+            Int32 sval = (Int32)(Int16)srcAddressingWord(ref nimo, ref cycle, sm, sr);
+
+#if DEBUG
+            nimo += ",";
+#endif
+
+
+            //dst
+            Int32 dval = (Int16)reg.D[dr];
+
+            //compute
+            Int32 ans = dval * sval;
+            reg.D[dr] = (UInt32)(ans & 0xffff);
+
+#if DEBUG
+            nimo += string.Format("D{0}", dr);
+#endif
+
+            cycle = cy.Muls_w[cycle];
+
+            //flag
+            //reg.X -
+            reg.N = (ans & 0x8000_000) != 0;
+            reg.Z = ans == 0;
+            reg.V = false;
+            reg.C = false;
+
+#if DEBUG
+            Log.WriteLine(LogLevel.Trace, nimo);
+#endif
+
+            return cycle;
         }
 
         private int Cmulu(UInt16 n)
@@ -11471,7 +11973,125 @@ namespace MDPlayer.Driver.ZMS.nise68
 
         private int Casl_w_ea(ushort n)
         {
-            throw new NotImplementedException();
+#if DEBUG
+            string nimo;
+            nimo = "ASL.w ";
+#endif
+
+            short before=0;
+            short after=0;
+
+            int cycle = 0;
+            int dm = (n & 0x0038) >> 3;
+            int dr = (n & 0x0007);
+            int sr = (n & 0x0e00) >> 9;
+
+            UInt16 vw;
+            bool isA;
+            int ni;
+            bool isL;
+            UInt32 IX;
+            UInt32 ptr;
+
+            switch (dm)
+            {
+                case 2://(An)
+                    before = (short)mem.PeekW(reg.A[dr]);
+                    after = (short)(before << 1);
+                    mem.PokeW(reg.A[dr], (ushort)after);
+#if DEBUG
+                    nimo += string.Format("(A{0})", dr);
+#endif
+                    cycle = 12;
+                    break;
+                case 3://(An)+
+                    before = (short)mem.PeekW(reg.A[dr]);
+                    after = (short)(before << 1);
+                    mem.PokeW(reg.A[dr], (ushort)after);
+                    reg.A[dr] += 2;
+#if DEBUG
+                    nimo += string.Format("(A{0})+", dr);
+#endif
+                    cycle = 12;
+                    break;
+                case 4://-(An)
+                    reg.A[dr] -= 2;
+                    before = (short)mem.PeekW(reg.A[dr]);
+                    after = (short)(before << 1);
+                    mem.PokeW(reg.A[dr], (ushort)after);
+#if DEBUG
+                    nimo += string.Format("-(A{0})", dr);
+#endif
+                    cycle = 14;
+                    break;
+                case 5://d16(An)
+                    Int16 d16 = (Int16)FetchW();
+                    before = (short)mem.PeekW((UInt32)(reg.A[dr]+d16));
+                    after = (short)(before << 1);
+                    mem.PokeW((UInt32)(reg.A[dr] + d16), (ushort)after);
+#if DEBUG
+                    nimo += string.Format("${0:x04}(A{1})", d16, dr);
+#endif
+                    cycle = 16;
+                    break;
+                case 6://d8(An,IX)
+                    vw = FetchW();
+                    isA = (vw & 0x8000) != 0;
+                    ni = (vw & 0x7000) >> 12;
+                    isL = (vw & 0x0800) != 0;
+                    IX = (isA ? reg.A[ni] : reg.D[ni]);
+#if DEBUG
+                    nimo += string.Format("${0:x02}(A{1},{2}{3}.{4})", (byte)vw, dr, isA ? "A" : "D", ni, isL ? "l" : "w");
+#endif
+
+                    if (!isL) ptr = (UInt32)(reg.A[dr] + ((sbyte)(byte)vw) + (Int16)(UInt16)IX);
+                    else ptr = (UInt32)(reg.A[dr] + ((sbyte)(byte)vw) + IX);
+                    before = (short)mem.PeekW(ptr);
+                    after = (short)(before << 1);
+                    mem.PokeW(ptr, (ushort)after);
+                    cycle = 18;
+                    break;
+                case 7://etc.
+                    switch (dr)
+                    {
+                        case 0://Abs.W
+                            ptr = (UInt32)(Int16)FetchW();
+#if DEBUG
+                            nimo += string.Format("${0:x04}", (Int16)ptr);
+#endif
+
+                            before = (short)mem.PeekW(ptr);
+                            after = (short)(before << 1);
+                            mem.PokeW(ptr, (ushort)after);
+                            cycle = 16;
+                            break;
+                        case 1://Abs.L
+                            ptr = FetchL();
+#if DEBUG
+                            nimo += string.Format("${0:x08}", (Int32)ptr);
+#endif
+
+                            before = (short)mem.PeekW(ptr);
+                            after = (short)(before << 1);
+                            mem.PokeW(ptr, (ushort)after);
+                            cycle = 20;
+                            break;
+                    }
+                    break;
+                default:
+                    throw new NotImplementedException();
+            }
+
+            reg.C = reg.X = ((before & 0x8000) != 0);
+            reg.SetN((ushort)after);
+            reg.SetZ((ushort)after);
+            reg.V = (before & 0xffff) != 0;
+
+#if DEBUG
+            Log.WriteLine(LogLevel.Trace, nimo);
+#endif
+
+            return cycle;
         }
 
         private int Casr_b_DnDn(ushort n)

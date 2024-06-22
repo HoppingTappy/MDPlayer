@@ -180,6 +180,7 @@ namespace MDPlayer.Driver.ZMS.nise68
                     after = (ushort)(val | before);
                     mem.PokeB(reg.A[r], (byte)after);
                     reg.A[r] += 1;
+                    if (r == 7) reg.A[r]++;
 #if DEBUG
                     nimo += string.Format("(A{0})+", r);
 #endif
@@ -188,6 +189,7 @@ namespace MDPlayer.Driver.ZMS.nise68
                     break;
                 case 4://-(An)
                     reg.A[r] -= 1;
+                    if (r == 7) reg.A[r]--;
                     before = mem.PeekB(reg.A[r]);
                     after = (ushort)(val | before);
                     mem.PokeB(reg.A[r], (byte)after);
@@ -652,6 +654,7 @@ namespace MDPlayer.Driver.ZMS.nise68
                     after = (ushort)(val & before);
                     mem.PokeB(reg.A[r], (byte)after);
                     reg.A[r] += 1;
+                    if (r == 7) reg.A[r]++;
 #if DEBUG
                     nimo += string.Format("(A{0})+", r);
 #endif
@@ -660,6 +663,7 @@ namespace MDPlayer.Driver.ZMS.nise68
                     break;
                 case 4://-(An)
                     reg.A[r] -= 1;
+                    if (r == 7) reg.A[r]--;
                     before = mem.PeekB(reg.A[r]);
                     after = (ushort)(val & before);
                     mem.PokeB(reg.A[r], (byte)after);
@@ -1099,6 +1103,7 @@ namespace MDPlayer.Driver.ZMS.nise68
                     after = (ushort)(val & before);
                     mem.PokeB(reg.A[r], (byte)after);
                     reg.A[r] += 1;
+                    if (r == 7) reg.A[r]++;
 #if DEBUG
                     nimo += string.Format("(A{0})+", r);
 #endif
@@ -1107,6 +1112,7 @@ namespace MDPlayer.Driver.ZMS.nise68
                     break;
                 case 4://-(An)
                     reg.A[r] -= 1;
+                    if (r == 7) reg.A[r]--;
                     before = mem.PeekB(reg.A[r]);
                     after = (ushort)(val & before);
                     mem.PokeB(reg.A[r], (byte)after);
@@ -1514,6 +1520,7 @@ namespace MDPlayer.Driver.ZMS.nise68
                     after = (byte)(src & dst);
                     reg.SetDb(sr, after);
                     reg.A[r] += 1;
+                    if (r == 7) reg.A[r]++;
 #if DEBUG
                     nimo += string.Format("(A{0})+,D{1}", r, sr);
 #endif
@@ -1522,6 +1529,7 @@ namespace MDPlayer.Driver.ZMS.nise68
                     break;
                 case 4://-(An)
                     reg.A[r] -= 1;
+                    if (r == 7) reg.A[r]--;
                     src = mem.PeekB(reg.A[r]);
                     after = (byte)(src & dst);
                     reg.SetDb(sr, after);
@@ -1958,6 +1966,7 @@ namespace MDPlayer.Driver.ZMS.nise68
                     after = val | before;
                     mem.PokeB(reg.A[dr], (byte)after);
                     reg.A[dr] += 1;
+                    if (dr == 7) reg.A[dr]++;
 #if DEBUG
                     nimo += string.Format("(A{0})+", dr);
 #endif
@@ -1966,6 +1975,7 @@ namespace MDPlayer.Driver.ZMS.nise68
                     break;
                 case 4://-(An)
                     reg.A[dr] -= 1;
+                    if (dr == 7) reg.A[dr]--;
                     before = mem.PeekB(reg.A[dr]);
                     after = val | before;
                     mem.PokeB(reg.A[dr], (byte)after);
@@ -2332,7 +2342,146 @@ namespace MDPlayer.Driver.ZMS.nise68
 
         private int Ceorb(ushort n)
         {
-            throw new NotImplementedException();
+#if DEBUG
+            string nimo = "EOR.b ";
+#endif
+
+            int cycle = 0;
+            int dm = (n & 0x0038) >> 3;
+            int dr = (n & 0x0007);
+            int sr = (n & 0x0e00) >> 9;
+
+            uint val = reg.GetDb(sr);
+#if DEBUG
+            nimo += string.Format("D{0},", sr);
+#endif
+
+
+            uint after = 0;
+            uint before;
+
+            UInt16 vw;
+            bool isA;
+            int ni;
+            bool isL;
+            UInt32 IX;
+            UInt32 ptr;
+
+            switch (dm)
+            {
+                case 0://Dn
+                    before = reg.GetDb(dr);
+                    after = val ^ before;
+                    reg.SetDb(dr, (byte)after);
+#if DEBUG
+                    nimo += string.Format("D{0}", dr);
+#endif
+
+                    cycle = cy.Eor_b[0];
+                    break;
+                case 2://(An)
+                    before = mem.PeekB(reg.A[dr]);
+                    after = val ^ before;
+                    mem.PokeB(reg.A[dr], (byte)after);
+#if DEBUG
+                    nimo += string.Format("(A{0})", dr);
+#endif
+
+                    cycle = cy.Eor_b[1];
+                    break;
+                case 3://(An)+
+                    before = mem.PeekB(reg.A[dr]);
+                    after = val ^ before;
+                    mem.PokeB(reg.A[dr], (byte)after);
+                    reg.A[dr] ++;
+                    if (dr == 7) reg.A[dr]++;
+#if DEBUG
+                    nimo += string.Format("(A{0})+", dr);
+#endif
+
+                    cycle = cy.Eor_b[2];
+                    break;
+                case 4://-(An)
+                    reg.A[dr] --;
+                    if (dr == 7) reg.A[dr]--;
+                    before = mem.PeekB(reg.A[dr]);
+                    after = val ^ before;
+                    mem.PokeB(reg.A[dr], (byte)after);
+#if DEBUG
+                    nimo += string.Format("-(A{0})", dr);
+#endif
+
+                    cycle = cy.Eor_b[3];
+                    break;
+                case 5://d16(An)
+                    Int16 d16 = (Int16)FetchW();
+                    before = mem.PeekB((UInt32)(reg.A[dr] + d16));
+                    after = val ^ before;
+                    mem.PokeB((UInt32)(reg.A[dr] + d16), (byte)after);
+#if DEBUG
+                    nimo += string.Format("${0:x04}(A{1})", d16, dr);
+#endif
+
+                    cycle = cy.Eor_b[4];
+                    break;
+                case 6://d8(An,IX)
+                    vw = FetchW();
+                    isA = (vw & 0x8000) != 0;
+                    ni = (vw & 0x7000) >> 12;
+                    isL = (vw & 0x0800) != 0;
+                    IX = (isA ? reg.A[ni] : reg.D[ni]);
+#if DEBUG
+                    nimo += string.Format("${0:x02}(A{1},{2}{3}.{4})", (byte)vw, dr, isA ? "A" : "D", ni, isL ? "l" : "w");
+#endif
+
+                    if (!isL) ptr = (UInt32)(reg.A[dr] + ((sbyte)(byte)vw) + (Int16)(UInt16)IX);
+                    else ptr = (UInt32)(reg.A[dr] + ((sbyte)(byte)vw) + IX);
+                    before = mem.PeekB(ptr);
+                    after = val ^ before;
+                    mem.PokeB(ptr, (byte)after);
+                    cycle = cy.Eor_b[5];
+                    break;
+                case 7://etc.
+                    switch (dr)
+                    {
+                        case 0://Abs.W
+                            ptr = (UInt32)(Int16)FetchW();
+#if DEBUG
+                            nimo += string.Format("${0:x04}", (Int16)ptr);
+#endif
+
+                            before = mem.PeekB(ptr);
+                            after = val ^ before;
+                            mem.PokeB(ptr, (byte)after);
+                            cycle = cy.Eor_b[6];
+                            break;
+                        case 1://Abs.L
+                            ptr = FetchL();
+#if DEBUG
+                            nimo += string.Format("${0:x08}", (Int32)ptr);
+#endif
+
+                            before = mem.PeekB(ptr);
+                            after = val ^ before;
+                            mem.PokeB(ptr, (byte)after);
+                            cycle = cy.Eor_b[7];
+                            break;
+                    }
+                    break;
+            }
+
+            //flag
+            //reg.X
+            reg.N = (after & 0x80) != 0;
+            reg.SetZ((byte)after);
+            reg.V = false;
+            reg.C = false;
+
+#if DEBUG
+            Log.WriteLine(LogLevel.Trace, nimo);
+#endif
+
+            return cycle;
         }
 
         private int Ceorw(ushort n)
@@ -2859,6 +3008,7 @@ namespace MDPlayer.Driver.ZMS.nise68
                 case 3://(An)+
                     dst = mem.PeekB(reg.A[r]);
                     reg.A[r] += 1;
+                    if (r == 7) reg.A[r]++;
 #if DEBUG
                     nimo += string.Format("(A{0})+", r);
 #endif
@@ -2867,6 +3017,7 @@ namespace MDPlayer.Driver.ZMS.nise68
                     break;
                 case 4://-(An)
                     reg.A[r] -= 1;
+                    if (r == 7) reg.A[r]--;
                     dst = mem.PeekB(reg.A[r]);
 #if DEBUG
                     nimo += string.Format("-(A{0})", r);
@@ -3064,10 +3215,12 @@ namespace MDPlayer.Driver.ZMS.nise68
                     ans = (dst & (1 << data)) == 0;
                     //mem.PokeB(reg.A[r], (byte)(dst | (byte)(1 << data)));
                     reg.A[r] += 1;
+                    if (r == 7) reg.A[r]++;
                     cycle = cy.Btst[2];
                     break;
                 case 4://-(An)
                     reg.A[r] -= 1;
+                    if (r == 7) reg.A[r]--;
                     dst = mem.PeekB(reg.A[r]);
 #if DEBUG
                     nimo += string.Format("-(A{0})", r);
@@ -3262,10 +3415,12 @@ namespace MDPlayer.Driver.ZMS.nise68
                     ans = (dst & (1 << data)) == 0;
                     mem.PokeB(reg.A[r], (byte)(dst | (byte)(1 << data)));
                     reg.A[r] += 1;
+                    if (r == 7) reg.A[r]++;
                     cycle = cy.Bset[2];
                     break;
                 case 4://-(An)
                     reg.A[r] -= 1;
+                    if (r == 7) reg.A[r]--;
                     dst = mem.PeekB(reg.A[r]);
 #if DEBUG
                     nimo += string.Format("-(A{0})", r);
@@ -3423,10 +3578,12 @@ namespace MDPlayer.Driver.ZMS.nise68
                     ans = (dst & (1 << data)) == 0;
                     mem.PokeB(reg.A[r], (byte)(dst | (byte)(1 << data)));
                     reg.A[r] += 1;
+                    if (r == 7) reg.A[r]++;
                     cycle = cy.Bset_i[2];
                     break;
                 case 4://-(An)
                     reg.A[r] -= 1;
+                    if (r == 7) reg.A[r]--;
                     dst = mem.PeekB(reg.A[r]);
 #if DEBUG
                     nimo += string.Format("-(A{0})", r);
@@ -3585,10 +3742,12 @@ namespace MDPlayer.Driver.ZMS.nise68
                     ans = (dst & (1 << data)) == 0;
                     mem.PokeB(reg.A[r], (byte)(dst & (byte)~(1 << data)));
                     reg.A[r] += 1;
+                    if (r == 7) reg.A[r]++;
                     cycle = cy.Bclr_i[2];
                     break;
                 case 4://-(An)
                     reg.A[r] -= 1;
+                    if (r == 7) reg.A[r]--;
                     dst = mem.PeekB(reg.A[r]);
 #if DEBUG
                     nimo += string.Format("-(A{0})", r);
@@ -3746,10 +3905,12 @@ namespace MDPlayer.Driver.ZMS.nise68
                     ans = (dst & (1 << data)) == 0;
                     mem.PokeB(reg.A[r], (byte)(dst & (byte)~(1 << data)));
                     reg.A[r] += 1;
+                    if (r == 7) reg.A[r]++;
                     cycle = cy.Bclr_i[2];
                     break;
                 case 4://-(An)
                     reg.A[r] -= 1;
+                    if (r == 7) reg.A[r]--;
                     dst = mem.PeekB(reg.A[r]);
 #if DEBUG
                     nimo += string.Format("-(A{0})", r);
@@ -3903,6 +4064,7 @@ namespace MDPlayer.Driver.ZMS.nise68
                     before = (ushort)(short)(sbyte)mem.PeekB(reg.A[r]);
                     after = (ushort)((short)before - (short)val);
                     reg.A[r] += 1;
+                    if (r == 7) reg.A[r]++;
 #if DEBUG
                     nimo += string.Format("(A{0})+", r);
 #endif
@@ -3911,6 +4073,7 @@ namespace MDPlayer.Driver.ZMS.nise68
                     break;
                 case 4://-(An)
                     reg.A[r] -= 1;
+                    if (r == 7) reg.A[r]--;
                     before = (ushort)(short)(sbyte)mem.PeekB(reg.A[r]);
                     after = (ushort)((short)before - (short)val);
 #if DEBUG
@@ -4331,6 +4494,7 @@ namespace MDPlayer.Driver.ZMS.nise68
                     ans = (byte)((sbyte)dst - (sbyte)src);
                     mem.PokeB(reg.A[r], ans);
                     reg.A[r] += 1;
+                    if (r == 7) reg.A[r]++;
 #if DEBUG
                     nimo += string.Format("(A{0})+", r);
 #endif
@@ -4339,6 +4503,7 @@ namespace MDPlayer.Driver.ZMS.nise68
                     break;
                 case 4://-(An)
                     reg.A[r] -= 1;
+                    if (r == 7) reg.A[r]--;
                     dst = mem.PeekB(reg.A[r]);
                     ans = (byte)((sbyte)dst - (sbyte)src);
                     mem.PokeB(reg.A[r], ans);
@@ -5027,6 +5192,7 @@ namespace MDPlayer.Driver.ZMS.nise68
                 case 3://(An)+
                     mem.PokeB(reg.A[dr], (byte)val);
                     reg.A[dr] += 1;
+                    if (dr == 7) reg.A[dr]++;
 #if DEBUG
                     nimo += string.Format("(A{0})+", dr);
 #endif
@@ -5035,6 +5201,7 @@ namespace MDPlayer.Driver.ZMS.nise68
                     break;
                 case 4://-(An)
                     reg.A[dr] -= 1;
+                    if (dr == 7) reg.A[dr]--;
                     mem.PokeB(reg.A[dr], (byte)val);
 #if DEBUG
                     nimo += string.Format("-(A{0})", dr);
@@ -5541,6 +5708,7 @@ namespace MDPlayer.Driver.ZMS.nise68
                     ans = (byte)~ans;
                     mem.PokeB(reg.A[dr], ans);
                     reg.A[dr] += 1;
+                    if (dr == 7) reg.A[dr]++;
 #if DEBUG
                     nimo += string.Format("(A{0})+", dr);
 #endif
@@ -5549,6 +5717,7 @@ namespace MDPlayer.Driver.ZMS.nise68
                     break;
                 case 4://-(An)
                     reg.A[dr] -= 1;
+                    if (dr == 7) reg.A[dr]--;
                     ans = mem.PeekB(reg.A[dr]);
                     ans = (byte)~ans;
                     mem.PokeB(reg.A[dr], ans);
@@ -5696,6 +5865,7 @@ namespace MDPlayer.Driver.ZMS.nise68
                 case 3://(An)+
                     mem.PokeB(reg.A[dr], 0);
                     reg.A[dr] += 1;
+                    if (dr == 7) reg.A[dr]++;
 #if DEBUG
                     nimo += string.Format("(A{0})+", dr);
 #endif
@@ -5704,6 +5874,7 @@ namespace MDPlayer.Driver.ZMS.nise68
                     break;
                 case 4://-(An)
                     reg.A[dr] -= 1;
+                    if (dr == 7) reg.A[dr]--;
                     mem.PokeB(reg.A[dr], 0);
 #if DEBUG
                     nimo += string.Format("-(A{0})", dr);
@@ -6727,6 +6898,7 @@ namespace MDPlayer.Driver.ZMS.nise68
                     ans = (byte)-(sbyte)val;
                     mem.PokeB(reg.A[dr], ans);
                     reg.A[dr] += 1;
+                    if (dr == 7) reg.A[dr]++;
 #if DEBUG
                     nimo += string.Format("(A{0})+", dr);
 #endif
@@ -6735,6 +6907,7 @@ namespace MDPlayer.Driver.ZMS.nise68
                     break;
                 case 4://-(An)
                     reg.A[dr] -= 1;
+                    if (dr == 7) reg.A[dr]--;
                     val = mem.PeekB(reg.A[dr]);
                     ans = (byte)-(sbyte)val;
                     mem.PokeB(reg.A[dr], ans);
@@ -7149,6 +7322,7 @@ namespace MDPlayer.Driver.ZMS.nise68
                 case 3://(An)+
                     val = mem.PeekB(reg.A[dr]);
                     reg.A[dr] += 1;
+                    if (dr == 7) reg.A[dr]++;
 #if DEBUG
                     nimo += string.Format("(A{0})+", dr);
 #endif
@@ -7157,6 +7331,7 @@ namespace MDPlayer.Driver.ZMS.nise68
                     break;
                 case 4://-(An)
                     reg.A[dr] -= 1;
+                    if (dr == 7) reg.A[dr]--;
                     val = mem.PeekB(reg.A[dr]);
 #if DEBUG
                     nimo += string.Format("-(A{0})", dr);
@@ -7514,6 +7689,7 @@ namespace MDPlayer.Driver.ZMS.nise68
                     val = mem.PeekB(reg.A[dr]);
                     mem.PokeB(reg.A[dr], (byte)(val | 0x80));
                     reg.A[dr] += 1;
+                    if (dr == 7) reg.A[dr] += 1;
 #if DEBUG
                     nimo += string.Format("(A{0})+", dr);
 #endif
@@ -7522,6 +7698,7 @@ namespace MDPlayer.Driver.ZMS.nise68
                     break;
                 case 4://-(An)
                     reg.A[dr] -= 1;
+                    if (dr == 7) reg.A[dr]--;
                     val = mem.PeekB(reg.A[dr]);
                     mem.PokeB(reg.A[dr], (byte)(val | 0x80));
 #if DEBUG
@@ -7814,6 +7991,7 @@ namespace MDPlayer.Driver.ZMS.nise68
                 case 3://(An)+
                     mem.PokeB(reg.A[dr], val);
                     reg.A[dr] += 1;
+                    if (dr == 7) reg.A[dr] += 1;
 #if DEBUG
                     nimo += string.Format("(A{0})+", dr);
 #endif
@@ -7821,6 +7999,7 @@ namespace MDPlayer.Driver.ZMS.nise68
                     break;
                 case 4://-(An)
                     reg.A[dr] -= 1;
+                    if (dr == 7) reg.A[dr]--;
                     mem.PokeB(reg.A[dr], val);
 #if DEBUG
                     nimo += string.Format("-(A{0})", dr);
@@ -7955,6 +8134,7 @@ namespace MDPlayer.Driver.ZMS.nise68
                     ans = src + dst;
                     mem.PokeB(reg.A[dr], (byte)ans);
                     reg.A[dr] += 1;
+                    if (dr == 7) reg.A[dr] += 1;
 #if DEBUG
                     nimo += string.Format("(A{0})+", dr);
 #endif
@@ -7963,6 +8143,7 @@ namespace MDPlayer.Driver.ZMS.nise68
                     break;
                 case 4://-(An)
                     reg.A[dr] -= 1;
+                    if (dr == 7) reg.A[dr]--;
                     src = (sbyte)mem.PeekB(reg.A[dr]);
                     ans = src + dst;
                     mem.PokeB(reg.A[dr], (byte)ans);
@@ -8420,6 +8601,7 @@ namespace MDPlayer.Driver.ZMS.nise68
                     ans = src - dst;
                     mem.PokeB(reg.A[dr], (byte)ans);
                     reg.A[dr] += 1;
+                    if (dr == 7) reg.A[dr] += 1;
 #if DEBUG
                     nimo += string.Format("(A{0})+", dr);
 #endif
@@ -8428,6 +8610,7 @@ namespace MDPlayer.Driver.ZMS.nise68
                     break;
                 case 4://-(An)
                     reg.A[dr] -= 1;
+                    if (dr == 7) reg.A[dr]--;
                     src = (sbyte)mem.PeekB(reg.A[dr]);
                     ans = src - dst;
                     mem.PokeB(reg.A[dr], (byte)ans);
@@ -9204,6 +9387,7 @@ namespace MDPlayer.Driver.ZMS.nise68
                     ans = (UInt32)((Int32)(sbyte)(byte)dst - (Int32)(sbyte)(byte)src);
                     mem.PokeB(reg.A[sr], (byte)ans);
                     reg.A[sr] += 1;
+                    if (sr == 7) reg.A[sr] += 1;
                     break;
                 case 4://-(An)
 #if DEBUG
@@ -9211,6 +9395,7 @@ namespace MDPlayer.Driver.ZMS.nise68
 #endif
 
                     reg.A[sr] -= 1;
+                    if (sr == 7) reg.A[sr]--;
                     dst = (UInt32)(Int16)mem.PeekB(reg.A[sr]);
                     ans = (UInt32)((Int32)(sbyte)(byte)dst - (Int32)(sbyte)(byte)src);
                     mem.PokeB(reg.A[sr], (byte)ans);
@@ -9730,6 +9915,7 @@ namespace MDPlayer.Driver.ZMS.nise68
                 case 3://(An)+
                     src = (ushort)(short)(sbyte)mem.PeekB(reg.A[dr]);
                     reg.A[dr]++;
+                    if (dr == 7) reg.A[dr] += 1;
 #if DEBUG
                     nimo += string.Format("(A{0})+", dr);
 #endif
@@ -9738,6 +9924,7 @@ namespace MDPlayer.Driver.ZMS.nise68
                     break;
                 case 4://-(An)
                     reg.A[dr]--;
+                    if (dr == 7) reg.A[dr]--;
                     src = (ushort)(short)(sbyte)mem.PeekB(reg.A[dr]);
 #if DEBUG
                     nimo += string.Format("-(A{0})", dr);
@@ -10478,9 +10665,11 @@ namespace MDPlayer.Driver.ZMS.nise68
                     mem.PokeB(reg.A[dr], ans);
                     cycle = cy.Addi_b[2];
                     reg.A[dr] += 1;
+                    if (dr == 7) reg.A[dr] += 1;
                     break;
                 case 4://-(An)
                     reg.A[dr] -= 1;
+                    if (dr == 7) reg.A[dr] += 1;
                     dst = mem.PeekB(reg.A[dr]);
                     ans = (byte)((sbyte)dst + (sbyte)src);
                     mem.PokeB(reg.A[dr], ans);
@@ -11069,6 +11258,7 @@ namespace MDPlayer.Driver.ZMS.nise68
                     ans = (sbyte)(dval + sval);
                     mem.PokeB(reg.A[sr], (byte)ans);
                     reg.A[sr] += 1;
+                    if (sr == 7) reg.A[sr] += 1;
                     cycle = 1;
                     break;
                 case 4://-(An)
@@ -11077,6 +11267,7 @@ namespace MDPlayer.Driver.ZMS.nise68
 #endif
 
                     reg.A[sr] -= 1;
+                    if (sr == 7) reg.A[sr]--;
                     dval = (sbyte)mem.PeekB(reg.A[sr]);
                     ans = (sbyte)(dval + sval);
                     mem.PokeB(reg.A[sr], (byte)ans);
@@ -11836,7 +12027,125 @@ namespace MDPlayer.Driver.ZMS.nise68
 
         private int Casl_w_ea(ushort n)
         {
-            throw new NotImplementedException();
+#if DEBUG
+            string nimo;
+            nimo = "ASL.w ";
+#endif
+
+            short before=0;
+            short after=0;
+
+            int cycle = 0;
+            int dm = (n & 0x0038) >> 3;
+            int dr = (n & 0x0007);
+            int sr = (n & 0x0e00) >> 9;
+
+            UInt16 vw;
+            bool isA;
+            int ni;
+            bool isL;
+            UInt32 IX;
+            UInt32 ptr;
+
+            switch (dm)
+            {
+                case 2://(An)
+                    before = (short)mem.PeekW(reg.A[dr]);
+                    after = (short)(before << 1);
+                    mem.PokeW(reg.A[dr], (ushort)after);
+#if DEBUG
+                    nimo += string.Format("(A{0})", dr);
+#endif
+                    cycle = 12;
+                    break;
+                case 3://(An)+
+                    before = (short)mem.PeekW(reg.A[dr]);
+                    after = (short)(before << 1);
+                    mem.PokeW(reg.A[dr], (ushort)after);
+                    reg.A[dr] += 2;
+#if DEBUG
+                    nimo += string.Format("(A{0})+", dr);
+#endif
+                    cycle = 12;
+                    break;
+                case 4://-(An)
+                    reg.A[dr] -= 2;
+                    before = (short)mem.PeekW(reg.A[dr]);
+                    after = (short)(before << 1);
+                    mem.PokeW(reg.A[dr], (ushort)after);
+#if DEBUG
+                    nimo += string.Format("-(A{0})", dr);
+#endif
+                    cycle = 14;
+                    break;
+                case 5://d16(An)
+                    Int16 d16 = (Int16)FetchW();
+                    before = (short)mem.PeekW((UInt32)(reg.A[dr]+d16));
+                    after = (short)(before << 1);
+                    mem.PokeW((UInt32)(reg.A[dr] + d16), (ushort)after);
+#if DEBUG
+                    nimo += string.Format("${0:x04}(A{1})", d16, dr);
+#endif
+                    cycle = 16;
+                    break;
+                case 6://d8(An,IX)
+                    vw = FetchW();
+                    isA = (vw & 0x8000) != 0;
+                    ni = (vw & 0x7000) >> 12;
+                    isL = (vw & 0x0800) != 0;
+                    IX = (isA ? reg.A[ni] : reg.D[ni]);
+#if DEBUG
+                    nimo += string.Format("${0:x02}(A{1},{2}{3}.{4})", (byte)vw, dr, isA ? "A" : "D", ni, isL ? "l" : "w");
+#endif
+
+                    if (!isL) ptr = (UInt32)(reg.A[dr] + ((sbyte)(byte)vw) + (Int16)(UInt16)IX);
+                    else ptr = (UInt32)(reg.A[dr] + ((sbyte)(byte)vw) + IX);
+                    before = (short)mem.PeekW(ptr);
+                    after = (short)(before << 1);
+                    mem.PokeW(ptr, (ushort)after);
+                    cycle = 18;
+                    break;
+                case 7://etc.
+                    switch (dr)
+                    {
+                        case 0://Abs.W
+                            ptr = (UInt32)(Int16)FetchW();
+#if DEBUG
+                            nimo += string.Format("${0:x04}", (Int16)ptr);
+#endif
+
+                            before = (short)mem.PeekW(ptr);
+                            after = (short)(before << 1);
+                            mem.PokeW(ptr, (ushort)after);
+                            cycle = 16;
+                            break;
+                        case 1://Abs.L
+                            ptr = FetchL();
+#if DEBUG
+                            nimo += string.Format("${0:x08}", (Int32)ptr);
+#endif
+
+                            before = (short)mem.PeekW(ptr);
+                            after = (short)(before << 1);
+                            mem.PokeW(ptr, (ushort)after);
+                            cycle = 20;
+                            break;
+                    }
+                    break;
+                default:
+                    throw new NotImplementedException();
+            }
+
+            reg.C = reg.X = ((before & 0x8000) != 0);
+            reg.SetN((ushort)after);
+            reg.SetZ((ushort)after);
+            reg.V = (before & 0xffff) != 0;
+
+#if DEBUG
+            Log.WriteLine(LogLevel.Trace, nimo);
+#endif
+
+            return cycle;
         }
 
         private int Casr_b_DnDn(ushort n)
@@ -12748,7 +13057,35 @@ namespace MDPlayer.Driver.ZMS.nise68
 
         private int Croxl_b_imm(ushort n)
         {
-            throw new NotImplementedException();
+#if DEBUG
+            string nimo;
+#endif
+
+            int cycle = 6;
+
+            int cnt = (n & 0x0e00) >> 9;
+            cnt = (cnt == 0) ? 8 : cnt;
+            int d = (n & 0x0007);
+#if DEBUG
+            nimo = string.Format("ROXL.b #{0:d},D{1}", cnt, d);
+#endif
+
+            cycle += 2 * cnt;
+            uint bv = reg.GetDb(d);
+            //uint av = (bv >> cnt) | (bv << (32 - cnt));//RLR
+            uint av = (uint)((bv << cnt) | (((uint)(reg.X ? 0x100 : 0x000) | bv) >> (9 - cnt)));
+            reg.SetDb(d, (byte)av);
+
+            reg.X = reg.C = (((bv << cnt) & 0x100) != 0);
+            reg.SetN((byte)av);
+            reg.SetZ((byte)av);
+            reg.V = false;
+
+#if DEBUG
+            Log.WriteLine(LogLevel.Trace, nimo);
+#endif
+
+            return cycle;
         }
 
         private int Croxl_w_DnDn(ushort n)
@@ -12862,7 +13199,8 @@ namespace MDPlayer.Driver.ZMS.nise68
 #endif
 
                     val = (sbyte)mem.PeekB(reg.A[sr]);
-                    reg.A[sr] += 1;
+                    reg.A[sr] ++;
+                    if (sr == 7) reg.A[sr]++;
                     break;
                 case 4://-(An)
                     if ((support & (1 << 4)) == 0) throw new NotImplementedException();
@@ -12870,7 +13208,8 @@ namespace MDPlayer.Driver.ZMS.nise68
                     if (nimoSw) nimo += string.Format("-(A{0})", sr);
 #endif
 
-                    reg.A[sr] -= 1;
+                    reg.A[sr]--;
+                    if (sr == 7) reg.A[sr]--;
                     val = (sbyte)mem.PeekB(reg.A[sr]);
                     break;
                 case 5://d16(An)

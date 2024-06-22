@@ -787,6 +787,20 @@ namespace MDPlayer
             }
         }
 
+        private Zmusic _Zmusic = new();
+        public Zmusic zmusic
+        {
+            get
+            {
+                return _Zmusic;
+            }
+
+            set
+            {
+                _Zmusic = value;
+            }
+        }
+
         private PlayList _playList = new();
         public PlayList playList
         {
@@ -3543,6 +3557,34 @@ namespace MDPlayer
                 }
             }
 
+            private Point[] _PosMPCMX68k = new Point[2] { Point.Empty, Point.Empty };
+            public Point[] PosMPCMX68k
+            {
+                get
+                {
+                    return _PosMPCMX68k;
+                }
+
+                set
+                {
+                    _PosMPCMX68k = value;
+                }
+            }
+
+            private bool[] _OpenMPCMX68k = new bool[2] { false, false };
+            public bool[] OpenMPCMX68k
+            {
+                get
+                {
+                    return _OpenMPCMX68k;
+                }
+
+                set
+                {
+                    _OpenMPCMX68k = value;
+                }
+            }
+
 
             private Point[] _PosSN76489 = new Point[2] { Point.Empty, Point.Empty };
             public Point[] PosSN76489
@@ -4261,6 +4303,8 @@ namespace MDPlayer
                     OpenOKIM6295 = this.OpenOKIM6295,
                     PosPCM8 = this.PosPCM8,
                     OpenPCM8 = this.OpenPCM8,
+                    PosMPCMX68k = this.PosMPCMX68k,
+                    OpenMPCMX68k = this.OpenMPCMX68k,
                     PosSN76489 = this.PosSN76489,
                     OpenSN76489 = this.OpenSN76489,
                     PosSegaPCM = this.PosSegaPCM,
@@ -5374,6 +5418,24 @@ namespace MDPlayer
         }
 
         [Serializable]
+        public class Zmusic
+        {
+            public int compilePriority = 0;
+            public int pcm8type = 1;
+
+            public Zmusic Copy()
+            {
+                Zmusic p = new()
+                {
+                    compilePriority = this.compilePriority,
+                    pcm8type = this.pcm8type
+                };
+
+                return p;
+            }
+        }
+
+        [Serializable]
         public class PlayList
         {
             public bool isJP { get; set; } = false;
@@ -5878,6 +5940,7 @@ namespace MDPlayer
             setting.nukedOPN2 = this.nukedOPN2.Copy();
             setting.autoBalance = this.autoBalance.Copy();
             setting.pmdDotNET = this.pmdDotNET.Copy();
+            setting.zmusic = this.zmusic.Copy();
             setting.playList = this.playList.Copy();
 
             setting.keyBoardHook = this.keyBoardHook.Copy();

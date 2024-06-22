@@ -69,6 +69,7 @@ namespace MDPlayer.form
             tsmiPOKIM6258 = new ToolStripMenuItem();
             tsmiPOKIM6295 = new ToolStripMenuItem();
             tsmiPPCM8 = new ToolStripMenuItem();
+            tsmiPMPCMX68k = new ToolStripMenuItem();
             tsmiPPWM = new ToolStripMenuItem();
             tsmiPQSound = new ToolStripMenuItem();
             tsmiPRF5C164 = new ToolStripMenuItem();
@@ -118,6 +119,7 @@ namespace MDPlayer.form
             tsmiSOKIM6258 = new ToolStripMenuItem();
             tsmiSOKIM6295 = new ToolStripMenuItem();
             tsmiSPCM8 = new ToolStripMenuItem();
+            tsmiSMPCMX68k = new ToolStripMenuItem();
             tsmiSPWM = new ToolStripMenuItem();
             tsmiSRF5C164 = new ToolStripMenuItem();
             tsmiSRF5C68 = new ToolStripMenuItem();
@@ -186,6 +188,7 @@ namespace MDPlayer.form
             toolStripMenuItem77 = new ToolStripMenuItem();
             toolStripMenuItem78 = new ToolStripMenuItem();
             toolStripMenuItem79 = new ToolStripMenuItem();
+            mPCMX68kToolStripMenuItem = new ToolStripMenuItem();
             toolStripMenuItem80 = new ToolStripMenuItem();
             toolStripMenuItem81 = new ToolStripMenuItem();
             toolStripMenuItem82 = new ToolStripMenuItem();
@@ -235,6 +238,7 @@ namespace MDPlayer.form
             toolStripMenuItem28 = new ToolStripMenuItem();
             toolStripMenuItem29 = new ToolStripMenuItem();
             toolStripMenuItem30 = new ToolStripMenuItem();
+            mPCMX68kToolStripMenuItem1 = new ToolStripMenuItem();
             toolStripMenuItem31 = new ToolStripMenuItem();
             toolStripMenuItem32 = new ToolStripMenuItem();
             toolStripMenuItem33 = new ToolStripMenuItem();
@@ -472,7 +476,7 @@ namespace MDPlayer.form
             // 
             // tsmiCPPCM
             // 
-            tsmiCPPCM.DropDownItems.AddRange(new ToolStripItem[] { tsmiPC140, tsmiPC352, tsmiPGA20, tsmiPOKIM6258, tsmiPOKIM6295, tsmiPPCM8, tsmiPPWM, tsmiPQSound, tsmiPRF5C164, tsmiPRF5C68, tsmiPMultiPCM, tsmiPPPZ8, tsmiPSegaPCM, tsmiPK053260, tsmiPK054539 });
+            tsmiCPPCM.DropDownItems.AddRange(new ToolStripItem[] { tsmiPC140, tsmiPC352, tsmiPGA20, tsmiPOKIM6258, tsmiPOKIM6295, tsmiPPCM8, tsmiPMPCMX68k, tsmiPPWM, tsmiPQSound, tsmiPRF5C164, tsmiPRF5C68, tsmiPMultiPCM, tsmiPPPZ8, tsmiPSegaPCM, tsmiPK053260, tsmiPK054539 });
             tsmiCPPCM.Name = "tsmiCPPCM";
             resources.ApplyResources(tsmiCPPCM, "tsmiCPPCM");
             // 
@@ -511,6 +515,12 @@ namespace MDPlayer.form
             tsmiPPCM8.Name = "tsmiPPCM8";
             resources.ApplyResources(tsmiPPCM8, "tsmiPPCM8");
             tsmiPPCM8.Click += TsmiPPCM8_Click;
+            // 
+            // tsmiPMPCMX68k
+            // 
+            tsmiPMPCMX68k.Name = "tsmiPMPCMX68k";
+            resources.ApplyResources(tsmiPMPCMX68k, "tsmiPMPCMX68k");
+            tsmiPMPCMX68k.Click += TsmiPMPCMX68k_Click;
             // 
             // tsmiPPWM
             // 
@@ -766,7 +776,7 @@ namespace MDPlayer.form
             // 
             // tsmiCSPCM
             // 
-            tsmiCSPCM.DropDownItems.AddRange(new ToolStripItem[] { tsmiSC140, tsmiSC352, tsmiSGA20, tsmiSOKIM6258, tsmiSOKIM6295, tsmiSPCM8, tsmiSPWM, tsmiSRF5C164, tsmiSRF5C68, tsmiSSegaPCM, tsmiSMultiPCM, tsmiSPPZ8, tsmiSK053260, tsmiSK054539 });
+            tsmiCSPCM.DropDownItems.AddRange(new ToolStripItem[] { tsmiSC140, tsmiSC352, tsmiSGA20, tsmiSOKIM6258, tsmiSOKIM6295, tsmiSPCM8, tsmiSMPCMX68k, tsmiSPWM, tsmiSRF5C164, tsmiSRF5C68, tsmiSSegaPCM, tsmiSMultiPCM, tsmiSPPZ8, tsmiSK053260, tsmiSK054539 });
             tsmiCSPCM.Name = "tsmiCSPCM";
             resources.ApplyResources(tsmiCSPCM, "tsmiCSPCM");
             // 
@@ -805,6 +815,12 @@ namespace MDPlayer.form
             tsmiSPCM8.Name = "tsmiSPCM8";
             resources.ApplyResources(tsmiSPCM8, "tsmiSPCM8");
             tsmiSPCM8.Click += TsmiSPCM8_Click;
+            // 
+            // tsmiSMPCMX68k
+            // 
+            tsmiSMPCMX68k.Name = "tsmiSMPCMX68k";
+            resources.ApplyResources(tsmiSMPCMX68k, "tsmiSMPCMX68k");
+            tsmiSMPCMX68k.Click += TsmiSMPCMX68k_Click;
             // 
             // tsmiSPWM
             // 
@@ -1174,7 +1190,7 @@ namespace MDPlayer.form
             // 
             // toolStripMenuItem74
             // 
-            toolStripMenuItem74.DropDownItems.AddRange(new ToolStripItem[] { toolStripMenuItem75, toolStripMenuItem76, gA20ToolStripMenuItem, toolStripMenuItem77, toolStripMenuItem78, toolStripMenuItem79, toolStripMenuItem80, toolStripMenuItem81, toolStripMenuItem82, toolStripMenuItem83, toolStripMenuItem84, toolStripMenuItem85, toolStripMenuItem86, toolStripMenuItem87, k054539ToolStripMenuItem });
+            toolStripMenuItem74.DropDownItems.AddRange(new ToolStripItem[] { toolStripMenuItem75, toolStripMenuItem76, gA20ToolStripMenuItem, toolStripMenuItem77, toolStripMenuItem78, toolStripMenuItem79, mPCMX68kToolStripMenuItem, toolStripMenuItem80, toolStripMenuItem81, toolStripMenuItem82, toolStripMenuItem83, toolStripMenuItem84, toolStripMenuItem85, toolStripMenuItem86, toolStripMenuItem87, k054539ToolStripMenuItem });
             toolStripMenuItem74.Name = "toolStripMenuItem74";
             resources.ApplyResources(toolStripMenuItem74, "toolStripMenuItem74");
             // 
@@ -1213,6 +1229,12 @@ namespace MDPlayer.form
             toolStripMenuItem79.Name = "toolStripMenuItem79";
             resources.ApplyResources(toolStripMenuItem79, "toolStripMenuItem79");
             toolStripMenuItem79.Click += TsmiPPCM8_Click;
+            // 
+            // mPCMX68kToolStripMenuItem
+            // 
+            mPCMX68kToolStripMenuItem.Name = "mPCMX68kToolStripMenuItem";
+            resources.ApplyResources(mPCMX68kToolStripMenuItem, "mPCMX68kToolStripMenuItem");
+            mPCMX68kToolStripMenuItem.Click += TsmiPMPCMX68k_Click;
             // 
             // toolStripMenuItem80
             // 
@@ -1468,7 +1490,7 @@ namespace MDPlayer.form
             // 
             // toolStripMenuItem25
             // 
-            toolStripMenuItem25.DropDownItems.AddRange(new ToolStripItem[] { toolStripMenuItem26, toolStripMenuItem27, gA20ToolStripMenuItem1, toolStripMenuItem28, toolStripMenuItem29, toolStripMenuItem30, toolStripMenuItem31, toolStripMenuItem32, toolStripMenuItem33, toolStripMenuItem34, toolStripMenuItem35, toolStripMenuItem36, toolStripMenuItem37, k054539ToolStripMenuItem1 });
+            toolStripMenuItem25.DropDownItems.AddRange(new ToolStripItem[] { toolStripMenuItem26, toolStripMenuItem27, gA20ToolStripMenuItem1, toolStripMenuItem28, toolStripMenuItem29, toolStripMenuItem30, mPCMX68kToolStripMenuItem1, toolStripMenuItem31, toolStripMenuItem32, toolStripMenuItem33, toolStripMenuItem34, toolStripMenuItem35, toolStripMenuItem36, toolStripMenuItem37, k054539ToolStripMenuItem1 });
             toolStripMenuItem25.Name = "toolStripMenuItem25";
             resources.ApplyResources(toolStripMenuItem25, "toolStripMenuItem25");
             // 
@@ -1507,6 +1529,12 @@ namespace MDPlayer.form
             toolStripMenuItem30.Name = "toolStripMenuItem30";
             resources.ApplyResources(toolStripMenuItem30, "toolStripMenuItem30");
             toolStripMenuItem30.Click += TsmiSPCM8_Click;
+            // 
+            // mPCMX68kToolStripMenuItem1
+            // 
+            mPCMX68kToolStripMenuItem1.Name = "mPCMX68kToolStripMenuItem1";
+            resources.ApplyResources(mPCMX68kToolStripMenuItem1, "mPCMX68kToolStripMenuItem1");
+            mPCMX68kToolStripMenuItem1.Click += TsmiSMPCMX68k_Click;
             // 
             // toolStripMenuItem31
             // 
@@ -2450,6 +2478,10 @@ namespace MDPlayer.form
         private ToolStripMenuItem tsmiSK054539;
         private ToolStripMenuItem k054539ToolStripMenuItem;
         private ToolStripMenuItem k054539ToolStripMenuItem1;
+        private ToolStripMenuItem tsmiPMPCMX68k;
+        private ToolStripMenuItem tsmiSMPCMX68k;
+        private ToolStripMenuItem mPCMX68kToolStripMenuItem;
+        private ToolStripMenuItem mPCMX68kToolStripMenuItem1;
     }
 }
 

@@ -1,6 +1,7 @@
 ﻿#if X64
 using MDPlayerx64;
 using System;
+using System.Diagnostics;
 #else
 using MDPlayer.Properties;
 #endif
@@ -58,7 +59,6 @@ namespace MDPlayer.form
                 oldParam.YM2610PSG    ,
                 oldParam.YM2610AdpcmA ,
                 oldParam.YM2610AdpcmB ,
-
                 oldParam.YM2413,
                 oldParam.YM3526,
                 oldParam.Y8950,
@@ -68,6 +68,7 @@ namespace MDPlayer.form
                 oldParam.YMZ280B,
                 oldParam.YMF271,
                 null,
+
                 oldParam.AY8910,
                 oldParam.SN76489,
                 oldParam.HuC6280,
@@ -75,9 +76,25 @@ namespace MDPlayer.form
                 null,
                 null,
                 null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                oldParam.APU,
+                oldParam.DMC,
+                oldParam.FDS,
+                oldParam.MMC5,
+                oldParam.N160,
+                oldParam.VRC6,
+                oldParam.VRC7,
+                oldParam.FME7,
+                oldParam.DMG,
 
-                null,
-                null,
                 oldParam.RF5C164,
                 oldParam.RF5C68,
                 oldParam.PWM,
@@ -92,21 +109,15 @@ namespace MDPlayer.form
                 oldParam.K054539,
                 oldParam.QSound,
                 oldParam.GA20,
-
-                oldParam.APU,
-                oldParam.DMC,
-                oldParam.FDS,
-                oldParam.MMC5,
-                oldParam.N160,
-                oldParam.VRC6,
-                oldParam.VRC7,
-                oldParam.FME7,
-                oldParam.DMG,
-                null,
-                null,
                 null,
                 null,
                 oldParam.PPZ8,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
                 oldParam.GimicOPN,
                 oldParam.GimicOPNA
             ];
@@ -128,7 +139,6 @@ namespace MDPlayer.form
                 newParam.YM2610PSG,
                 newParam.YM2610AdpcmA,
                 newParam.YM2610AdpcmB,
-
                 newParam.YM2413,
                 newParam.YM3526,
                 newParam.Y8950,
@@ -138,6 +148,7 @@ namespace MDPlayer.form
                 newParam.YMZ280B,
                 newParam.YMF271,
                 null,
+
                 newParam.AY8910,
                 newParam.SN76489,
                 newParam.HuC6280,
@@ -145,9 +156,25 @@ namespace MDPlayer.form
                 null,
                 null,
                 null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                newParam.APU,
+                newParam.DMC,
+                newParam.FDS,
+                newParam.MMC5,
+                newParam.N160,
+                newParam.VRC6,
+                newParam.VRC7,
+                newParam.FME7,
+                newParam.DMG,
 
-                null,
-                null,
                 newParam.RF5C164,
                 newParam.RF5C68,
                 newParam.PWM,
@@ -162,31 +189,30 @@ namespace MDPlayer.form
                 newParam.K054539,
                 newParam.QSound,
                 newParam.GA20,
-
-                newParam.APU,
-                newParam.DMC,
-                newParam.FDS,
-                newParam.MMC5,
-                newParam.N160,
-                newParam.VRC6,
-                newParam.VRC7,
-                newParam.FME7,
-                newParam.DMG,
-                null,
-                null,
                 null,
                 null,
                 newParam.PPZ8,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
                 newParam.GimicOPN,
                 newParam.GimicOPNA
             ];
         }
 
+        int width = 25;
+        int height = 3;
+        int faderWidth = 20;
+        int faderHeight = 72;
+
         private void pbScreen_MouseWheel(object sender, MouseEventArgs e)
         {
             int px = e.Location.X / parent.setting.other.Zoom;
             int py = e.Location.Y / parent.setting.other.Zoom;
-            chipn = px / 20 + (py / 72) * 16;
+            chipn = px / faderWidth + (py / faderHeight) * width;
             int delta = Math.Sign(e.Delta);
 
             if (chipn < 0 || chipn >= SetVolume.Length) return;
@@ -721,7 +747,7 @@ namespace MDPlayer.form
             do
             {
                 cn++;
-                if (cn >= 16 * 4) cn = 0;
+                if (cn >= width * height) cn = 0;
             } while (oVITbl[cn] == null);
         }
 
@@ -730,8 +756,8 @@ namespace MDPlayer.form
         {
             DrawBuff.drawFader(
                 frameBuffer
-                , 5 + (num % 16) * 20
-                , 16 + (num / 16) * 8 * 9
+                , 5 + (num % width) * faderWidth
+                , 16 + (num / width) * faderHeight
                 , num == 0 ? 0 : 1
                 , ref oVI.Volume
                 , nVI.Volume);
@@ -743,8 +769,8 @@ namespace MDPlayer.form
             }
             DrawBuff.MixerVolume(
                 frameBuffer
-                , 2 + (num % 16) * 20
-                , 10 + (num / 16) * 8 * 9
+                , 2 + (num % width) * faderWidth
+                , 10 + (num / width) * faderHeight
                 , ref oVI.VisVolume1
                 , nVI.VisVolume1
                 , ref oVI.VisVolume2
@@ -755,8 +781,8 @@ namespace MDPlayer.form
         {
             DrawBuff.drawGFader(
                 frameBuffer
-                , 5 + (num % 16) * 20
-                , 16 + (num / 16) * 8 * 9
+                , 5 + (num % width) * faderWidth
+                , 16 + (num / width) * faderHeight
                 , num == 0 ? 0 : 1
                 , ref oVI.Volume
                 , nVI.Volume);
@@ -768,8 +794,8 @@ namespace MDPlayer.form
             }
             DrawBuff.MixerVolume(
                 frameBuffer
-                , 2 + (num % 16) * 20
-                , 10 + (num / 16) * 8 * 9
+                , 2 + (num % width) * faderWidth
+                , 10 + (num / width) * faderHeight
                 , ref oVI.VisVolume1
                 , nVI.VisVolume1
                 , ref oVI.VisVolume2
@@ -840,7 +866,7 @@ namespace MDPlayer.form
         {
             int px = e.Location.X / parent.setting.other.Zoom;
             int py = e.Location.Y / parent.setting.other.Zoom;
-            chipn = px / 20 + (py / 72) * 16;
+            chipn = px / faderWidth + (py / faderHeight) * width;
             bool b = e.Button == MouseButtons.Middle;
             if (b) SetVolume[chipn]?.Invoke(true, 0);
         }
@@ -855,7 +881,7 @@ namespace MDPlayer.form
             int px = e.Location.X / parent.setting.other.Zoom;
             int py = e.Location.Y / parent.setting.other.Zoom;
 
-            chipn = px / 20 + (py / 72) * 16;
+            chipn = px / faderWidth + (py / faderHeight) * width;
 
         }
 
@@ -863,37 +889,39 @@ namespace MDPlayer.form
         {
             int px = e.Location.X / parent.setting.other.Zoom;
             int py = e.Location.Y / parent.setting.other.Zoom;
-            py = py % 72;
             int n = 0;
             if ((e.Button & MouseButtons.Left) == MouseButtons.Left)
             {
-                if (chipn < 62)
+                int min = chipn / width * faderHeight + 10;
+                int max = min + faderHeight - 28;
+
+                if (chipn < oVITbl.Length - 2)
                 {
-                    if (py < 18)
-                    {
-                        n = (18 - py) > 8 ? 8 : (18 - py);
-                        n = (int)(n * 2.5);
-                    }
-                    else if (py == 18)
-                    {
-                        n = 0;
-                    }
-                    else
-                    {
-                        n = (18 - py) < -35 ? -35 : (18 - py);
-                        n = (int)(n * (192.0 / 35.0));
-                    }
+                    //if (py < 18)
+                    //{
+                    //    n = (18 - py) > 8 ? 8 : (18 - py);
+                    //    n = (int)(n * 2.5);
+                    //}
+                    //else if (py == 18)
+                    //{
+                    //    n = 0;
+                    //}
+                    //else
+                    //{
+                    //    n = (18 - py) < -35 ? -35 : (18 - py);
+                    //    n = (int)(n * (192.0 / 35.0));
+                    //}
+                    n = (int)(
+                        20
+                        - (
+                            (Math.Min(Math.Max(py, min), max) - min) * (212.0 / (max - min))
+                            )
+                        );
+                    //n -= 192;
                 }
                 else
                 {
-                    if (py < 0)
-                    {
-                        n = 127;
-                    }
-                    else
-                    {
-                        n = (int)((72 - py) * (127.0 / 72.0));
-                    }
+                    n = (int)(127 - ((Math.Min(Math.Max(py, min), max) - min) * (127.0 / (max - min))));
                 }
 
                 if (chipn < 0 || chipn >= SetVolume.Length) return;
@@ -909,21 +937,25 @@ namespace MDPlayer.form
                 , Audio.SetYM2203PSGVolume , Audio.SetYM2612Volume       , Audio.SetYM2608Volume       , Audio.SetYM2608FMVolume
                 , Audio.SetYM2608PSGVolume , Audio.SetYM2608RhythmVolume , Audio.SetYM2608AdpcmVolume  , Audio.SetYM2610Volume
                 , Audio.SetYM2610FMVolume  , Audio.SetYM2610PSGVolume    , Audio.SetYM2610AdpcmAVolume , Audio.SetYM2610AdpcmBVolume
-
                 , Audio.SetYM2413Volume    , Audio.SetYM3526Volume       , Audio.SetY8950Volume        , Audio.SetYM3812Volume
                 , Audio.SetYMF262Volume    , Audio.SetYMF278BVolume      , Audio.SetYMZ280BVolume      , Audio.SetYMF271Volume
-                , null                     , Audio.SetAY8910Volume       , Audio.SetSN76489Volume      , Audio.SetHuC6280Volume
-                , Audio.SetSA1099Volume    , null                        , null                        , null
-
-                , null                     , null                        , Audio.SetRF5C164Volume      , Audio.SetRF5C68Volume
-                , Audio.SetPWMVolume       , Audio.SetOKIM6258Volume     , Audio.SetOKIM6295Volume     , Audio.SetC140Volume
-                , Audio.SetC352Volume      , Audio.SetSegaPCMVolume      , Audio.SetMultiPCMVolume     , Audio.SetK051649Volume
-                , Audio.SetK053260Volume   , Audio.SetK054539Volume      , Audio.SetQSoundVolume       , Audio.SetGA20Volume
-
+                , null                     
+            
+                , Audio.SetAY8910Volume    , Audio.SetSN76489Volume      , Audio.SetHuC6280Volume      , Audio.SetSA1099Volume
+                , null                     , null                        , null                        , null
+                , null                     , null                        , null                        , null
+                , null                     , null                        , null                        , null
                 , Audio.SetAPUVolume       , Audio.SetDMCVolume          , Audio.SetFDSVolume          , Audio.SetMMC5Volume
                 , Audio.SetN160Volume      , Audio.SetVRC6Volume         , Audio.SetVRC7Volume         , Audio.SetFME7Volume
-                , Audio.SetDMGVolume       , null                        , null                        , null
-                , null                     , Audio.SetPPZ8Volume         , Audio.SetGimicOPNVolume     , Audio.SetGimicOPNAVolume
+                , Audio.SetDMGVolume       
+
+                , Audio.SetRF5C164Volume   , Audio.SetRF5C68Volume       , Audio.SetPWMVolume          , Audio.SetOKIM6258Volume
+                , Audio.SetOKIM6295Volume  , Audio.SetC140Volume         , Audio.SetC352Volume         , Audio.SetSegaPCMVolume
+                , Audio.SetMultiPCMVolume  , Audio.SetK051649Volume      , Audio.SetK053260Volume      , Audio.SetK054539Volume
+                , Audio.SetQSoundVolume    , Audio.SetGA20Volume         , null                        , null
+                , Audio.SetPPZ8Volume      , null                        , null                        , null
+                , null                     , null                        , null                        , Audio.SetGimicOPNVolume
+                , Audio.SetGimicOPNAVolume
         };
 
 

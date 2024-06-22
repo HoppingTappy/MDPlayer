@@ -1,5 +1,6 @@
 ﻿#if X64
 using MDPlayer.Driver.MXDRV;
+using MDPlayer.Driver.ZMS;
 using MDPlayerx64;
 #else
 using MDPlayer.Properties;
@@ -86,9 +87,21 @@ namespace MDPlayer.form
 
         public void screenChangeParams()
         {
-            if (Audio.DriverVirtual is not MXDRV) return;
-            MXDRV mdx=Audio.DriverVirtual as MXDRV;
-            MXDRV.Pcm8St[] pcm8St = mdx.pcm8St;
+            MXDRV.Pcm8St[] pcm8St;
+            if (Audio.DriverVirtual is MXDRV)
+            {
+                MXDRV mdx = Audio.DriverVirtual as MXDRV;
+                pcm8St = mdx.pcm8St;
+            }
+            else if (Audio.DriverVirtual is ZMS)
+            {
+                ZMS zms = Audio.DriverVirtual as ZMS;
+                pcm8St = zms.pcm8St;
+            }
+            else
+            {
+                return;
+            }
 
             for (int ch = 0; ch < pcm8St.Length; ch++)
             {
@@ -96,9 +109,9 @@ namespace MDPlayer.form
                 if (pcm8St[ch].Keyon)
                 {
                     nyc.volume = Math.Min(Math.Max((int)(((pcm8St[ch].mode >> 16) & 0x0f) * 20.0 / 16.0), 0), 19);
-                    nyc.volumeL = (int)((pcm8St[ch].mode >> 16) & 0x0f);
-                    nyc.freq = (int)((pcm8St[ch].mode >> 8) & 0x07);
-                    nyc.pcmMode = (int)((pcm8St[ch].mode >> 0) & 0x03);
+                    nyc.volumeL = (int)((pcm8St[ch].mode >> 16) & 0xff);
+                    nyc.freq = (int)((pcm8St[ch].mode >> 8) & 0xff);
+                    nyc.pcmMode = (int)((pcm8St[ch].mode >> 0) & 0xff);
                     nyc.utp = pcm8St[ch].tablePtr;
                     nyc.utl = pcm8St[ch].length;
                     pcm8St[ch].Keyon = false;

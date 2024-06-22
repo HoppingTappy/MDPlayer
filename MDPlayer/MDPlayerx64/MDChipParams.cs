@@ -70,6 +70,7 @@
             public bool[] bit = new bool[67];
             public short[] aryWave16bit = null;
             public byte[] PSGWave = null;
+            public uint[] adr = new uint[16];
 
             public Channel()
             {
@@ -240,6 +241,17 @@
             };
         }
         public PCM8[] pcm8 = new PCM8[] { new PCM8(), new PCM8() };
+
+        public class MPCMX68k
+        {
+            public Channel[] channels = new Channel[16] {
+                new Channel(), new Channel(), new Channel(), new Channel(),
+                new Channel(), new Channel(), new Channel(), new Channel(),
+                new Channel(), new Channel(), new Channel(), new Channel(),
+                new Channel(), new Channel(), new Channel(), new Channel()
+            };
+        }
+        public MPCMX68k[] mpcmX68k = new MPCMX68k[] { new MPCMX68k(), new MPCMX68k() };
 
         public class SegaPcm
         {

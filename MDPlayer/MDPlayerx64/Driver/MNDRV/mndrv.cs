@@ -1,9 +1,12 @@
-﻿namespace MDPlayer.Driver.MNDRV
+﻿using MDPlayer.Driver.ZMS.nise68;
+using static MDPlayer.Driver.ZMS.ZMS;
+
+namespace MDPlayer.Driver.MNDRV
 {
     public class mndrv : baseDriver
     {
         public List<Tuple<string, byte[]>> ExtendFile = null;
-
+        public ZMS.ZMS.MPCMSt[] mpcmSt = new MPCMSt[16] { new(), new(), new(), new(), new(), new(), new(), new(), new(), new(), new(), new(), new(), new(), new(), new() };
 
         public override bool init(byte[] vgmBuf, ChipRegister chipRegister, EnmModel model, EnmChip[] useChip, uint latency, uint waitTime)
         {
@@ -303,29 +306,34 @@
             {
                 case 0x00:
                     m_MPCM.KeyOn(0, ch);
+                    mpcmSt[ch].Keyon = true;
                     break;
                 case 0x01:
                     m_MPCM.KeyOff(0, ch);
+                    mpcmSt[ch].Keyoff = true;
                     break;
                 case 0x02:
-                    tbl.type = mm.ReadByte(0x00 + reg.a1);
-                    tbl.orig = mm.ReadByte(0x01 + reg.a1);
+                    mpcmSt[ch].type = tbl.type = mm.ReadByte(0x00 + reg.a1);
+                    mpcmSt[ch].orig = tbl.orig = mm.ReadByte(0x01 + reg.a1);
                     tbl.adrs_buf = mm.mm;
-                    tbl.adrs_ptr = (int)mm.ReadUInt32(0x04 + reg.a1);
-                    tbl.size = mm.ReadUInt32(0x08 + reg.a1);
-                    tbl.start = mm.ReadUInt32(0x0c + reg.a1);
-                    tbl.end = mm.ReadUInt32(0x10 + reg.a1);
-                    tbl.count = mm.ReadUInt32(0x14 + reg.a1);
+                    mpcmSt[ch].adrs_ptr = tbl.adrs_ptr = (int)mm.ReadUInt32(0x04 + reg.a1);
+                    mpcmSt[ch].size = tbl.size = mm.ReadUInt32(0x08 + reg.a1);
+                    mpcmSt[ch].start = tbl.start = mm.ReadUInt32(0x0c + reg.a1);
+                    mpcmSt[ch].end = tbl.end = mm.ReadUInt32(0x10 + reg.a1);
+                    mpcmSt[ch].count = tbl.count = mm.ReadUInt32(0x14 + reg.a1);
                     m_MPCM.SetPcm(0, ch, tbl);
                     break;
                 case 0x04:
                     m_MPCM.SetPitch(0, ch, (int)reg.D1_L);
+                    mpcmSt[ch].pitch = (int)reg.D1_L;
                     break;
                 case 0x05:
                     m_MPCM.SetVol(0, ch, (int)(reg.D1_B));
+                    mpcmSt[ch].volume = (int)reg.D1_B;
                     break;
                 case 0x06:
                     m_MPCM.SetPan(0, ch, (int)(reg.D1_B));
+                    mpcmSt[ch].pan = (int)reg.D1_B;
                     break;
                 case 0x80:
                     switch (reg.D0_B)

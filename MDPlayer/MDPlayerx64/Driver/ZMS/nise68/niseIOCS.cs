@@ -26,7 +26,7 @@ namespace MDPlayer.Driver.ZMS.nise68
                 //20
                 null ,null,null,null, null,null,null,null,  null,null,_B_CLR_ST,null, null,null,null,null,
                 //30
-                null ,null,null,null, null,null,null,null,  null,null,null,null, null,null,null,null,
+                _SET232C ,null,null,null, null,null,null,null,  null,null,null,null, null,null,null,null,
                 //40
                 null ,null,null,null, null,null,null,null,  null,null,null,null, null,null,null,null,
                 //50
@@ -34,7 +34,7 @@ namespace MDPlayer.Driver.ZMS.nise68
                 //60
                 _ADPCMOUT ,null,null,null, null,null,null,_ADPCMMOD,  null,null,_OPMINTST,null, null,null,null,null,
                 //70
-                null ,null,null,null, null,null,null,null,  null,null,null,null, null,null,null,null,
+                _MS_INIT ,null,null,null, null,null,null,null,  null,null,null,null, null,null,null,null,
                 //80
                 _B_INTVCS ,_B_SUPER,null,null, null,null,null,null,  null,null,_DMAMOVE,null, null,null,null,null,
                 //90
@@ -107,6 +107,20 @@ namespace MDPlayer.Driver.ZMS.nise68
             byte clrArea = reg.GetDb(1);
         }
 
+        private void _SET232C()
+        {
+            Log.WriteLine(LogLevel.Trace, "IOCS _SET232C");
+
+            reg.SR = mem.PeekW(reg.SSP);
+            reg.SSP += 2;
+            reg.PC = mem.PeekL(reg.SSP);
+            reg.SSP += 4;
+
+            ushort settingNumber = reg.GetDw(1);
+
+            reg.SetDl(0, 0x0000_0000);//以前の設定値を返す
+        }
+
         private void _ADPCMOUT()
         {
             Log.WriteLine(LogLevel.Trace, "IOCS _ADPCMOUT");
@@ -144,6 +158,18 @@ namespace MDPlayer.Driver.ZMS.nise68
 
             interruptOPM = reg.GetAl(1);
             reg.SetDl(0,0);
+        }
+
+        private void _MS_INIT()
+        {
+            Log.WriteLine(LogLevel.Trace, "IOCS _MS_INIT");
+
+            reg.SR = mem.PeekW(reg.SSP);
+            reg.SSP += 2;
+            reg.PC = mem.PeekL(reg.SSP);
+            reg.SSP += 4;
+
+            //マウスの初期化
         }
 
         private void _B_INTVCS()

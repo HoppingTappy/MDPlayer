@@ -249,6 +249,27 @@ namespace MDPlayer
         {
         }
 
+        public static void screenInitMPCMX68k(FrameBuffer screen)
+        {
+            for (int y = 0; y < 16; y++)
+            {
+                drawFont8(screen, 142*4, y * 8 + 8, 1, "   ");
+                for (int i = 0; i < 96; i++)
+                {
+                    int kx = Tables.kbl[(i % 12) * 2] + i / 12 * 28;
+                    int kt = Tables.kbl[(i % 12) * 2 + 1];
+                    drawKbn(screen, 40 + kx, y * 8 + 8, kt, 0);
+                }
+
+                drawPanP(screen, 32, y * 8 + 8, 3, 0);
+
+                int d = 99;
+                Volume(screen, 132*4 , 8 + y * 8, 1, ref d, 0, 0);
+                d = 99;
+                Volume(screen, 132*4 , 8 + y * 8, 2, ref d, 0, 0);
+            }
+        }
+
         public static void screenInitSN76489(FrameBuffer screen, int tp)
         {
 
@@ -1979,6 +2000,18 @@ namespace MDPlayer
             }
 
             ChPCM8_P(screen, 0, 8 + ch * 8, ch, nm == null ? false : (bool)nm, tp);
+            om = nm;
+        }
+
+        public static void ChMPCMX68k(FrameBuffer screen, int ch, ref bool? om, bool? nm, int tp)
+        {
+
+            if (om == nm)
+            {
+                return;
+            }
+
+            ChMPCMX68k_P(screen, 0, 8 + ch * 8, ch, nm == null ? false : (bool)nm, tp);
             om = nm;
         }
 
@@ -4265,6 +4298,14 @@ namespace MDPlayer
 
             screen.drawByteArray(x, y, rType[tp * 2 + (mask ? 1 : 0)], 128, 64, 0, 24, 8);
             drawFont8(screen, x + 24, y, mask ? 1 : 0, (1 + ch).ToString());
+        }
+
+        private static void ChMPCMX68k_P(FrameBuffer screen, int x, int y, int ch, bool mask, int tp)
+        {
+            if (screen == null) return;
+
+            screen.drawByteArray(x, y, rType[tp * 2 + (mask ? 1 : 0)], 128, 64, 0, 24, 8);
+            drawFont4Int2(screen, x + 24, y, mask ? 1 : 0,2, 1 + ch);
         }
 
         private static void ChPPZ8_P(FrameBuffer screen, int x, int y, int ch, bool mask, int tp)

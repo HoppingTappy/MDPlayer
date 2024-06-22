@@ -1171,4 +1171,10 @@ VGMファイルなどのPlayer(メガドライブ音源チップなどのエミ�
   <data name="planeK054539" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\planeK054539.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="planeMpcmX68k" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\planeMpcmX68k.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="DefaultVolumeBalance_ZMD" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\DefaultVolumeBalance_ZMD.xml;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;shift_jis</value>
+  </data>
 </root>

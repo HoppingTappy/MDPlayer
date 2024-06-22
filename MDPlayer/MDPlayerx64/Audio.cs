@@ -3718,25 +3718,50 @@ namespace MDPlayer
                 UseChip.Add(EnmChip.OKIM6258);
                 ((Driver.ZMS.ZMS) DriverVirtual).mpcm = mpcm;
 
-                MDSound.ym2151_x68sound opmPCM = new MDSound.ym2151_x68sound();
-                opmPCM.x68sound[0] = new MDSound.NX68Sound.X68Sound();
-                opmPCM.sound_Iocs[0] = new MDSound.NX68Sound.sound_iocs(opmPCM.x68sound[0]);
-                MDSound.MDSound.Chip opmPCMc = new MDSound.MDSound.Chip
+                if (setting.zmusic.pcm8type == 0)
                 {
-                    type = MDSound.MDSound.enmInstrumentType.YM2151x68soundPCM,
-                    ID=0,
-                    Instrument = opmPCM,
-                    Update = opmPCM.Update,
-                    Start = opmPCM.Start,
-                    Stop = opmPCM.Stop,
-                    Reset = opmPCM.Reset,
-                    Volume = 0,
-                    Clock = 4_000_000,
-                    SamplingRate = (UInt32)4_000_000 / 64,
-                    Option = new object[3] { 0, 1, 0 }
-                };
-                lstChips.Add(opmPCMc);
-                ((Driver.ZMS.ZMS)DriverVirtual).opmPCM = opmPCM;
+                    MDSound.ym2151_x68sound opmPCM = new MDSound.ym2151_x68sound();
+                    opmPCM.x68sound[0] = new MDSound.NX68Sound.X68Sound();
+                    opmPCM.sound_Iocs[0] = new MDSound.NX68Sound.sound_iocs(opmPCM.x68sound[0]);
+                    MDSound.MDSound.Chip opmPCMc = new MDSound.MDSound.Chip
+                    {
+                        type = MDSound.MDSound.enmInstrumentType.YM2151x68soundPCM,
+                        ID = 0,
+                        Instrument = opmPCM,
+                        Update = opmPCM.Update,
+                        Start = opmPCM.Start,
+                        Stop = opmPCM.Stop,
+                        Reset = opmPCM.Reset,
+                        Volume = 0,
+                        Clock = 4_000_000,
+                        SamplingRate = (UInt32)4_000_000 / 64,
+                        Option = new object[3] { 0, 1, 0 }
+                    };
+                    lstChips.Add(opmPCMc);
+                    ((Driver.ZMS.ZMS)DriverVirtual).opmPCM = opmPCM;
+                    ((Driver.ZMS.ZMS)DriverVirtual).pcm8type = 0;
+                }
+                else
+                {
+                    MDSound.PCM8PP pcm8pp = new MDSound.PCM8PP();
+                    MDSound.MDSound.Chip pcm8ppc = new MDSound.MDSound.Chip
+                    {
+                        type = MDSound.MDSound.enmInstrumentType.PCM8PP,
+                        ID = 0,
+                        Instrument = pcm8pp,
+                        Update = pcm8pp.Update,
+                        Start = pcm8pp.Start,
+                        Stop = pcm8pp.Stop,
+                        Reset = pcm8pp.Reset,
+                        Volume = 0,
+                        Clock = 4_000_000,
+                        SamplingRate = (uint)setting.outputDevice.SampleRate,
+                        Option = null
+                    };
+                    lstChips.Add(pcm8ppc);
+                    ((Driver.ZMS.ZMS)DriverVirtual).pcm8pp = pcm8pp;
+                    ((Driver.ZMS.ZMS)DriverVirtual).pcm8type = 1;
+                }
 
                 if (hiyorimiNecessary) hiyorimiNecessary = true;
                 else hiyorimiNecessary = false;
@@ -3757,19 +3782,86 @@ namespace MDPlayer
                 DriverVirtual.SetYM2151Hosei(4000000);
                 DriverReal?.SetYM2151Hosei(4000000);
 
+                ChipLED.PriPCM8 = 0;
+                ChipLED.PriMPCMX68k = 0;
 
                 //ZMSの場合は事前にコンパイルを実施
                 if (fm == EnmFileFormat.ZMS)
                 {
-                    if (((Driver.ZMS.ZMS)DriverVirtual).Compile(vgmBuf))
+                    switch (setting.zmusic.compilePriority)
                     {
-                        vgmBuf = ((Driver.ZMS.ZMS)DriverReal).CompiledData = ((Driver.ZMS.ZMS)DriverVirtual).CompiledData;
-                    }
-                    else if(((Driver.ZMS.ZMS)DriverVirtual).Compilev2(vgmBuf))
-                    {
-                        vgmBuf = ((Driver.ZMS.ZMS)DriverReal).CompiledData = ((Driver.ZMS.ZMS)DriverVirtual).CompiledData;
-                        ((Driver.ZMS.ZMS)DriverVirtual).version = 2;
-                        ((Driver.ZMS.ZMS)DriverReal).version = 2;
+                        case 0:
+                            //Version3優先
+                            if (((Driver.ZMS.ZMS)DriverVirtual).Compile(vgmBuf))
+                            {
+                                vgmBuf = ((Driver.ZMS.ZMS)DriverReal).CompiledData = ((Driver.ZMS.ZMS)DriverVirtual).CompiledData;
+                                ChipLED.PriMPCMX68k = 1;
+                            }
+                            else if (((Driver.ZMS.ZMS)DriverVirtual).Compilev2(vgmBuf))
+                            {
+                                vgmBuf = ((Driver.ZMS.ZMS)DriverReal).CompiledData = ((Driver.ZMS.ZMS)DriverVirtual).CompiledData;
+                                ((Driver.ZMS.ZMS)DriverVirtual).version = 2;
+                                ((Driver.ZMS.ZMS)DriverReal).version = 2;
+                                ChipLED.PriPCM8 = 1;
+                            }
+                            else
+                            {
+                                //compile error
+                                ErrMsg = "Compile Error.Check console log.";
+                                return false;
+                            }
+                            break;
+                        case 1:
+                            //Version2優先
+                            if (((Driver.ZMS.ZMS)DriverVirtual).Compilev2(vgmBuf))
+                            {
+                                vgmBuf = ((Driver.ZMS.ZMS)DriverReal).CompiledData = ((Driver.ZMS.ZMS)DriverVirtual).CompiledData;
+                                ((Driver.ZMS.ZMS)DriverVirtual).version = 2;
+                                ((Driver.ZMS.ZMS)DriverReal).version = 2;
+                                ChipLED.PriPCM8 = 1;
+                            }
+                            else if (((Driver.ZMS.ZMS)DriverVirtual).Compile(vgmBuf))
+                            {
+                                vgmBuf = ((Driver.ZMS.ZMS)DriverReal).CompiledData = ((Driver.ZMS.ZMS)DriverVirtual).CompiledData;
+                                ChipLED.PriMPCMX68k = 1;
+                            }
+                            else
+                            {
+                                //compile error
+                                ErrMsg = "Compile Error.Check console log.";
+                                return false;
+                            }
+                            break;
+                        case 2:
+                            //Version3のみ
+                            if (((Driver.ZMS.ZMS)DriverVirtual).Compile(vgmBuf))
+                            {
+                                vgmBuf = ((Driver.ZMS.ZMS)DriverReal).CompiledData = ((Driver.ZMS.ZMS)DriverVirtual).CompiledData;
+                                ChipLED.PriMPCMX68k = 1;
+                            }
+                            else
+                            {
+                                //compile error
+                                ErrMsg = "Compile Error.Check console log.";
+                                return false;
+                            }
+                            break;
+                        case 3:
+                            //Version2のみ
+                            if (((Driver.ZMS.ZMS)DriverVirtual).Compilev2(vgmBuf))
+                            {
+                                vgmBuf = ((Driver.ZMS.ZMS)DriverReal).CompiledData = ((Driver.ZMS.ZMS)DriverVirtual).CompiledData;
+                                ((Driver.ZMS.ZMS)DriverVirtual).version = 2;
+                                ((Driver.ZMS.ZMS)DriverReal).version = 2;
+                                ChipLED.PriPCM8 = 1;
+                            }
+                            else
+                            {
+                                //compile error
+                                ErrMsg = "Compile Error.Check console log.";
+                                return false;
+                            }
+                            break;
                     }
                 }
                 else
@@ -3791,10 +3883,11 @@ namespace MDPlayer
                     ChipLED.SecMID = (byte)(useMIDI2 ? 1 : 0);
                     ChipLED.TrdMID = (byte)(useMIDI3 ? 1 : 0);
                     ChipLED.ForMID = (byte)(useMIDI4 ? 1 : 0);
+                    ChipLED.PriMPCMX68k = (byte)(useMPCM ? 1 : 0);
                 }
                 else
                 {
-
+                    ChipLED.PriPCM8 = 1;
                 }
 
 
@@ -4394,7 +4487,10 @@ namespace MDPlayer
                 }
                 UseChip.Add(EnmChip.YM2151);
 
-                MDSound.ym2151_x68sound mdxPCM_V = new();
+                MDSound.ym2151_x68sound mdxPCM_V=null;
+                MDSound.ym2151_x68sound mdxPCM_R = null;
+                MDSound.PCM8PP pcm8pp = null;
+                mdxPCM_V = new();
                 mdxPCM_V.x68sound[0] = new MDSound.NX68Sound.X68Sound();
                 mdxPCM_V.sound_Iocs[0] = new MDSound.NX68Sound.sound_iocs(mdxPCM_V.x68sound[0]);
 
@@ -4412,10 +4508,34 @@ namespace MDPlayer
                 };
                 lstChips.Add(chip);
 
-                MDSound.ym2151_x68sound mdxPCM_R = new();
+                mdxPCM_R = new();
                 mdxPCM_R.x68sound[0] = new MDSound.NX68Sound.X68Sound();
                 mdxPCM_R.sound_Iocs[0] = new MDSound.NX68Sound.sound_iocs(mdxPCM_R.x68sound[0]);
                 UseChip.Add(EnmChip.PCM8);
+                ((Driver.MXDRV.MXDRV)DriverVirtual).pcm8type = 0;
+                if (setting.zmusic.pcm8type == 0)
+                {
+                }
+                else
+                {
+                    pcm8pp = new MDSound.PCM8PP();
+                    MDSound.MDSound.Chip pcm8ppc = new MDSound.MDSound.Chip
+                    {
+                        type = MDSound.MDSound.enmInstrumentType.PCM8PP,
+                        ID = 0,
+                        Instrument = pcm8pp,
+                        Update = pcm8pp.Update,
+                        Start = pcm8pp.Start,
+                        Stop = pcm8pp.Stop,
+                        Reset = pcm8pp.Reset,
+                        Volume = 0,
+                        Clock = 4_000_000,
+                        SamplingRate = (uint)setting.outputDevice.SampleRate,
+                        Option = null
+                    };
+                    lstChips.Add(pcm8ppc);
+                    ((Driver.MXDRV.MXDRV)DriverVirtual).pcm8type = 1;
+                }
 
                 ChipLED.PriOPM = 1;
                 ChipLED.PriPCM8 = 1;
@@ -4454,14 +4574,14 @@ namespace MDPlayer
                 bool retV = ((MDPlayer.Driver.MXDRV.MXDRV)DriverVirtual).Init(vgmBuf, chipRegister, EnmModel.VirtualModel, new EnmChip[] { EnmChip.Unuse }
                     , (uint)(setting.outputDevice.SampleRate * setting.LatencyEmulation / 1000)
                     , (uint)(setting.outputDevice.SampleRate * setting.outputDevice.WaitTime / 1000)
-                    , mdxPCM_V);
+                    , mdxPCM_V, pcm8pp);
                 bool retR = true;
                 if (DriverReal != null)
                 {
                     retR = ((MDPlayer.Driver.MXDRV.MXDRV)DriverReal).Init(vgmBuf, chipRegister, EnmModel.RealModel, new EnmChip[] { EnmChip.Unuse }
                         , (uint)(setting.outputDevice.SampleRate * setting.LatencySCCI / 1000)
                         , (uint)(setting.outputDevice.SampleRate * setting.outputDevice.WaitTime / 1000)
-                        , mdxPCM_R);
+                        , mdxPCM_R, null);
                 }
 
                 if (!retV || !retR)
@@ -4647,7 +4767,7 @@ namespace MDPlayer
                 ChipLED.PriOPM = 1;
                 ChipLED.PriOPNA = 1;
                 ChipLED.SecOPNA = 1;
-                ChipLED.PriOKI5 = 1;
+                ChipLED.PriMPCMX68k = 1;
 
                 if (hiyorimiDeviceFlag == 0x3 && hiyorimiNecessary) hiyorimiNecessary = true;
                 else hiyorimiNecessary = false;
@@ -8872,6 +8992,8 @@ namespace MDPlayer
                 return;
             }
 
+            naudioWrap.resetMyAsioOut();
+
             TrdClosed = false;
             trdMain = new Thread(new ThreadStart(TrdVgmRealFunction))
             {
@@ -8902,19 +9024,23 @@ namespace MDPlayer
                     Thread.Sleep(0);
 
                     double el1 = sw.ElapsedTicks / swFreq;
-                    if (el1 - o < step)
-                        continue;
-                    if (el1 - o >= step * Setting.outputDevice.SampleRate / 1.0)//閾値1000ms  //100.0)//閾値10ms
+                    if (naudioWrap.CheckLate())
                     {
-                        do
+                        if (el1 - o < step)
+                            continue;
+                        if (el1 - o >= step * Setting.outputDevice.SampleRate / 1.0)//閾値1000ms  //100.0)//閾値10ms
+                        {
+                            do
+                            {
+                                o += step;
+                            } while (el1 - o >= step);
+                        }
+                        else
                         {
                             o += step;
-                        } while (el1 - o >= step);
+                        }
                     }
-                    else
-                    {
-                        o += step;
-                    }
+                    if (naudioWrap.CheckLate2()) continue;
 
                     if (Stopped || Paused)
                     {
@@ -9068,6 +9194,7 @@ namespace MDPlayer
         internal static int TrdVgmVirtualFunction(short[] buffer, int offset, int sampleCount)
         {
             //return NaudioRead(buffer, offset, sampleCount);
+            naudioWrap.UpdateSamplePosition(sampleCount);
 
             if (naudioWaveFileReader != null || naudioMp3FileReader != null || naudioAiffFileReader != null)
             {
@@ -10765,6 +10892,11 @@ namespace MDPlayer
             chipRegister.setMaskX68Sound(chipID, ch, true);
         }
 
+        public static void SetMPCMX68kMask(int chipID, int ch)
+        {
+            chipRegister.setMaskMPCMX68k(chipID, ch, true);
+        }
+
         public static void SetC352Mask(int chipID, int ch)
         {
             chipRegister.setMaskC352(chipID, ch, true);
@@ -11022,6 +11154,15 @@ namespace MDPlayer
             try
             {
                 chipRegister.setMaskX68Sound(chipID, ch, false);
+            }
+            catch { }
+        }
+
+        public static void ResetMPCMX68kMask(int chipID, int ch)
+        {
+            try
+            {
+                chipRegister.setMaskMPCMX68k(chipID, ch, false);
             }
             catch { }
         }

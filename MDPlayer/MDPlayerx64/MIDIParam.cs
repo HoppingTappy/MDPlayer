@@ -1,4 +1,6 @@
-﻿namespace MDPlayer
+﻿using System.Diagnostics;
+
+namespace MDPlayer
 {
     public class MIDIParam
     {
@@ -220,7 +222,10 @@
 
             }
             Lyric = "";
+            latestCmd = 0;
         }
+
+        private byte latestCmd = 0;
 
         public void SendBuffer(byte[] dat)
         {
@@ -230,7 +235,8 @@
 
                 if (IsStatusByte)
                 {
-                    //Console.WriteLine("");
+                    latestCmd = d;
+                    //Debug.Write(string.Format("[{0:X02}]:", d));
                     NowSystemMsg = ((d & 0xf0) == 0xf0);
                     if (d == 0xf7 && NowSystemMsg)
                     {
@@ -240,6 +246,10 @@
                     }
                     msgInd = 0;
                 }
+                //else
+                //{
+                //    Debug.Write(string.Format("{0:X02}:", d));
+                //}
 
                 if (msgInd < msg.Length)
                 {
@@ -248,65 +258,90 @@
                     msgInd++;
                 }
 
-                Analyze();
+                Analyze(d);
 
             }
         }
 
-        private void Analyze()
+        private void Analyze(byte d)
         {
-            if (msgInd == 2)
-            {
-                byte cmd = (byte)(msg[0] & 0xf0);
-                byte ch = (byte)(msg[0] & 0xf);
-                switch (cmd)
-                {
-                    case 0xc0://Program Change
-                        pc[ch] = msg[1];
-                        break;
-                }
-            }
-            else if (msgInd == 3)
-            {
-                byte cmd = (byte)(msg[0] & 0xf0);
-                byte ch = (byte)(msg[0] & 0xf);
-                switch (cmd)
-                {
-                    case 0x80://Note OFF
-                        note[ch][msg[1]] = 0;
-                        break;
-                    case 0x90://Note ON
-                        note[ch][msg[1]] = msg[2];
+            bool IsStatusByte = (d & 0x80) != 0;
+            if (IsStatusByte) return;
 
-                        if (msg[2] != 0)//NOTE OFF の代用の場合は液晶パラメータの更新を行わない
+            byte cmd = (byte)(latestCmd & 0xf0);
+            byte ch = (byte)(latestCmd & 0xf);
+            bool IsStatusByte0 = (msg[0] & 0x80) != 0;
+
+            switch (msgInd)
+            {
+                case 1:
+                    if (!IsStatusByte0) AnalyzeData1(cmd, ch, 0);
+                    break;
+                case 2:
+                    if (IsStatusByte0) AnalyzeData1(cmd, ch, 1);
+                    else AnalyzeData2(cmd, ch, 0);
+                    break;
+                case 3:
+                    if (IsStatusByte0) AnalyzeData2(cmd, ch, 1);
+                    break;
+            }
+        }
+
+        private void AnalyzeData1(byte cmd, byte ch, int i)
+        {
+            switch (cmd)
+            {
+                case 0xc0://Program Change
+                    pc[ch] = msg[i + 0];
+                    msgInd = 0;
+                    break;
+            }
+        }
+
+        private void AnalyzeData2(byte cmd, byte ch, int i)
+        {
+            switch (cmd)
+            {
+                case 0x80://Note OFF
+                    note[ch][msg[i + 0]] = 0;
+                    msgInd = 0;
+                    break;
+                case 0x90://Note ON
+                    note[ch][msg[i + 0]] = msg[i + 1];
+
+                    if (msg[i + 1] != 0)//NOTE OFF の代用の場合は液晶パラメータの更新を行わない
+                    {
+                        int lv = cc[ch][7] * cc[ch][11] * msg[i + 1] >> (7 + 7);
+                        int lvl = (lv * (cc[ch][10] > 64 ? ((127 - cc[ch][10]) * 2) : 127)) >> (7); //65->124 127->0
+                        int lvr = (lv * (cc[ch][10] < 64 ? (cc[ch][10] * 2) : 127)) >> (7); // 63->126 0->0
+                        level[ch][0] = (byte)lvl;
+                        level[ch][1] = (byte)lv;
+                        level[ch][2] = (byte)lvr;
+                        if (level[ch][3] < lv)
                         {
-                            int lv = cc[ch][7] * cc[ch][11] * msg[2] >> (7 + 7);
-                            int lvl = (lv * (cc[ch][10] > 64 ? ((127 - cc[ch][10]) * 2) : 127)) >> (7); //65->124 127->0
-                            int lvr = (lv * (cc[ch][10] < 64 ? (cc[ch][10] * 2) : 127)) >> (7); // 63->126 0->0
-                            level[ch][0] = (byte)lvl;
-                            level[ch][1] = (byte)lv;
-                            level[ch][2] = (byte)lvr;
-                            if (level[ch][3] < lv)
-                            {
-                                level[ch][3] = (byte)lv;
-                                level[ch][4] = 100;
-                            }
+                            level[ch][3] = (byte)lv;
+                            level[ch][4] = 100;
                         }
-                        break;
-                    case 0xa0://Key Press
-                        keyPress[ch][msg[1]] = msg[2];
-                        break;
-                    case 0xb0://Control Change
-                        cc[ch][msg[1]] = msg[2];
-                        AnalyzeControlChange(ch);
-                        break;
-                    case 0xd0://Ch Press
-                        cPress[ch] = msg[1];
-                        break;
-                    case 0xe0://Pitch Bend
-                        bend[ch] = (short)(msg[2] * 0x80 + msg[1]);
-                        break;
-                }
+                    }
+                    msgInd = 0;
+                    break;
+                case 0xa0://Key Press
+                    keyPress[ch][msg[i + 0]] = msg[i + 1];
+                    msgInd = 0;
+                    break;
+                case 0xb0://Control Change
+                    cc[ch][msg[i + 0]] = msg[i + 1];
+                    AnalyzeControlChange(ch);
+                    msgInd = 0;
+                    break;
+                case 0xd0://Ch Press
+                    cPress[ch] = msg[i + 0];
+                    msgInd = 0;
+                    break;
+                case 0xe0://Pitch Bend
+                    bend[ch] = (short)(msg[i + 1] * 0x80 + msg[i + 0]);
+                    msgInd = 0;
+                    break;
             }
         }
 
