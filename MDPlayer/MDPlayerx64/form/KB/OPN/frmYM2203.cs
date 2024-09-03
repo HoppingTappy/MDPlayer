@@ -425,7 +425,7 @@ namespace MDPlayer.form
                 //但しchをクリックした場合はマスク反転
                 if (px < 8)
                 {
-                    for (int ch = 0; ch < 6; ch++)
+                    for (int ch = 0; ch < 9; ch++)
                     {
                         if (newParam.channels[ch].mask == true)
                             parent.ResetChannelMask(EnmChip.YM2203, chipID, ch);
@@ -444,6 +444,37 @@ namespace MDPlayer.form
 
                 if (e.Button == MouseButtons.Left)
                 {
+                    //FM Ch3専用マスク判定処理
+                    if (ch == 2 || ch == 6 || ch == 7 || ch == 8)
+                    {
+                        if ((Control.ModifierKeys & Keys.Shift) == Keys.Shift)
+                        {
+                            //マスク
+                            if (newParam.channels[ch].mask == true)
+                                parent.ResetChannelMask(EnmChip.YM2203, chipID, ch);
+                            else
+                                parent.SetChannelMask(EnmChip.YM2203, chipID, ch);
+                            return;
+                        }
+
+                        //マスク
+                        if (newParam.channels[ch].mask == true)
+                        {
+                            parent.ResetChannelMask(EnmChip.YM2203, chipID, 2);
+                            parent.ResetChannelMask(EnmChip.YM2203, chipID, 6);
+                            parent.ResetChannelMask(EnmChip.YM2203, chipID, 7);
+                            parent.ResetChannelMask(EnmChip.YM2203, chipID, 8);
+                        }
+                        else
+                        {
+                            parent.SetChannelMask(EnmChip.YM2203, chipID, 2);
+                            parent.SetChannelMask(EnmChip.YM2203, chipID, 6);
+                            parent.SetChannelMask(EnmChip.YM2203, chipID, 7);
+                            parent.SetChannelMask(EnmChip.YM2203, chipID, 8);
+                        }
+                        return;
+                    }
+
                     //マスク
                     if (newParam.channels[ch].mask == true)
                         parent.ResetChannelMask(EnmChip.YM2203, chipID, ch);

@@ -936,8 +936,46 @@ namespace MDPlayer.form
             rbZmV2V3.Checked = setting.zmusic.compilePriority == 1;
             rbZmV3.Checked = setting.zmusic.compilePriority == 2;
             rbZmV2.Checked = setting.zmusic.compilePriority == 3;
-            rbPCM8.Checked = setting.zmusic.pcm8type == 0;
-            rbPCM8PP.Checked = setting.zmusic.pcm8type == 1;
+            rbZmPCM8.Checked = setting.zmusic.pcm8type == 0;
+            rbZmPCM8PP.Checked = setting.zmusic.pcm8type == 1;
+            rbZmMPCM.Checked = setting.zmusic.mpcmtype == 0;
+            rbZmMPCMPP.Checked = setting.zmusic.mpcmtype == 1;
+            tbWaitNextPlay.Text = setting.zmusic.waitNextPlay.ToString();
+            rbZmSopNone.Checked = setting.zmusic.pcm8ppSoption == -1;
+            rbZmSop0.Checked = setting.zmusic.pcm8ppSoption == 0;
+            rbZmSop1.Checked = setting.zmusic.pcm8ppSoption == 1;
+            rbZmSop2.Checked = setting.zmusic.pcm8ppSoption == 2;
+            rbZmSop3.Checked = setting.zmusic.pcm8ppSoption == 3;
+            rbZmSop4.Checked = setting.zmusic.pcm8ppSoption == 4;
+            rbZmSop5.Checked = setting.zmusic.pcm8ppSoption == 5;
+            rbZmSop6.Checked = setting.zmusic.pcm8ppSoption == 6;
+            rbZmSop7.Checked = setting.zmusic.pcm8ppSoption == 7;
+            rbZmSop8.Checked = setting.zmusic.pcm8ppSoption == 8;
+            rbZmSop9.Checked = setting.zmusic.pcm8ppSoption == 9;
+            rbZmSop10.Checked = setting.zmusic.pcm8ppSoption == 10;
+            rbZmSop11.Checked = setting.zmusic.pcm8ppSoption == 11;
+
+            rbMxPCM8.Checked = setting.mxdrv.pcm8type == 0;
+            rbMxPCM8PP.Checked = setting.mxdrv.pcm8type == 1;
+            rbMxSopNone.Checked = setting.mxdrv.pcm8ppSoption == -1;
+            rbMxSop0.Checked = setting.mxdrv.pcm8ppSoption == 0;
+            rbMxSop1.Checked = setting.mxdrv.pcm8ppSoption == 1;
+            rbMxSop2.Checked = setting.mxdrv.pcm8ppSoption == 2;
+            rbMxSop3.Checked = setting.mxdrv.pcm8ppSoption == 3;
+            rbMxSop4.Checked = setting.mxdrv.pcm8ppSoption == 4;
+            rbMxSop5.Checked = setting.mxdrv.pcm8ppSoption == 5;
+            rbMxSop6.Checked = setting.mxdrv.pcm8ppSoption == 6;
+            rbMxSop7.Checked = setting.mxdrv.pcm8ppSoption == 7;
+            rbMxSop8.Checked = setting.mxdrv.pcm8ppSoption == 8;
+            rbMxSop9.Checked = setting.mxdrv.pcm8ppSoption == 9;
+            rbMxSop10.Checked = setting.mxdrv.pcm8ppSoption == 10;
+            rbMxSop11.Checked = setting.mxdrv.pcm8ppSoption == 11;
+
+            rbMnMPCM.Checked = setting.mndrv.mpcmtype == 0;
+            rbMnMPCMPP.Checked = setting.mndrv.mpcmtype == 1;
+
+            rbRcsPCM8.Checked = setting.rcs.pcm8type == 0;
+            rbRcsPCM8PP.Checked = setting.rcs.pcm8type == 1;
         }
 
         private void SetRealCombo(EnmRealChipType realType, ComboBox cmbP, RadioButton rbP, ComboBox cmbS, RadioButton rbS)
@@ -1835,7 +1873,43 @@ namespace MDPlayer.form
             setting.pmdDotNET.volumeGIMICSSG = nn;
 
             setting.zmusic.compilePriority = rbZmV3V2.Checked ? 0 : (rbZmV2V3.Checked ? 1 : (rbZmV3.Checked ? 2 : 3));
-            setting.zmusic.pcm8type = rbPCM8.Checked ? 0 : (rbPCM8PP.Checked ? 1 : 0);
+            setting.zmusic.pcm8type = rbZmPCM8.Checked ? 0 : (rbZmPCM8PP.Checked ? 1 : 0);
+            setting.zmusic.mpcmtype = rbZmMPCM.Checked ? 0 : (rbZmMPCMPP.Checked ? 1 : 0);
+            if (!int.TryParse(tbWaitNextPlay.Text, out nn)) nn = 1000;
+            nn = Math.Min(Math.Max(nn, 0), 10000);
+            setting.zmusic.waitNextPlay = nn;
+            if (rbZmSopNone.Checked) setting.zmusic.pcm8ppSoption = -1;
+            if (rbZmSop0.Checked) setting.zmusic.pcm8ppSoption = 0;
+            if (rbZmSop1.Checked) setting.zmusic.pcm8ppSoption = 1;
+            if (rbZmSop2.Checked) setting.zmusic.pcm8ppSoption = 2;
+            if (rbZmSop3.Checked) setting.zmusic.pcm8ppSoption = 3;
+            if (rbZmSop4.Checked) setting.zmusic.pcm8ppSoption = 4;
+            if (rbZmSop5.Checked) setting.zmusic.pcm8ppSoption = 5;
+            if (rbZmSop6.Checked) setting.zmusic.pcm8ppSoption = 6;
+            if (rbZmSop7.Checked) setting.zmusic.pcm8ppSoption = 7;
+            if (rbZmSop8.Checked) setting.zmusic.pcm8ppSoption = 8;
+            if (rbZmSop9.Checked) setting.zmusic.pcm8ppSoption = 9;
+            if (rbZmSop10.Checked) setting.zmusic.pcm8ppSoption = 10;
+            if (rbZmSop11.Checked) setting.zmusic.pcm8ppSoption = 11;
+
+
+            setting.mxdrv.pcm8type = rbMxPCM8.Checked ? 0 : (rbMxPCM8PP.Checked ? 1 : 0);
+            if (rbMxSopNone.Checked) setting.mxdrv.pcm8ppSoption = -1;
+            if (rbMxSop0.Checked) setting.mxdrv.pcm8ppSoption = 0;
+            if (rbMxSop1.Checked) setting.mxdrv.pcm8ppSoption = 1;
+            if (rbMxSop2.Checked) setting.mxdrv.pcm8ppSoption = 2;
+            if (rbMxSop3.Checked) setting.mxdrv.pcm8ppSoption = 3;
+            if (rbMxSop4.Checked) setting.mxdrv.pcm8ppSoption = 4;
+            if (rbMxSop5.Checked) setting.mxdrv.pcm8ppSoption = 5;
+            if (rbMxSop6.Checked) setting.mxdrv.pcm8ppSoption = 6;
+            if (rbMxSop7.Checked) setting.mxdrv.pcm8ppSoption = 7;
+            if (rbMxSop8.Checked) setting.mxdrv.pcm8ppSoption = 8;
+            if (rbMxSop9.Checked) setting.mxdrv.pcm8ppSoption = 9;
+            if (rbMxSop10.Checked) setting.mxdrv.pcm8ppSoption = 10;
+            if (rbMxSop11.Checked) setting.mxdrv.pcm8ppSoption = 11;
+
+            setting.mndrv.mpcmtype = rbMnMPCM.Checked ? 0 : (rbMnMPCMPP.Checked ? 1 : 0);
+            setting.rcs.pcm8type = rbRcsPCM8.Checked ? 0 : (rbRcsPCM8PP.Checked ? 1 : 0);
 
             setting.keyBoardHook.UseKeyBoardHook = cbUseKeyBoardHook.Checked;
 

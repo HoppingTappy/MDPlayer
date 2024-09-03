@@ -137,7 +137,20 @@ namespace MDPlayer
         };
         public int[][] fmCh3SlotVolYM2612 = new int[][] { new int[4], new int[4] };
         private int[] nowYM2612FadeoutVol = new int[] { 0, 0 };
-        private bool[][] maskFMChYM2612 = new bool[][] { new bool[6] { false, false, false, false, false, false }, new bool[6] { false, false, false, false, false, false } };
+        private bool[][] maskFMChYM2612 = new bool[][] { 
+            new bool[13] { 
+                false, false, false,//FM1 - 3
+                false, false, false,//FM4 - 6
+                false, false, false,//FM3OP2 - OP4
+                false, false, false, false //XGMPCM1 - 4
+            }
+            , new bool[13] {
+                false, false, false,//FM1 - 3
+                false, false, false,//FM4 - 6
+                false, false, false,//FM3OP2 - OP4
+                false, false, false, false //XGMPCM1 - 4
+            }
+        };
 
         public int[][][] fmRegisterYM2608 = new int[][][] { new int[][] { null, null }, new int[][] { null, null } };
 
@@ -155,8 +168,18 @@ namespace MDPlayer
         public int[] fmVolYM2608AdpcmPan = new int[] { 0, 0 };
         private int[] nowYM2608FadeoutVol = new int[] { 0, 0 };
         private bool[][] maskFMChYM2608 = new bool[][] {
-            new bool[14] { false, false, false, false, false, false, false, false, false, false, false, false, false, false}
-            , new bool[14] { false, false, false, false, false, false, false, false, false, false, false, false, false, false}
+            new bool[19] { 
+                false, false, false, false,
+                false, false, false, false,
+                false, false, false, false,
+                false, false, false, false,
+                false, false, false }
+            , new bool[19] { 
+                false, false, false, false,
+                false, false, false, false,
+                false, false, false, false,
+                false, false, false, false,
+                false, false, false }
         };
 
 
@@ -1733,6 +1756,12 @@ namespace MDPlayer
             }
         }
 
+        public void setZXBeep(int chipID, EnmModel model)
+        {
+            if (model == EnmModel.RealModel) return;
+            mds.WriteZXBeep((byte)chipID);
+        }
+
         public void setDMGRegister(int chipID, int dAddr, int dData, EnmModel model)
         {
             if (chipID == 0) chipLED.PriDMG = 2;
@@ -2270,7 +2299,15 @@ namespace MDPlayer
                     if ((algM[al] & (1 << slot)) != 0)
                     {
                         dData = Math.Min(dData + nowYM2203FadeoutVol[chipID], 127);
-                        dData = maskFMChYM2203[chipID][ch] ? 127 : dData;
+                        int c = ch;
+                        if (ch == 2)
+                        {
+                            //FM Ch3 の場合はスロット毎にマスクフラグチェック
+                            c = 2;
+                            if (slot != 0) c = 5 + opN[slot];
+                        }
+                        //マスクフラグチェック(ONの場合はTLを127に変更)
+                        dData = maskFMChYM2203[chipID][c] ? 127 : dData;
                     }
                 }
             }
@@ -3027,7 +3064,15 @@ namespace MDPlayer
                     if ((algM[al] & (1 << slot)) != 0)
                     {
                         dData = Math.Min(dData + nowYM2608FadeoutVol[chipID], 127);
-                        dData = maskFMChYM2608[chipID][dPort * 3 + ch] ? 127 : dData;
+                        int c = dPort * 3 + ch;
+                        if (dPort == 0 && ch == 2)
+                        {
+                            //FM Ch3 の場合はスロット毎にマスクフラグチェック
+                            c = 2;
+                            if (slot != 0) c = 8 + opN[slot];
+                        }
+                        //マスクフラグチェック(ONの場合はTLを127に変更)
+                        dData = maskFMChYM2608[chipID][c] ? 127 : dData;
                     }
                 }
             }
@@ -3100,9 +3145,12 @@ namespace MDPlayer
             //Ryhthm
             if (dPort == 0 && dAddr == 0x10)
             {
-                if (maskFMChYM2608[chipID][13])
+                for (int i = 0; i < 6; i++)
                 {
-                    dData = 0;
+                    if (maskFMChYM2608[chipID][13+i])
+                    {
+                        dData &= (~(0b0000_0001 << i) & 0xff);
+                    }
                 }
             }
 
@@ -4350,7 +4398,15 @@ namespace MDPlayer
                     if ((algM[al] & (1 << slot)) != 0)
                     {
                         dData = Math.Min(dData + nowYM2612FadeoutVol[chipID], 127);
-                        dData = maskFMChYM2612[chipID][dPort * 3 + ch] ? 127 : dData;
+                        int c = dPort * 3 + ch;
+                        if (dPort == 0 && ch == 2)
+                        {
+                            //FM Ch3 の場合はスロット毎にマスクフラグチェック
+                            c = 2;
+                            if (slot != 0) c = 5 + opN[slot];
+                        }
+                        //マスクフラグチェック(ONの場合はTLを127に変更)
+                        dData = maskFMChYM2612[chipID][c] ? 127 : dData;
                     }
                 }
             }
@@ -4383,6 +4439,7 @@ namespace MDPlayer
             if (dAddr == 0x2a)
             {
                 //PCMデータをマスクする
+                //if (maskFMChYM2612[chipID][5] && Audio.PlayingFileFormat != EnmFileFormat.XGM) dData = 0x80;
                 if (maskFMChYM2612[chipID][5]) dData = 0x80;
                 //Console.WriteLine("{0:x02}",dData);
             }
@@ -4617,8 +4674,9 @@ namespace MDPlayer
             if (noSend) return;
 
             int c = ch;
-            if (ch < 3)
+            if (ch < 3 || ch > 5)
             {
+                if (ch > 5) c = 2;
                 setYM2203Register((byte)chipID, 0x40 + c, fmRegisterYM2203[chipID][0x40 + c], EnmModel.VirtualModel);
                 setYM2203Register((byte)chipID, 0x44 + c, fmRegisterYM2203[chipID][0x44 + c], EnmModel.VirtualModel);
                 setYM2203Register((byte)chipID, 0x48 + c, fmRegisterYM2203[chipID][0x48 + c], EnmModel.VirtualModel);
@@ -4731,13 +4789,13 @@ namespace MDPlayer
         public void setMaskYM2608(int chipID, int ch, bool mask, bool noSend = false)
         {
             maskFMChYM2608[chipID][ch] = mask;
-            if (ch >= 9 && ch < 12)
-            {
-                maskFMChYM2608[chipID][2] = mask;
-                maskFMChYM2608[chipID][9] = mask;
-                maskFMChYM2608[chipID][10] = mask;
-                maskFMChYM2608[chipID][11] = mask;
-            }
+            //if (ch >= 9 && ch < 12)
+            //{
+            //    maskFMChYM2608[chipID][2] = mask;
+            //    maskFMChYM2608[chipID][9] = mask;
+            //    maskFMChYM2608[chipID][10] = mask;
+            //    maskFMChYM2608[chipID][11] = mask;
+            //}
 
             int c = (ch < 3) ? ch : (ch - 3);
             int p = (ch < 3) ? 0 : 1;
@@ -4746,6 +4804,7 @@ namespace MDPlayer
 
             if (ch < 6)
             {
+                //FM1-6
                 setYM2608Register((byte)chipID, p, 0x40 + c, fmRegisterYM2608[chipID][p][0x40 + c], EnmModel.VirtualModel);
                 setYM2608Register((byte)chipID, p, 0x44 + c, fmRegisterYM2608[chipID][p][0x44 + c], EnmModel.VirtualModel);
                 setYM2608Register((byte)chipID, p, 0x48 + c, fmRegisterYM2608[chipID][p][0x48 + c], EnmModel.VirtualModel);
@@ -4758,11 +4817,13 @@ namespace MDPlayer
             }
             else if (ch < 9)
             {
+                //SSG
                 setYM2608Register((byte)chipID, 0, 0x08 + ch - 6, fmRegisterYM2608[chipID][0][0x08 + ch - 6], EnmModel.VirtualModel);
                 setYM2608Register((byte)chipID, 0, 0x08 + ch - 6, fmRegisterYM2608[chipID][0][0x08 + ch - 6], EnmModel.RealModel);
             }
             else if (ch < 12)
             {
+                //FM3OP1-4
                 setYM2608Register((byte)chipID, 0, 0x40 + 2, fmRegisterYM2608[chipID][0][0x40 + 2], EnmModel.VirtualModel);
                 setYM2608Register((byte)chipID, 0, 0x44 + 2, fmRegisterYM2608[chipID][0][0x44 + 2], EnmModel.VirtualModel);
                 setYM2608Register((byte)chipID, 0, 0x48 + 2, fmRegisterYM2608[chipID][0][0x48 + 2], EnmModel.VirtualModel);
@@ -4832,8 +4893,27 @@ namespace MDPlayer
         {
             maskFMChYM2612[chipID][ch] = mask;
 
+            if (ch > 8)
+            {
+                if(Audio.PlayingFileFormat== EnmFileFormat.XGM)
+                {
+                    if (Audio.DriverVirtual != null && Audio.DriverVirtual is xgm)
+                    {
+                        ((xgm)Audio.DriverVirtual).xgmpcm[0].mute = maskFMChYM2612[chipID][9];
+                        ((xgm)Audio.DriverVirtual).xgmpcm[1].mute = maskFMChYM2612[chipID][10];
+                        ((xgm)Audio.DriverVirtual).xgmpcm[2].mute = maskFMChYM2612[chipID][11];
+                        ((xgm)Audio.DriverVirtual).xgmpcm[3].mute = maskFMChYM2612[chipID][12];
+                    }
+                }
+                return;
+            }
             int c = (ch < 3) ? ch : (ch - 3);
             int p = (ch < 3) ? 0 : 1;
+            if (ch > 5 && ch < 9)
+            {
+                c = 2;
+                p = 0;
+            }
 
             setYM2612Register((byte)chipID, p, 0x40 + c, fmRegisterYM2612[chipID][p][0x40 + c], EnmModel.VirtualModel, -1);
             setYM2612Register((byte)chipID, p, 0x44 + c, fmRegisterYM2612[chipID][p][0x44 + c], EnmModel.VirtualModel, -1);
@@ -4845,8 +4925,8 @@ namespace MDPlayer
             setYM2612Register((byte)chipID, p, 0x48 + c, fmRegisterYM2612[chipID][p][0x48 + c], EnmModel.RealModel, -1);
             setYM2612Register((byte)chipID, p, 0x4c + c, fmRegisterYM2612[chipID][p][0x4c + c], EnmModel.RealModel, -1);
 
-            if (mask) mds.setYM2612Mask(chipID, ch);
-            else mds.resetYM2612Mask(chipID, ch);
+            //if (mask) mds.setYM2612Mask(chipID, ch);
+            //else mds.resetYM2612Mask(chipID, ch);
         }
 
         public void setMaskOKIM6258(int chipID, bool mask)

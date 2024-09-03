@@ -1,4 +1,6 @@
-﻿namespace MDPlayer
+﻿using MDPlayer.Driver.MNDRV;
+
+namespace MDPlayer
 {
     public class xgm : baseDriver
     {
@@ -47,6 +49,7 @@
             TotalCounter = 0;
             LoopCounter = 0;
             vgmCurLoop = 0;
+            loopTimeCounter = -1;
             Stopped = false;
             vgmFrameCounter = -latency - waitTime;
             vgmSpeed = 1;
@@ -257,6 +260,9 @@
                 if (cmd == 0x7e)
                 {
                     musicPtr = musicDataBlockAddr + Common.getLE24(vgmBuf, musicPtr);
+
+                    updateLoopTimeCounter();
+
                     vgmCurLoop++;
                     continue;
                 }
@@ -264,6 +270,7 @@
                 //end command
                 if (cmd == 0x7f)
                 {
+                    updateLoopTimeCounter();
                     Stopped = true;
                     break;
                 }
@@ -348,6 +355,7 @@
             public uint inst = 0;
             public bool isPlaying = false;
             public byte data = 0;
+            public bool mute = false;
         }
 
         public XGMPCM[] xgmpcm = null;
@@ -394,6 +402,7 @@
             {
                 if (!xgmpcm[i].isPlaying) continue;
                 sbyte d = (sbyte)vgmBuf[xgmpcm[i].addr++];
+                if (!xgmpcm[i].mute)
                 o += (short)d;
                 xgmpcm[i].data = (byte)Math.Abs((int)d);
                 if (xgmpcm[i].addr >= xgmpcm[i].endAddr)

@@ -1279,7 +1279,7 @@ namespace MDPlayer
                             msgBuf[0] = (byte)((int)MIDIEventType.NoteOff + trk.OutChannel);
                             msgBuf[1] = (byte)key;
                             msgBuf[2] = 127;
-                            PutMIDIMessage((int)trk.OutDeviceNumber, msgBuf, 3);
+                            PutMIDIMessage(trk.OutDeviceNumber, msgBuf, 3);
                         }
                         trk.NoteGateTime[n] = int.MaxValue;
                         flg = true;
@@ -1292,15 +1292,16 @@ namespace MDPlayer
 
         private byte[] vv = new byte[1];
 
-        private void PutMIDIMessage(int n, byte[] pMIDIMessage, int len)
+        private void PutMIDIMessage(int? n, byte[] pMIDIMessage, int len)
         {
+            if(n == null) return;
             List<byte> dat = new List<byte>();
             for (int i = 0; i < len; i++)
             {
                 dat.Add(pMIDIMessage[i]);
                 //                chipRegister.sendMIDIout(model, n, vv, vstDelta);
             }
-            chipRegister.sendMIDIout(model, n, dat.ToArray(), vstDelta);
+            chipRegister.sendMIDIout(model, (int)n, dat.ToArray(), vstDelta);
         }
 
         /// <summary>
@@ -1372,7 +1373,7 @@ namespace MDPlayer
             msgBuf[0] = eve.MIDIMessage[0];
             eve.MIDIMessage[0] &= 0xf0;
             eve.MIDIMessage[0] += (byte)trk.OutChannel;
-            PutMIDIMessage((int)trk.OutDeviceNumber, eve.MIDIMessage, 2);
+            PutMIDIMessage(trk.OutDeviceNumber, eve.MIDIMessage, 2);
             eve.MIDIMessage[0] = msgBuf[0];
         }
 
@@ -1382,13 +1383,13 @@ namespace MDPlayer
             msgBuf[0] = eve.MIDIMessage[0];
             eve.MIDIMessage[0] &= 0xf0;
             eve.MIDIMessage[0] += (byte)trk.OutChannel;
-            PutMIDIMessage((int)trk.OutDeviceNumber, eve.MIDIMessage, 3);
+            PutMIDIMessage(trk.OutDeviceNumber, eve.MIDIMessage, 3);
             eve.MIDIMessage[0] = msgBuf[0];
         }
 
         void efnbyteMsg(MIDITrack trk, MIDIEvent eve)
         {
-            PutMIDIMessage((int)trk.OutDeviceNumber, eve.MIDIMessage, eve.MIDIMessage.Length);
+            PutMIDIMessage(trk.OutDeviceNumber, eve.MIDIMessage, eve.MIDIMessage.Length);
         }
 
         void efMetaSeqNumber(MIDITrack trk, MIDIEvent eve)
@@ -1508,7 +1509,7 @@ namespace MDPlayer
                     msgBuf[0] = (byte)((int)MIDIEventType.NoteOff + trk.OutChannel);
                     msgBuf[1] = (byte)key;
                     msgBuf[2] = 127;
-                    PutMIDIMessage((int)trk.OutDeviceNumber, msgBuf, 3);
+                    PutMIDIMessage(trk.OutDeviceNumber, msgBuf, 3);
                     flg = true;
                 }
 
@@ -1518,7 +1519,7 @@ namespace MDPlayer
                     msgBuf[0] = (byte)((eve.MIDIMessage[0] & 0xf0) + trk.OutChannel);
                     msgBuf[1] = (byte)key;
                     msgBuf[2] = eve.MIDIMessage[2];
-                    PutMIDIMessage((int)trk.OutDeviceNumber, msgBuf, 3);
+                    PutMIDIMessage(trk.OutDeviceNumber, msgBuf, 3);
                 }
             }
 
@@ -1649,7 +1650,7 @@ namespace MDPlayer
                     return;//バッファをオーバーする時はエクスクルーシブを送らない
                 }
             }
-            PutMIDIMessage((int)trk.OutDeviceNumber, msgBuf, i);
+            PutMIDIMessage(trk.OutDeviceNumber, msgBuf, i);
         }
 
         void sefOutsideProcessExec(MIDITrack trk, MIDIEvent eve)
@@ -1662,10 +1663,10 @@ namespace MDPlayer
             msgBuf[0] = (byte)(eve.MIDIMessageLst[1][0] + (trk.OutChannel % 16));
             msgBuf[1] = eve.MIDIMessageLst[1][1];
             msgBuf[2] = eve.MIDIMessageLst[1][2];
-            PutMIDIMessage((int)trk.OutDeviceNumber, msgBuf, 3);
+            PutMIDIMessage(trk.OutDeviceNumber, msgBuf, 3);
             msgBuf[0] = (byte)(eve.MIDIMessageLst[0][0] + (trk.OutChannel % 16));
             msgBuf[1] = eve.MIDIMessageLst[0][1];
-            PutMIDIMessage((int)trk.OutDeviceNumber, msgBuf, 2);
+            PutMIDIMessage(trk.OutDeviceNumber, msgBuf, 2);
         }
 
         void sefKeyScan(MIDITrack trk, MIDIEvent eve)
@@ -1736,7 +1737,7 @@ namespace MDPlayer
             msgBuf[6] = trk.YAMAHAPara_gt;
             msgBuf[7] = trk.YAMAHAPara_vel;
             msgBuf[8] = 0xf7;
-            PutMIDIMessage((int)trk.OutDeviceNumber, msgBuf, 9);
+            PutMIDIMessage(trk.OutDeviceNumber, msgBuf, 9);
         }
 
         void sefYAMAHAXGAddrPara(MIDITrack trk, MIDIEvent eve)
@@ -1753,7 +1754,7 @@ namespace MDPlayer
             msgBuf[6] = trk.YAMAHAPara_gt;
             msgBuf[7] = trk.YAMAHAPara_vel;
             msgBuf[8] = 0xf7;
-            PutMIDIMessage((int)trk.OutDeviceNumber, msgBuf, 9);
+            PutMIDIMessage(trk.OutDeviceNumber, msgBuf, 9);
         }
 
         void sefRolandBase(MIDITrack trk, MIDIEvent eve)
@@ -1778,7 +1779,7 @@ namespace MDPlayer
             msgBuf[8] = trk.RolandPara_vel;
             msgBuf[9] = (byte)((128 - ((trk.RolandBase_gt + trk.RolandBase_vel + trk.RolandPara_gt + trk.RolandPara_vel) % 128)) & 0x7f);
             msgBuf[10] = 0xF7;
-            PutMIDIMessage((int)trk.OutDeviceNumber, msgBuf, 11);
+            PutMIDIMessage(trk.OutDeviceNumber, msgBuf, 11);
         }
 
         void sefRolandDev(MIDITrack trk, MIDIEvent eve)
@@ -1969,7 +1970,7 @@ namespace MDPlayer
                     return;//バッファをオーバーする時はエクスクルーシブを送らない
                 }
             }
-            PutMIDIMessage((int)trk.OutDeviceNumber, msgBuf, i);
+            PutMIDIMessage(trk.OutDeviceNumber, msgBuf, i);
         }
 
 

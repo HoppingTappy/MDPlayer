@@ -258,13 +258,14 @@ namespace MDPlayer.Driver.MXDRV
                 return 0;
             }
             int ret = 0;
-            if(model== EnmModel.VirtualModel) 
+            if (model == EnmModel.VirtualModel)
                 ret = mdxPCM.x68sound[0].X68Sound_GetPcm(buffer, offset, (int)sampleCount, OneFrameProc2);
             else
             {
                 ret = mdxPCM.x68sound[0].X68Sound_GetPcm(buffer, offset, (int)sampleCount, OneFrameProc2);
                 //for(int i=0;i<sampleCount;i++) buffer[i] = 0;
             }
+
             //for (int ch = 0; ch < 16; ch++) chipRegister.setMaskX68Sound(0, ch, true);
             //Console.WriteLine("0:{0:x08}", mm.ReadUInt32(MXWORK_CHBUF_FM[8] + MXWORK_CH.S0012));
             //Console.WriteLine("1:{0:x04}", mm.ReadUInt16(MXWORK_CHBUF_PCM[0] + MXWORK_CH.S0012) >> 6);
@@ -975,12 +976,13 @@ namespace MDPlayer.Driver.MXDRV
             if (MeasurePlayTime) return;
 
             int ch;
+
             switch (D0 & 0xfff0)
             {
                 case 0x0000:
                     //x68Sound.Pcm8_Out((int)D0 & 0xff, A1, (int)D1, (int)D2);
                     if (pcm8type == 0) mdxPCM?.x68sound[0].X68Sound_Pcm8_Out((int)D0 & 0xff, null, A1, (int)D1, (int)D2);//指定チャンネル発音開始
-                    else pcm8pp?.KeyOn((int)D0 & 0xff, A1, (int)(D1|0x0800), (int)D2);//指定チャンネル発音開始
+                    else pcm8pp?.KeyOn((int)D0 & 0xff, A1, (int)(D1+0x0800), (int)D2);//指定チャンネル発音開始
                     ch = (int)((D0 & 0xff) % 8);
                     pcm8St[ch].tablePtr = A1;
                     pcm8St[ch].mode = D1;
@@ -1056,17 +1058,20 @@ namespace MDPlayer.Driver.MXDRV
 
         private void ADPCMOUT()
         {
-            mdxPCM?.sound_Iocs[0]._iocs_adpcmout(A1, (Int32)D1, (Int32)D2);
+            if(pcm8type==0) mdxPCM?.sound_Iocs[0]._iocs_adpcmout(A1, (Int32)D1, (Int32)D2);
+            else pcm8pp?.KeyOn((int)0, A1, (int)(D1 + 0x0c00), (int)D2);
         }
 
         private void ADPCMMOD_STOP()
         {
-            mdxPCM?.sound_Iocs[0]._iocs_adpcmmod(1);
+            if (pcm8type == 0) mdxPCM?.sound_Iocs[0]._iocs_adpcmmod(1);
+            else pcm8pp?.KeyOff((int)0);
         }
 
         private void ADPCMMOD_END()
         {
-            mdxPCM?.sound_Iocs[0]._iocs_adpcmmod(0);
+            if (pcm8type == 0) mdxPCM?.sound_Iocs[0]._iocs_adpcmmod(0);
+            else pcm8pp?.KeyOff((int)0);
         }
 
         /***************************************************************/

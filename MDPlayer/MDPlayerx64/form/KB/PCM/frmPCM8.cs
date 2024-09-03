@@ -98,6 +98,11 @@ namespace MDPlayer.form
                 ZMS zms = Audio.DriverVirtual as ZMS;
                 pcm8St = zms.pcm8St;
             }
+            else if (Audio.DriverVirtual is RCS)
+            {
+                RCS rcs = Audio.DriverVirtual as RCS;
+                pcm8St = rcs.pcm8St;
+            }
             else
             {
                 return;
@@ -114,6 +119,7 @@ namespace MDPlayer.form
                     nyc.pcmMode = (int)((pcm8St[ch].mode >> 0) & 0xff);
                     nyc.utp = pcm8St[ch].tablePtr;
                     nyc.utl = pcm8St[ch].length;
+                    nyc.pan = nyc.pcmMode == 1 ? 2 : (nyc.pcmMode == 2 ? 1 : nyc.pcmMode);
                     pcm8St[ch].Keyon = false;
                 }
                 else
@@ -129,19 +135,21 @@ namespace MDPlayer.form
             MDChipParams.PCM8 nst = newParam;
             int tp = 0;
 
-            for (int c = 0; c < 8; c++)
+            for (int c = 0; c < 16; c++)
             {
                 MDChipParams.Channel oyc = oldParam.channels[c];
                 MDChipParams.Channel nyc = newParam.channels[c];
 
                 DrawBuff.ChPCM8(frameBuffer, c, ref oyc.mask, nyc.mask, tp);
 
+                DrawBuff.Pan(frameBuffer, 36, 8 + c * 8, ref oyc.pan, nyc.pan, ref oyc.pantp, tp);
+                
                 int x = 10;
-                DrawBuff.font4Hex32Bit(frameBuffer, (x + 0) * 4, c * 8 + 8, 0, ref oyc.utp, nyc.utp);//ptr
-                DrawBuff.font4Hex32Bit(frameBuffer, (x + 10) * 4, c * 8 + 8, 0, ref oyc.utl, nyc.utl);//length
+                DrawBuff.font4Hex32Bit(frameBuffer, (x + 3) * 4, c * 8 + 8, 0, ref oyc.utp, nyc.utp);//ptr
+                DrawBuff.font4Hex32Bit(frameBuffer, (x + 13) * 4, c * 8 + 8, 0, ref oyc.utl, nyc.utl);//length
 
-                DrawBuff.font4Int2(frameBuffer, (x + 19) * 4, c * 8 + 8, 0, 2, ref oyc.pcmMode, nyc.pcmMode);//mode
-                DrawBuff.font4Int2(frameBuffer, (x + 22) * 4, c * 8 + 8, 0, 2, ref oyc.freq, nyc.freq);//rate
+                DrawBuff.font4Int2(frameBuffer, (x + 22) * 4, c * 8 + 8, 0, 2, ref oyc.pcmMode, nyc.pcmMode);//mode
+                DrawBuff.font4Int2(frameBuffer, (x + 25) * 4, c * 8 + 8, 0, 2, ref oyc.freq, nyc.freq);//rate
                 DrawBuff.font4Int2(frameBuffer, (x + 51) * 4, c * 8 + 8, 0, 2, ref oyc.volumeL, nyc.volumeL);//volume
 
                 DrawBuff.Volume(frameBuffer, (x + 54) * 4, c * 8 + 8, 0, ref oyc.volume, nyc.volume, 0);
@@ -164,7 +172,7 @@ namespace MDPlayer.form
                 //但しchをクリックした場合はマスク反転
                 if (px < 8)
                 {
-                    for (int ch = 0; ch < 8; ch++)
+                    for (int ch = 0; ch < 16; ch++)
                     {
 
                         if (newParam.channels[ch].mask == true)
@@ -177,7 +185,7 @@ namespace MDPlayer.form
             }
 
             //鍵盤
-            if (py < 9 * 8)
+            if (py < 17 * 8)
             {
                 int ch = (py / 8) - 1;
                 if (ch < 0) return;
@@ -189,7 +197,7 @@ namespace MDPlayer.form
                 }
 
                 //マスク解除
-                for (ch = 0; ch < 8; ch++) parent.ResetChannelMask(EnmChip.PCM8, chipID, ch);
+                for (ch = 0; ch < 16; ch++) parent.ResetChannelMask(EnmChip.PCM8, chipID, ch);
                 return;
             }
 

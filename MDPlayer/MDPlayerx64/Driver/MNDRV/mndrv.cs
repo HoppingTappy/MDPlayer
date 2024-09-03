@@ -1,4 +1,6 @@
-﻿using MDPlayer.Driver.ZMS.nise68;
+﻿using Driver;
+using MDPlayer.Driver.ZMS.nise68;
+using MDSound;
 using static MDPlayer.Driver.ZMS.ZMS;
 
 namespace MDPlayer.Driver.MNDRV
@@ -6,7 +8,10 @@ namespace MDPlayer.Driver.MNDRV
     public class mndrv : baseDriver
     {
         public List<Tuple<string, byte[]>> ExtendFile = null;
-        public ZMS.ZMS.MPCMSt[] mpcmSt = new MPCMSt[16] { new(), new(), new(), new(), new(), new(), new(), new(), new(), new(), new(), new(), new(), new(), new(), new() };
+        public ZMS.ZMS.MPCMSt[] mpcmSt = [new(), new(), new(), new(),
+                new(), new(), new(), new(),
+                new(), new(), new(), new(),
+                new(), new(), new(), new()];
 
         public override bool init(byte[] vgmBuf, ChipRegister chipRegister, EnmModel model, EnmChip[] useChip, uint latency, uint waitTime)
         {
@@ -87,6 +92,11 @@ namespace MDPlayer.Driver.MNDRV
                     memPtr += (uint)ExtendFile[j].Item2.Length;
                 }
             }
+
+            mpcmSt = [new(), new(), new(), new(), 
+                new(), new(), new(), new(),
+                new(), new(), new(), new(),
+                new(), new(), new(), new()];
 
             reg.D0_B = 0x03;//MND 演奏開始
             _trap4_entry();
@@ -290,63 +300,112 @@ namespace MDPlayer.Driver.MNDRV
         public FMTimer timerOPN;
 
         MDSound.mpcmX68k.SETPCM tbl = new MDSound.mpcmX68k.SETPCM();
+        MDSound.mpcmpp.SETPCM ptr = new mpcmpp.SETPCM();
         UInt16[] vtbl = new UInt16[128];
-        public MDSound.mpcmX68k m_MPCM;
+        public mpcmX68k mpcm;
+        public mpcmpp mpcmpp;
+        public int mpcmtype = 0;
 
         //トラップ処理(実質MPCM制御)
         public void trap(int n)
         {
             if (model == EnmModel.RealModel) return;
 
-            int ch = (int)reg.D0_B;
+            int ch = (int)reg.D0_B&0xf;
 
-            if (m_MPCM == null) return;
+            if (mpcm == null && mpcmpp == null) return;
 
             switch ((reg.D0_W >> 8) & 0xff)
             {
                 case 0x00:
-                    m_MPCM.KeyOn(0, ch);
+                    if (mpcmtype == 0) mpcm?.KeyOn(0, ch);
+                    else mpcmpp?.KeyOn(0, ch);
                     mpcmSt[ch].Keyon = true;
                     break;
                 case 0x01:
-                    m_MPCM.KeyOff(0, ch);
+                    if (mpcmtype == 0) mpcm?.KeyOff(0, ch);
+                    else mpcmpp?.KeyOff(0, ch);
                     mpcmSt[ch].Keyoff = true;
                     break;
                 case 0x02:
-                    mpcmSt[ch].type = tbl.type = mm.ReadByte(0x00 + reg.a1);
-                    mpcmSt[ch].orig = tbl.orig = mm.ReadByte(0x01 + reg.a1);
-                    tbl.adrs_buf = mm.mm;
-                    mpcmSt[ch].adrs_ptr = tbl.adrs_ptr = (int)mm.ReadUInt32(0x04 + reg.a1);
-                    mpcmSt[ch].size = tbl.size = mm.ReadUInt32(0x08 + reg.a1);
-                    mpcmSt[ch].start = tbl.start = mm.ReadUInt32(0x0c + reg.a1);
-                    mpcmSt[ch].end = tbl.end = mm.ReadUInt32(0x10 + reg.a1);
-                    mpcmSt[ch].count = tbl.count = mm.ReadUInt32(0x14 + reg.a1);
-                    m_MPCM.SetPcm(0, ch, tbl);
+                    if (mpcmtype == 0)
+                    {
+                        tbl.adrs_buf = mm.mm;
+                        mpcmSt[ch].type = tbl.type = mm.ReadByte(0x00 + reg.a1);
+                        mpcmSt[ch].orig = tbl.orig = mm.ReadByte(0x01 + reg.a1);
+                        mpcmSt[ch].adrs_ptr = tbl.adrs_ptr = (int)mm.ReadUInt32(0x04 + reg.a1);
+                        mpcmSt[ch].size = tbl.size = mm.ReadUInt32(0x08 + reg.a1);
+                        mpcmSt[ch].start = tbl.start = mm.ReadUInt32(0x0c + reg.a1);
+                        mpcmSt[ch].end = tbl.end = mm.ReadUInt32(0x10 + reg.a1);
+                        mpcmSt[ch].count = tbl.count = mm.ReadUInt32(0x14 + reg.a1);
+                        mpcmSt[ch].frq = mpcmSt[ch].type == 0xff ? 4 : (mpcmSt[ch].type == 1 ? 8 : (mpcmSt[ch].type == 2 ? 0x10 : 0));
+                        if (mpcm != null)
+                        {
+                            mpcmSt[n & 0xf].rate = mpcm.m[0].rate;
+                            mpcmSt[n & 0xf].base_ = mpcm.m[0].base_;
+                        }
+                        mpcm?.SetPcm(0, ch, tbl);
+                    }
+                    else
+                    {
+                        ptr.adrs_buf = mm.mm;
+                        mpcmSt[ch].type = ptr.type = mm.ReadByte(0x00 + reg.a1);
+                        mpcmSt[ch].orig = ptr.orig = mm.ReadByte(0x01 + reg.a1);
+                        mpcmSt[ch].adrs_ptr = ptr.adrs_ptr = (int)mm.ReadUInt32(0x04 + reg.a1);
+                        mpcmSt[ch].size = ptr.size = mm.ReadUInt32(0x08 + reg.a1);
+                        mpcmSt[ch].start = ptr.start = mm.ReadUInt32(0x0c + reg.a1);
+                        mpcmSt[ch].end = ptr.end = mm.ReadUInt32(0x10 + reg.a1);
+                        mpcmSt[ch].count = ptr.count = mm.ReadUInt32(0x14 + reg.a1);
+                        if (mpcmpp != null)
+                        {
+                            mpcmSt[ch].rate = mpcmpp.m[0].rate;
+                            mpcmSt[ch].base_ = mpcmpp.m[0].base_;
+                        }
+                        mpcmSt[ch].frq = mpcmSt[ch].type == 0xff ? 4 : (mpcmSt[ch].type == 1 ? 8 : (mpcmSt[ch].type == 2 ? 0x10 : 0));
+                        //nise68.DumpMemory((uint)ptr.adrs_ptr, (uint)(ptr.adrs_ptr + ptr.size));
+                        mpcmpp?.SetFreq(0, ch, mpcmSt[ch].frq);
+                        mpcmpp?.SetPcm(0, ch, ptr);
+                    }
                     break;
                 case 0x04:
-                    m_MPCM.SetPitch(0, ch, (int)reg.D1_L);
+                    if (mpcmtype == 0)
+                        mpcm?.SetPitch(0, ch, (int)reg.D1_L);
+                    else
+                        mpcmpp?.SetPitch(0, ch, (int)reg.D1_L);
                     mpcmSt[ch].pitch = (int)reg.D1_L;
                     break;
                 case 0x05:
-                    m_MPCM.SetVol(0, ch, (int)(reg.D1_B));
+                    if (mpcmtype == 0)
+                        mpcm?.SetVol(0, ch, (int)reg.D1_B);
+                    else
+                        mpcmpp?.SetVol(0,   ch, (int)reg.D1_B);
                     mpcmSt[ch].volume = (int)reg.D1_B;
                     break;
                 case 0x06:
-                    m_MPCM.SetPan(0, ch, (int)(reg.D1_B));
+                    if (mpcmtype == 0)
+                        mpcm?.SetPan(0, ch, (int)reg.D1_B);
+                    else
+                        mpcmpp?.SetPan(0, ch, (int)reg.D1_B);
                     mpcmSt[ch].pan = (int)reg.D1_B;
                     break;
                 case 0x80:
                     switch (reg.D0_B)
                     {
                         case 0x02:
-                            m_MPCM.Reset(0);
+                            if (mpcmtype == 0)
+                                mpcm?.Reset(0);
+                            else
+                                mpcmpp?.Reset(0);
                             break;
                         case 0x05:
                             for (int i = 0; i < 128; i++)
                             {
                                 vtbl[i] = mm.ReadUInt16((uint)(reg.a1 + (i * 2)));
                             }
-                            m_MPCM.SetVolTable(0, (int)reg.D1_L, vtbl);
+                            if (mpcmtype == 0)
+                                mpcm?.SetVolTable(0, (int)reg.D1_L, vtbl);
+                            else
+                                mpcmpp?.SetVolTable(0, (int)reg.D1_L, vtbl);
                             break;
                     }
                     break;

@@ -8,6 +8,7 @@
         public long Counter = 0;
         public long TotalCounter = 0;
         public long LoopCounter = 0;
+        public long loopTimeCounter = -1;//loop pointに到達した際のカウンター値
         public uint vgmCurLoop = 0;
         public bool Stopped = false;
         public long vgmFrameCounter;
@@ -66,6 +67,12 @@
                     }
                 }
             }
+        }
+
+        public void updateLoopTimeCounter()
+        {
+            if (loopTimeCounter >= 0) return;
+            loopTimeCounter = Counter;
         }
 
     }

@@ -304,6 +304,7 @@ namespace MDPlayer
             if (filename.ToLower().LastIndexOf(".nsf") != -1) return EnmFileFormat.NSF;
             if (filename.ToLower().LastIndexOf(".hes") != -1) return EnmFileFormat.HES;
             if (filename.ToLower().LastIndexOf(".sid") != -1) return EnmFileFormat.SID;
+            if (filename.ToLower().LastIndexOf(".ay") != -1) return EnmFileFormat.AY;
             if (filename.ToLower().LastIndexOf(".mnd") != -1) return EnmFileFormat.MND;
             if (filename.ToLower().LastIndexOf(".mdr") != -1) return EnmFileFormat.MDR;
             if (filename.ToLower().LastIndexOf(".mdx") != -1) return EnmFileFormat.MDX;
@@ -322,6 +323,7 @@ namespace MDPlayer
             if (filename.ToLower().LastIndexOf(".zms") != -1) return EnmFileFormat.ZMS;
             if (filename.ToLower().LastIndexOf(".zmd") != -1) return EnmFileFormat.ZMD;
             if (filename.ToLower().LastIndexOf(".rcp") != -1) return EnmFileFormat.RCP;
+            if (filename.ToLower().LastIndexOf(".rcs") != -1) return EnmFileFormat.RCS;
             if (filename.ToLower().LastIndexOf(".s98") != -1) return EnmFileFormat.S98;
             if (filename.ToLower().LastIndexOf(".vgm") != -1) return EnmFileFormat.VGM;
             if (filename.ToLower().LastIndexOf(".vgz") != -1) return EnmFileFormat.VGM;
@@ -1092,9 +1094,11 @@ namespace MDPlayer
         XGM2 = 30,
         ZMS = 31,
         ZMD = 32,
-        HOOT_GENERIC_Z80 = 33,
-        XML = 34,
-        HOOT = 35
+        RCS = 33,
+        AY=34,
+        HOOT_GENERIC_Z80 = 35,
+        XML = 36,
+        HOOT = 37
     }
 
     public enum EnmArcType : int

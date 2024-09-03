@@ -48,6 +48,9 @@
         public short ga20 = 0;
 
         public short ppz8 = 0;
+        public short pcm8 = 0;
+        public short pcm8pp = 0;
+        public short mpcmX68k = 0;
 
         public short APU = 0;
         public short DMC = 0;

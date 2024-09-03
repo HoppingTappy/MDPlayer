@@ -110,10 +110,10 @@ namespace MDPlayer.Driver.ZMS.nise68
                 //    //Log.SetLogLevel(LogLevel.Trace);
                 //}
 
-                //if (reg.PC == 0x0000000002_9D6A || reg.PC == 0x0002_7132)
-                //{
-                //    ;
-                //}
+                if (reg.PC == 0x0002e9fe)
+                {
+                    ;
+                }
                 //if (reg.PC == 0x0000002_58a8)//コメント読みこみ完了
                 //{
                 //    ;

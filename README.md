@@ -3,7 +3,7 @@ VGMファイルなどのPlayer(メガドライブ音源チップなどのエミ�
   
 [概要]  
   このツールは、鍵盤表示を行いながらVGMファイルの再生を行います。  
-  (NRD,XGM,S98,MID,RCP,NSF,HES,SID,MGS,MDR,MDX,MND,ZMD,ZMS,MUC,MUB,M,M2,MZ,MPI,MVI,MZI,OPI,OVI,OZI,WAV,MP3,AIFFファイルにも対応。)  
+  (NRD,XGM,S98,MID,RCP,RCS,NSF,HES,SID,AY,MGS,MDR,MDX,MND,ZMD,ZMS,MUC,MUB,M,M2,MZ,MPI,MVI,MZI,OPI,OVI,OZI,WAV,MP3,AIFFファイルにも対応。)  
   
 [注意]  
   ・FileAssociationTool(ファイル関連付け設定ツール)についてはREADME_AST.md/README_AST_EN.mdを参照お願いします。  
@@ -28,9 +28,11 @@ VGMファイルなどのPlayer(メガドライブ音源チップなどのエミ�
   .S98 (主に日本製レトロPC向けファイル)  
   .MID (StandardMIDIファイル。フォーマット0/1対応)  
   .RCP (レコポンファイル CM6,GSDの送信可)  
+  .RCS (上記RCPを演奏しながらPCM8も発音できるファイル)  
   .NSF (NES Sound Format)  
   .HES (HESファイル)  
   .SID (コモドール向けファイル)  
+  .AY  (ZX Spectrum / Amstrad CPC向けファイル)  
   .MGS (MGSDRVファイル 演奏するにはMGSDRV.COMが必要です)  
   .BGM (MuSICAファイル 演奏するにはKINROU5.DRVが必要です)  
   .MDR (MoonDriver MSXで,MoonSound(OPL4)を鳴らすドライバの演奏ファイル)  
@@ -69,7 +71,7 @@ VGMファイルなどのPlayer(メガドライブ音源チップなどのエミ�
   ・現在、以下の鍵盤表示が可能です。  
      
       YM2612(YM3438), SN76489    , RF5C164  
-      , AY8910      , C140(C219) , C352    , SEGAPCM    , K054539 , GA20 , OKIM6295 , OKIM6258(PCM8含)  
+      , AY8910      , C140(C219) , C352    , SEGAPCM    , K054539 , GA20 , OKIM6295 , OKIM6258(PCM8,MPCM含)  
       , Y8950       , YM2151     , YM2203  , YM2413     , YM2608 , YM2609 , YM2610/B 
       , YM3526      , YM3812     
       , YMF262      , YMF278B    , YMZ280B , MultiPCM   
@@ -99,6 +101,8 @@ VGMファイルなどのPlayer(メガドライブ音源チップなどのエミ�
   
   ・sidplayfpのソースを参考、移植しています。  
   
+  ・YMEmuWithFiltersのソースを参考にしています。  
+
   ・NRTDRVのソースを参考、移植しています。  
   
   ・MoonDriverのソースを参考、移植しています。  
@@ -126,8 +130,9 @@ VGMファイルなどのPlayer(メガドライブ音源チップなどのエミ�
 
   ・CVS.EXEの出力を参考に同じデータが出力されるよう調整しています。  
   
-  ・SCCIを利用して本物のYM2612(YM3438),SN76489,YM2608,YM2151,YMF262から再生が可能です。  
+  ・SCCI2を利用して本物のYM2612(YM3438),SN76489,YM2608,YM2151,YMF262から再生が可能です。  
   またSPPCMにも対応しています。  
+  SCCI2は別途ダウンロードしMDPlayerと同じ場所に置き、scci2config.exeで設定を行っておくことが必須です。  
   
   ・GIMIC(C86ctl)を利用して本物のYM2608,YM2151,YMF262から再生が可能です。  
   
@@ -191,6 +196,7 @@ VGMファイルなどのPlayer(メガドライブ音源チップなどのエミ�
 [ちょっと分かりづらい操作]  
   ・各ウィンドウのタイトルバーをダブルクリック(トグル)すると常に前面に表示するようになります。  
 　・Shiftキーを押しながらアプリを起動すると、ウィンドウの位置を初期化できるように機能追加。  
+　・OPN系の鍵盤ではShiftキーを押しながらFM3OP1～4をクリックすると、SLOT毎のミュートが可能です。（但しキャリアのみ)  
 
   
   
@@ -209,6 +215,12 @@ VGMファイルなどのPlayer(メガドライブ音源チップなどのエミ�
       ・MNDRV(.MND)  
         .PND  
     尚、PMDDotNETの場合は環境変数PMDで指定されたパスを参照します。  
+
+  ・レコンポーザ(.RCP)ファイル演奏時にの.CM6 .GSDを読ませるためには  
+    設定画面のMIDIデバイス設定時にそれぞれLA、GSと音源種を適切に選択しておく必要があります。  
+
+  ・X68000系のファイル(.MDX .ZMS .ZMD .RCS)演奏時はPCM再生ドライバ(PCM8,PCM8PP,MPCM,MPCMPP)を適切に選択する必要があります。  
+    (これらはデータから最適なドライバを自動選択させるための手段を持たない為)   
 
   
   
@@ -280,7 +292,7 @@ VGMファイルなどのPlayer(メガドライブ音源チップなどのエミ�
   ・音声を再生できるオーディオデバイスが必須。  
   そこそこ性能があるものが必要です。UMX250のおまけでついてたUCA222でも十分いけます。私はこれを使ってました。  
   
-  ・もしあれば、SPFM Light＋YM2612(YM3438)＋YM2608＋YM2151＋SPPCM  
+  ・もしあれば、SPFM Light(SCCI2対応版)＋YM2612(YM3438)＋YM2608＋YM2151＋SPPCM  
   
   ・もしあれば、GIMIC＋YM2608＋YM2151  
   
@@ -294,6 +306,8 @@ VGMファイルなどのPlayer(メガドライブ音源チップなどのエミ�
       タムタム        2608_TOM.WAV  
       トップシンバル  2608_TOP.WAV  
       (44.1KHz 16bitPCM モノラル 無圧縮Microsoft WAVE形式ファイル)  
+    曲ファイルと同じ位置に上記ファイルが存在する場合はそちらを読み込んで発音します。  
+    リズム音を独自に変えたい場合に便利。  
   
   ・YMF278Bのエミュレーション時、MoonSoundの音色を鳴らすために以下のROMファイルが必要です。  
   作成方法は申し訳ありませんがお任せします。  
@@ -330,9 +344,14 @@ VGMファイルなどのPlayer(メガドライブ音源チップなどのエミ�
     ZMC.X  
     ZMSC3.X  
   
+  ・SCCI2を使用して実チップから演奏するには、以下のファイルが必要です。  
+  (公式サイトなどから入手してください。)
+    scci2.dll  
+    scci2config.exe  
+
 [同期のすゝめ]  
     
-  ・SCCI/GIMIC(C86ctl)とエミュレーション(以下EMUと略す)による音を同期させるのにはコツがいります。  
+  ・SCCI2/GIMIC(C86ctl)とエミュレーション(以下EMUと略す)による音を同期させるのにはコツがいります。  
   環境にもよるので何が正解かはわからないのですが、私の環境での調整手順を紹介します。  
       
     １．まず、[Output]タブから音声の出力に使用するデバイスを選びます。  
@@ -529,6 +548,8 @@ VGMファイルなどのPlayer(メガドライブ音源チップなどのエミ�
     ・blueMSX  
     ・FMP  
     ・PPZ8  
+    ・ZMUSICv2/v3    
+    ・RCSMP  
      
     ・SMS Power!  
     ・DOBON.NET  
@@ -560,9 +581,9 @@ VGMファイルなどのPlayer(メガドライブ音源チップなどのエミ�
         (Exception from HRESULT:xxxx)  
 
     Case2  
-      主に実チップ使用時に発生します。SCCIがc86ctlを使用する状態になっている為です。  
+      主に実チップ使用時に発生します。SCCI2がc86ctlを使用する状態になっている為です。  
     MDPlayerもc86ctlを使用するため取り合いになってしまい、起動に失敗します。  
-    →scciconfig.exeを使用してc86ctlの設定項目である「enable」のチェックを外してください。  
+    →scci2config.exeを使用してc86ctlの設定項目である「enable」のチェックを外してください。  
   
     Case3  
       .NETframeworkのバージョンが違う為です。  

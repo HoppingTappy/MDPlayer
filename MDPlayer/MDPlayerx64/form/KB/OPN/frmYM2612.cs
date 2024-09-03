@@ -391,7 +391,12 @@ namespace MDPlayer.form
                             oldParam.fileFormat = newParam.fileFormat;
                         }
 
-                        DrawBuff.Ch6YM2612XGM(frameBuffer, nyc.pcmBuff, ref oyc.pcmMode, nyc.pcmMode, ref oyc.mask, nyc.mask, ref oyc.tp, tp6v);
+                        DrawBuff.Ch6YM2612XGM(frameBuffer, nyc.pcmBuff, ref oyc.pcmMode, nyc.pcmMode, ref oyc.mask, nyc.mask,
+                            ref oldParam.channels[9].mask, newParam.channels[9].mask,
+                            ref oldParam.channels[10].mask, newParam.channels[10].mask,
+                            ref oldParam.channels[11].mask, newParam.channels[11].mask,
+                            ref oldParam.channels[12].mask, newParam.channels[12].mask,
+                            ref oyc.tp, tp6v);
                         if (newParam.channels[5].pcmMode == 0)
                         {
                             DrawBuff.Volume(frameBuffer, 289, 8 + c * 8, 1, ref oyc.volumeL, nyc.volumeL, tp6v);
@@ -456,7 +461,12 @@ namespace MDPlayer.form
                             //
                             oyc.pcmMode = 1;
                             nyc.pcmMode = 0;
-                            DrawBuff.Ch6YM2612XGM(frameBuffer, nyc.pcmBuff, ref oyc.pcmMode, nyc.pcmMode, ref oyc.mask, nyc.mask, ref oyc.tp, tp6v);
+                            DrawBuff.Ch6YM2612XGM(frameBuffer, nyc.pcmBuff, ref oyc.pcmMode, nyc.pcmMode, ref oyc.mask, nyc.mask,
+                                ref oldParam.channels[9].mask, newParam.channels[9].mask,
+                                ref oldParam.channels[10].mask, newParam.channels[10].mask,
+                                ref oldParam.channels[11].mask, newParam.channels[11].mask,
+                                ref oldParam.channels[12].mask, newParam.channels[12].mask,
+                                ref oyc.tp, tp6v);
                             oldParam.fileFormat = newParam.fileFormat;
                         }
 
@@ -496,7 +506,7 @@ namespace MDPlayer.form
                 //但しchをクリックした場合はマスク反転
                 if (px < 8)
                 {
-                    for (int ch = 0; ch < 6; ch++)
+                    for (int ch = 0; ch < 13; ch++)
                     {
                         if (newParam.channels[ch].mask == true)
                             parent.ResetChannelMask(EnmChip.YM2612, chipID, ch);
@@ -512,13 +522,62 @@ namespace MDPlayer.form
             {
                 int ch = (py / 8) - 1;
                 if (ch < 0) return;
-                if (6 <= ch && ch <= 8)
-                {
-                    ch = 2;
-                }
 
                 if (e.Button == MouseButtons.Left)
                 {
+                    //FM Ch3専用マスク判定処理
+                    if (ch == 2 || ch == 6 || ch == 7 || ch == 8)
+                    {
+                        if ((Control.ModifierKeys & Keys.Shift) == Keys.Shift)
+                        {
+                            //マスク
+                            if (newParam.channels[ch].mask == true)
+                                parent.ResetChannelMask(EnmChip.YM2612, chipID, ch);
+                            else
+                                parent.SetChannelMask(EnmChip.YM2612, chipID, ch);
+                            return;
+                        }
+
+                        //マスク
+                        if (newParam.channels[ch].mask == true)
+                        {
+                            parent.ResetChannelMask(EnmChip.YM2612, chipID, 2);
+                            parent.ResetChannelMask(EnmChip.YM2612, chipID, 6);
+                            parent.ResetChannelMask(EnmChip.YM2612, chipID, 7);
+                            parent.ResetChannelMask(EnmChip.YM2612, chipID, 8);
+                        }
+                        else
+                        {
+                            parent.SetChannelMask(EnmChip.YM2612, chipID, 2);
+                            parent.SetChannelMask(EnmChip.YM2612, chipID, 6);
+                            parent.SetChannelMask(EnmChip.YM2612, chipID, 7);
+                            parent.SetChannelMask(EnmChip.YM2612, chipID, 8);
+                        }
+                        return;
+                    }
+
+                    if (ch == 5)
+                    {
+                        // XGM/2か
+                        if (newParam.fileFormat == EnmFileFormat.XGM)
+                        {
+                            if (px < 4 * 9 + 1)
+                            {
+                                ch = 5;
+                            }
+                            else
+                            {
+                                int x = (px - 33) / (17 * 4);
+                                ch = 9 + x;
+                                ch = Math.Max(Math.Min(ch, 12), 9);
+                            }
+                        }
+                        else if (newParam.fileFormat == EnmFileFormat.XGM2)
+                        {
+
+                        }   
+                    }
+
                     //マスク
                     if (newParam.channels[ch].mask == true)
                         parent.ResetChannelMask(EnmChip.YM2612, chipID, ch);
@@ -528,7 +587,7 @@ namespace MDPlayer.form
                 }
 
                 //マスク解除
-                for (ch = 0; ch < 6; ch++) parent.ResetChannelMask(EnmChip.YM2612, chipID, ch);
+                for (ch = 0; ch < 13; ch++) parent.ResetChannelMask(EnmChip.YM2612, chipID, ch);
                 return;
             }
 

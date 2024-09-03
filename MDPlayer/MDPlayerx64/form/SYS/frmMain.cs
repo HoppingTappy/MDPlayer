@@ -260,7 +260,10 @@ namespace MDPlayer.form
 
             log.ForcedWrite("frmMain(コンストラクタ):STEP 04");
 
-
+            while (setting.playMode != newButtonMode[9])
+            {
+                PlayMode();
+            }
         }
 
         private void ClearWindowPos()
@@ -1527,6 +1530,8 @@ namespace MDPlayer.form
                     setting.location.OpenVisWave = true;
                 }
             }
+
+            setting.playMode = newButtonMode[9];
 
             log.ForcedWrite("frmMain_FormClosing:STEP 05");
 
@@ -4745,6 +4750,7 @@ namespace MDPlayer.form
                 frmPic.w = setting.location.SPic.X;
                 frmPic.h = setting.location.SPic.Y;
             }
+            //frmPic.Show();
 
             Screen s = Screen.FromControl(frmInfo);
             Rectangle rc = new(frmInfo.Location, frmInfo.Size);
@@ -4980,7 +4986,7 @@ namespace MDPlayer.form
 
                     if (filename.ToLower().LastIndexOf(".zip") == -1)
                     {
-                        loadAndPlay(0, 0, filename);
+                        loadAndPlay(0, 0, filename, null, null, null);
                         frmPlayList.setStart(-1);
                         oldParam = new MDChipParams();
 
@@ -5196,6 +5202,24 @@ namespace MDPlayer.form
             newParam.LCsecond = (int)sec;
             sec -= newParam.LCsecond;
             newParam.LCmillisecond = (int)(sec * 100.0);
+
+            w = Audio.GetLoopTimeCounter();
+            if (w != -1)
+            {
+                if (newParam.LTCounter != w)
+                {
+                    newParam.LTCounter = w;
+                    sec = (double)w / (double)Common.VGMProcSampleRate;
+                    int minutes = (int)(sec / 60);
+                    sec -= minutes * 60;
+                    int second = (int)sec;
+                    sec -= second;
+                    int millisecond = (int)(sec * 100.0);
+                    Audio.GetPlayingFileName(out string pfn, out string paf);
+                    //Audio.ResetLoopTimeCounter();
+                    frmPlayList.UpdateDuration(pfn, paf, minutes, second, millisecond);
+                }
+            }
 
             //フェーダー(マスターボリューム)
             //フェーダー解像度57段階(0～56) 7*8=56dot
@@ -5697,7 +5721,7 @@ namespace MDPlayer.form
             oldParam.Cminutes = -1; oldParam.Csecond = -1; oldParam.Cmillisecond = -1;
             oldParam.TCminutes = -1; oldParam.TCsecond = -1; oldParam.TCmillisecond = -1;
             oldParam.LCminutes = -1; oldParam.LCsecond = -1; oldParam.LCmillisecond = -1;
-
+            newParam.LTCounter = -1;
         }
 
 
@@ -5756,7 +5780,7 @@ namespace MDPlayer.form
             }
 
             string[] fn = null;
-            Tuple<int, int, string, string> playFn = null;
+            Tuple<int, int, string, string, string[], string> playFn = null;
 
             frmPlayList.Stop();
 
@@ -5775,13 +5799,13 @@ namespace MDPlayer.form
                 playFn = frmPlayList.setStart(-2);//first 
             }
 
-            reqAllScreenInit = true;
 
-            if (loadAndPlay(playFn.Item1, playFn.Item2, playFn.Item3, playFn.Item4))
+            if (loadAndPlay(playFn.Item1, playFn.Item2, playFn.Item3, playFn.Item4,playFn.Item5,playFn.Item6))
             {
                 frmPlayList.Play();
             }
 
+            reqAllScreenInit = true;
         }
 
         private void Playdata()
@@ -5826,7 +5850,6 @@ namespace MDPlayer.form
 
                 //oldParam = new MDChipParams();
                 //newParam = new MDChipParams();
-                reqAllScreenInit = true;
 
                 if (setting.other.WavSwitch)
                 {
@@ -5883,6 +5906,7 @@ namespace MDPlayer.form
 
                 speedRatio = 1.0;
 
+                reqAllScreenInit = true;
                 for (int chipID = 0; chipID < 2; chipID++)
                 {
                     for (int ch = 0; ch < 3; ch++) ForceChannelMask(EnmChip.AY8910, chipID, ch, newParam.ay8910[chipID].channels[ch].mask);
@@ -5897,7 +5921,7 @@ namespace MDPlayer.form
                         else if (ch == 13) c = 12;
                         ForceChannelMask(EnmChip.YM2610, chipID, ch, newParam.ym2610[chipID].channels[c].mask);
                     }
-                    for (int ch = 0; ch < 6; ch++) ForceChannelMask(EnmChip.YM2612, chipID, ch, newParam.ym2612[chipID].channels[ch].mask);
+                    for (int ch = 0; ch < 13; ch++) ForceChannelMask(EnmChip.YM2612, chipID, ch, newParam.ym2612[chipID].channels[ch].mask);
                     for (int ch = 0; ch < 4; ch++) ForceChannelMask(EnmChip.SN76489, chipID, ch, newParam.sn76489[chipID].channels[ch].mask);
                     for (int ch = 0; ch < 8; ch++) ForceChannelMask(EnmChip.RF5C164, chipID, ch, newParam.rf5c164[chipID].channels[ch].mask);
                     for (int ch = 0; ch < 8; ch++) ForceChannelMask(EnmChip.RF5C68, chipID, ch, newParam.rf5c68[chipID].channels[ch].mask);
@@ -6405,6 +6429,12 @@ namespace MDPlayer.form
                 return buf;
             }
 
+            if (ext == ".ay")
+            {
+                format = EnmFileFormat.AY;
+                return buf;
+            }
+
             if (ext == ".mid")
             {
                 format = EnmFileFormat.MID;
@@ -6414,6 +6444,12 @@ namespace MDPlayer.form
             if (ext == ".rcp")
             {
                 format = EnmFileFormat.RCP;
+                return buf;
+            }
+
+            if (ext == ".rcs")
+            {
+                format = EnmFileFormat.RCS;
                 return buf;
             }
 
@@ -8565,7 +8601,7 @@ namespace MDPlayer.form
                 //frmPlayList.AddList(sParam);
             }
 
-            if (!loadAndPlay(0, songNum, fname))
+            if (!loadAndPlay(0, songNum, fname,null,null,null))
             {
                 frmPlayList.Stop();
                 Request req = new(EnmRequest.Stop);
@@ -8642,7 +8678,7 @@ namespace MDPlayer.form
 
 
 
-        public bool loadAndPlay(int m, int songNo, string fn, string zfn = null)
+        public bool loadAndPlay(int m, int songNo, string fn, string zfn, string[] spfn,string useCom)
         {
             try
             {
@@ -8671,7 +8707,7 @@ namespace MDPlayer.form
                     {
                         srcBuf = null;
                     }
-                    extFile = getExtendFile(fn, srcBuf, format);
+                    extFile = getExtendFile(fn, spfn, srcBuf, format);
                 }
                 else
                 {
@@ -8689,7 +8725,7 @@ namespace MDPlayer.form
                         {
                             srcBuf = getBytesFromZipFile(entry, out arcFn);
                             if (arcFn != "") playingFileName = arcFn;
-                            extFile = getExtendFile(fn, srcBuf, format, archive);
+                            extFile = getExtendFile(fn, null, srcBuf, format, archive);
                         }
                     }
                     else
@@ -8700,7 +8736,7 @@ namespace MDPlayer.form
                             UnlhaWrap.UnlhaCmd cmd = new();
                             srcBuf = cmd.GetFileByte(zfn, fn);
                             playingFileName = fn;
-                            extFile = getExtendFile(fn, srcBuf, format, new Tuple<string, string>(zfn, fn));
+                            extFile = getExtendFile(fn, null, srcBuf, format, new Tuple<string, string>(zfn, fn));
                         }
                     }
                 }
@@ -8717,7 +8753,7 @@ namespace MDPlayer.form
                 //再生前に音量のバランスを設定する
                 LoadPresetMixerBalance(playingFileName, playingArcFileName, format);
 
-                Audio.SetVGMBuffer(format, srcBuf, playingFileName, playingArcFileName, m, songNo, extFile);
+                Audio.SetVGMBuffer(format, srcBuf, playingFileName, playingArcFileName, m, songNo, extFile, spfn, useCom);
                 newParam.ym2612[0].fileFormat = format;
                 newParam.ym2612[1].fileFormat = format;
 
@@ -8763,7 +8799,7 @@ namespace MDPlayer.form
                 //再生前に音量のバランスを設定する
                 LoadPresetMixerBalance(playingFileName, playingArcFileName, format);
 
-                Audio.SetVGMBuffer(format, srcBuf, playingFileName, playingArcFileName, 0, 0, extFile);
+                Audio.SetVGMBuffer(format, srcBuf, playingFileName, playingArcFileName, 0, 0, extFile, null, null);
                 newParam.ym2612[0].fileFormat = format;
                 newParam.ym2612[1].fileFormat = format;
 
@@ -8785,15 +8821,38 @@ namespace MDPlayer.form
             return true;
         }
 
-        private List<Tuple<string, byte[]>> getExtendFile(string fn, byte[] srcBuf, EnmFileFormat format, object archive = null)
+        private List<Tuple<string, byte[]>> getExtendFile(string fn, string[] spfn, byte[] srcBuf, EnmFileFormat format, object archive = null)
         {
             List<Tuple<string, byte[]>> ret = new();
             byte[] buf;
+            string CM6, GSD, GSD2, sRCP;
             switch (format)
             {
                 case EnmFileFormat.RCP:
-                    string CM6, GSD, GSD2;
                     RCP.getControlFileName(srcBuf, out CM6, out GSD, out GSD2);
+                    if (!string.IsNullOrEmpty(CM6))
+                    {
+                        buf = getExtendFileAllBytes(fn, CM6, archive);
+                        if (buf != null) ret.Add(new Tuple<string, byte[]>(".CM6", buf));
+                    }
+                    if (!string.IsNullOrEmpty(GSD))
+                    {
+                        buf = getExtendFileAllBytes(fn, GSD, archive);
+                        if (buf != null) ret.Add(new Tuple<string, byte[]>(".GSD", buf));
+                    }
+                    if (!string.IsNullOrEmpty(GSD2))
+                    {
+                        buf = getExtendFileAllBytes(fn, GSD2, archive);
+                        if (buf != null) ret.Add(new Tuple<string, byte[]>(".GSD", buf));
+                    }
+                    break;
+                case EnmFileFormat.RCS:
+                    RCS.getControlFileName(fn, (spfn != null && spfn.Length > 0) ? spfn[0] : null, srcBuf, out sRCP, out CM6, out GSD, out GSD2);
+                    if (!string.IsNullOrEmpty(sRCP))
+                    {
+                        buf = getExtendFileAllBytes(fn, sRCP, archive);
+                        if (buf != null) ret.Add(new Tuple<string, byte[]>(".RCP", buf));
+                    }
                     if (!string.IsNullOrEmpty(CM6))
                     {
                         buf = getExtendFileAllBytes(fn, CM6, archive);
@@ -8936,14 +8995,14 @@ namespace MDPlayer.form
                         Audio.SetYM2203Mask(chipID, ch);
                         newParam.ym2203[chipID].channels[ch].mask = true;
 
-                        //FM(2ch) FMex
-                        if ((ch == 2) || (ch >= 6 && ch < 9))
-                        {
-                            newParam.ym2203[chipID].channels[2].mask = true;
-                            newParam.ym2203[chipID].channels[6].mask = true;
-                            newParam.ym2203[chipID].channels[7].mask = true;
-                            newParam.ym2203[chipID].channels[8].mask = true;
-                        }
+                        ////FM(2ch) FMex
+                        //if ((ch == 2) || (ch >= 6 && ch < 9))
+                        //{
+                        //    newParam.ym2203[chipID].channels[2].mask = true;
+                        //    newParam.ym2203[chipID].channels[6].mask = true;
+                        //    newParam.ym2203[chipID].channels[7].mask = true;
+                        //    newParam.ym2203[chipID].channels[8].mask = true;
+                        //}
                     }
                     break;
                 case EnmChip.YM2413:
@@ -9018,19 +9077,19 @@ namespace MDPlayer.form
                     }
                     break;
                 case EnmChip.YM2608:
-                    if (ch >= 0 && ch < 14)
+                    if (ch >= 0 && ch < 19)
                     {
                         Audio.SetYM2608Mask(chipID, ch);
                         newParam.ym2608[chipID].channels[ch].mask = true;
 
-                        //FM(2ch) FMex
-                        if ((ch == 2) || (ch >= 9 && ch < 12))
-                        {
-                            newParam.ym2608[chipID].channels[2].mask = true;
-                            newParam.ym2608[chipID].channels[9].mask = true;
-                            newParam.ym2608[chipID].channels[10].mask = true;
-                            newParam.ym2608[chipID].channels[11].mask = true;
-                        }
+                        ////FM(2ch) FMex
+                        //if ((ch == 2) || (ch >= 9 && ch < 12))
+                        //{
+                        //    newParam.ym2608[chipID].channels[2].mask = true;
+                        //    newParam.ym2608[chipID].channels[9].mask = true;
+                        //    newParam.ym2608[chipID].channels[10].mask = true;
+                        //    newParam.ym2608[chipID].channels[11].mask = true;
+                        //}
                     }
                     break;
                 case EnmChip.YM2610:
@@ -9054,19 +9113,19 @@ namespace MDPlayer.form
                     }
                     break;
                 case EnmChip.YM2612:
-                    if (ch >= 0 && ch < 9)
+                    if (ch >= 0 && ch < 13)
                     {
                         Audio.SetYM2612Mask(chipID, ch);
                         newParam.ym2612[chipID].channels[ch].mask = true;
 
-                        //FM(2ch) FMex
-                        if ((ch == 2) || (ch >= 6 && ch < 9))
-                        {
-                            newParam.ym2612[chipID].channels[2].mask = true;
-                            newParam.ym2612[chipID].channels[6].mask = true;
-                            newParam.ym2612[chipID].channels[7].mask = true;
-                            newParam.ym2612[chipID].channels[8].mask = true;
-                        }
+                        ////FM(2ch) FMex
+                        //if ((ch == 2) || (ch >= 6 && ch < 9))
+                        //{
+                        //    newParam.ym2612[chipID].channels[2].mask = true;
+                        //    newParam.ym2612[chipID].channels[6].mask = true;
+                        //    newParam.ym2612[chipID].channels[7].mask = true;
+                        //    newParam.ym2612[chipID].channels[8].mask = true;
+                        //}
                     }
                     break;
                 case EnmChip.SN76489:
@@ -9414,14 +9473,14 @@ namespace MDPlayer.form
                         Audio.ResetYM2203Mask(chipID, ch);
                         newParam.ym2203[chipID].channels[ch].mask = false;
 
-                        //FM(2ch) FMex
-                        if ((ch == 2) || (ch >= 6 && ch < 9))
-                        {
-                            newParam.ym2203[chipID].channels[2].mask = false;
-                            newParam.ym2203[chipID].channels[6].mask = false;
-                            newParam.ym2203[chipID].channels[7].mask = false;
-                            newParam.ym2203[chipID].channels[8].mask = false;
-                        }
+                        ////FM(2ch) FMex
+                        //if ((ch == 2) || (ch >= 6 && ch < 9))
+                        //{
+                        //    newParam.ym2203[chipID].channels[2].mask = false;
+                        //    newParam.ym2203[chipID].channels[6].mask = false;
+                        //    newParam.ym2203[chipID].channels[7].mask = false;
+                        //    newParam.ym2203[chipID].channels[8].mask = false;
+                        //}
                     }
                     break;
                 case EnmChip.YM2413:
@@ -9437,19 +9496,19 @@ namespace MDPlayer.form
                     Audio.ResetK053260Mask(chipID, ch);
                     break;
                 case EnmChip.YM2608:
-                    if (ch >= 0 && ch < 14)
+                    if (ch >= 0 && ch < 19)
                     {
                         Audio.ResetYM2608Mask(chipID, ch);
                         newParam.ym2608[chipID].channels[ch].mask = false;
 
-                        //FM(2ch) FMex
-                        if ((ch == 2) || (ch >= 9 && ch < 12))
-                        {
-                            newParam.ym2608[chipID].channels[2].mask = false;
-                            newParam.ym2608[chipID].channels[9].mask = false;
-                            newParam.ym2608[chipID].channels[10].mask = false;
-                            newParam.ym2608[chipID].channels[11].mask = false;
-                        }
+                        ////FM(2ch) FMex
+                        //if ((ch == 2) || (ch >= 9 && ch < 12))
+                        //{
+                        //    newParam.ym2608[chipID].channels[2].mask = false;
+                        //    newParam.ym2608[chipID].channels[9].mask = false;
+                        //    newParam.ym2608[chipID].channels[10].mask = false;
+                        //    newParam.ym2608[chipID].channels[11].mask = false;
+                        //}
                     }
                     break;
                 case EnmChip.YM2610:
@@ -9474,19 +9533,19 @@ namespace MDPlayer.form
                     }
                     break;
                 case EnmChip.YM2612:
-                    if (ch >= 0 && ch < 9)
+                    if (ch >= 0 && ch < 13)
                     {
                         Audio.ResetYM2612Mask(chipID, ch);
                         newParam.ym2612[chipID].channels[ch].mask = false;
 
-                        //FM(2ch) FMex
-                        if ((ch == 2) || (ch >= 6 && ch < 9))
-                        {
-                            newParam.ym2612[chipID].channels[2].mask = false;
-                            newParam.ym2612[chipID].channels[6].mask = false;
-                            newParam.ym2612[chipID].channels[7].mask = false;
-                            newParam.ym2612[chipID].channels[8].mask = false;
-                        }
+                        ////FM(2ch) FMex
+                        //if ((ch == 2) || (ch >= 6 && ch < 9))
+                        //{
+                        //    newParam.ym2612[chipID].channels[2].mask = false;
+                        //    newParam.ym2612[chipID].channels[6].mask = false;
+                        //    newParam.ym2612[chipID].channels[7].mask = false;
+                        //    newParam.ym2612[chipID].channels[8].mask = false;
+                        //}
                     }
                     break;
                 case EnmChip.YM3526:
@@ -9523,7 +9582,7 @@ namespace MDPlayer.form
                     break;
                 case EnmChip.PCM8:
                     newParam.pcm8[chipID].channels[ch].mask = false;
-                    if (ch < 8) Audio.ResetPCM8Mask(chipID, ch);
+                    if (ch < 16) Audio.ResetPCM8Mask(chipID, ch);
                     break;
                 case EnmChip.C352:
                     newParam.c352[chipID].channels[ch].mask = false;
@@ -9787,18 +9846,18 @@ namespace MDPlayer.form
                         newParam.ym2608[chipID].channels[ch].mask = mask;
                         oldParam.ym2608[chipID].channels[ch].mask = !mask;
 
-                        //FM(2ch) FMex
-                        if ((ch == 2) || (ch >= 9 && ch < 12))
-                        {
-                            newParam.ym2608[chipID].channels[2].mask = mask;
-                            newParam.ym2608[chipID].channels[9].mask = mask;
-                            newParam.ym2608[chipID].channels[10].mask = mask;
-                            newParam.ym2608[chipID].channels[11].mask = mask;
-                            oldParam.ym2608[chipID].channels[2].mask = !mask;
-                            oldParam.ym2608[chipID].channels[9].mask = !mask;
-                            oldParam.ym2608[chipID].channels[10].mask = !mask;
-                            oldParam.ym2608[chipID].channels[11].mask = !mask;
-                        }
+                        ////FM(2ch) FMex
+                        //if ((ch == 2) || (ch >= 9 && ch < 12))
+                        //{
+                        //    newParam.ym2608[chipID].channels[2].mask = mask;
+                        //    newParam.ym2608[chipID].channels[9].mask = mask;
+                        //    newParam.ym2608[chipID].channels[10].mask = mask;
+                        //    newParam.ym2608[chipID].channels[11].mask = mask;
+                        //    oldParam.ym2608[chipID].channels[2].mask = !mask;
+                        //    oldParam.ym2608[chipID].channels[9].mask = !mask;
+                        //    oldParam.ym2608[chipID].channels[10].mask = !mask;
+                        //    oldParam.ym2608[chipID].channels[11].mask = !mask;
+                        //}
                     }
                     break;
                 case EnmChip.YM2610:
@@ -9830,7 +9889,7 @@ namespace MDPlayer.form
                     }
                     break;
                 case EnmChip.YM2612:
-                    if (ch >= 0 && ch < 9)
+                    if (ch >= 0 && ch < 13)
                     {
                         if (mask == true)
                             Audio.SetYM2612Mask(chipID, ch);
@@ -9841,17 +9900,17 @@ namespace MDPlayer.form
                         oldParam.ym2612[chipID].channels[ch].mask = null;
 
                         //FM(2ch) FMex
-                        if ((ch == 2) || (ch >= 6 && ch < 9))
-                        {
-                            newParam.ym2612[chipID].channels[2].mask = mask;
-                            newParam.ym2612[chipID].channels[6].mask = mask;
-                            newParam.ym2612[chipID].channels[7].mask = mask;
-                            newParam.ym2612[chipID].channels[8].mask = mask;
-                            oldParam.ym2612[chipID].channels[2].mask = null;
-                            oldParam.ym2612[chipID].channels[6].mask = null;
-                            oldParam.ym2612[chipID].channels[7].mask = null;
-                            oldParam.ym2612[chipID].channels[8].mask = null;
-                        }
+                        //if ((ch == 2) || (ch >= 6 && ch < 9))
+                        //{
+                        //    newParam.ym2612[chipID].channels[2].mask = mask;
+                        //    newParam.ym2612[chipID].channels[6].mask = mask;
+                        //    newParam.ym2612[chipID].channels[7].mask = mask;
+                        //    newParam.ym2612[chipID].channels[8].mask = mask;
+                        //    oldParam.ym2612[chipID].channels[2].mask = null;
+                        //    oldParam.ym2612[chipID].channels[6].mask = null;
+                        //    oldParam.ym2612[chipID].channels[7].mask = null;
+                        //    oldParam.ym2612[chipID].channels[8].mask = null;
+                        //}
                     }
                     break;
                 case EnmChip.YM3526:
@@ -10330,6 +10389,10 @@ namespace MDPlayer.form
                             fn = "DriverBalance_SID.mbc";
                             defMbc = Resources.DefaultVolumeBalance_SID;
                             break;
+                        case EnmFileFormat.AY:
+                            fn = "DriverBalance_AY.mbc";
+                            defMbc = Resources.DefaultVolumeBalance_AY;
+                            break;
                         case EnmFileFormat.MUC:
                             fn = "DriverBalance_MUC.mbc";
                             defMbc = Resources.DefaultVolumeBalance_MUC;
@@ -10715,7 +10778,7 @@ namespace MDPlayer.form
 
                 if (Common.CheckExt(fn[0]) != EnmFileFormat.M3U && Common.CheckExt(fn[0]) != EnmFileFormat.ZIP)
                 {
-                    if (!loadAndPlay(0, 0, fn[0], "")) return;
+                    if (!loadAndPlay(0, 0, fn[0], "",null,null)) return;
                     frmPlayList.setStart(-1);
                 }
                 oldParam = new MDChipParams();

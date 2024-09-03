@@ -167,7 +167,7 @@ namespace MDPlayer.form
                     n = i;
                 }
             }
-            return n;
+            return n+1;
         }
 
         private static int[] pantbl = new int[] {

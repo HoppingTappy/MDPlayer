@@ -83,6 +83,16 @@ namespace MDPlayerx64.Properties {
         /// <summary>
         ///   型 System.Drawing.Bitmap のローカライズされたリソースを検索します。
         /// </summary>
+        internal static System.Drawing.Bitmap allPL {
+            get {
+                object obj = ResourceManager.GetObject("allPL", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   型 System.Drawing.Bitmap のローカライズされたリソースを検索します。
+        /// </summary>
         internal static System.Drawing.Bitmap ccFadeout {
             get {
                 object obj = ResourceManager.GetObject("ccFadeout", resourceCulture);
@@ -808,6 +818,26 @@ namespace MDPlayerx64.Properties {
         ///   &lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;
         ///&lt;Balance xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot; xmlns:xsd=&quot;http://www.w3.org/2001/XMLSchema&quot;&gt;
         ///  &lt;MasterVolume&gt;0&lt;/MasterVolume&gt;
+        ///  &lt;YM2612Volume&gt;-192&lt;/YM2612Volume&gt;
+        ///  &lt;SN76489Volume&gt;-192&lt;/SN76489Volume&gt;
+        ///  &lt;RF5C68Volume&gt;-192&lt;/RF5C68Volume&gt;
+        ///  &lt;RF5C164Volume&gt;-192&lt;/RF5C164Volume&gt;
+        ///  &lt;PWMVolume&gt;-192&lt;/PWMVolume&gt;
+        ///  &lt;C140Volume&gt;-192&lt;/C140Volume&gt;
+        ///  &lt;OKIM6258Volume&gt;-192&lt;/OKIM6258Volume&gt;
+        ///  &lt;OKIM6295Volume&gt;-192&lt;/OKIM6295Volume&gt;
+        ///  &lt;SEGAPCMVolume&gt;-192&lt;/SEGAPCM [残りの文字列は切り詰められました]&quot;; に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        internal static string DefaultVolumeBalance_AY {
+            get {
+                return ResourceManager.GetString("DefaultVolumeBalance_AY", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   &lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;
+        ///&lt;Balance xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot; xmlns:xsd=&quot;http://www.w3.org/2001/XMLSchema&quot;&gt;
+        ///  &lt;MasterVolume&gt;0&lt;/MasterVolume&gt;
         ///  &lt;YM2612Volume&gt;0&lt;/YM2612Volume&gt;
         ///  &lt;SN76489Volume&gt;-15&lt;/SN76489Volume&gt;
         ///  &lt;RF5C68Volume&gt;-192&lt;/RF5C68Volume&gt;
@@ -1192,6 +1222,16 @@ namespace MDPlayerx64.Properties {
         internal static System.Drawing.Bitmap downPL {
             get {
                 object obj = ResourceManager.GetObject("downPL", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   型 System.Drawing.Bitmap のローカライズされたリソースを検索します。
+        /// </summary>
+        internal static System.Drawing.Bitmap engPL {
+            get {
+                object obj = ResourceManager.GetObject("engPL", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

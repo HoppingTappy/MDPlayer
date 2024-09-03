@@ -10386,7 +10386,7 @@ namespace MDPlayer.Driver.ZMS.nise68
 
             //compute
             Int32 ans = dval * sval;
-            reg.D[dr] = (UInt32)(ans & 0xffff);
+            reg.D[dr] = (UInt32)(ans & 0xffff_ffff);
 
 #if DEBUG
             nimo += string.Format("D{0}", dr);

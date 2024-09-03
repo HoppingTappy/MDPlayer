@@ -162,10 +162,42 @@ namespace MDPlayerx64.Driver
                         byte flag1 = v2[index++];
                         byte flag2 = v2[index++];
 
-                        if (frameID[0] == 'T')
+                        if (frameID == "APIC")
                         {
-                            byte[] v3 = new byte[frameSize-1];
-                            Array.Copy(v2,index + 1, v3, 0, frameSize - 1);
+                            ASCIIEncoding asc = new ASCIIEncoding();
+                            string mime=asc.GetString(v2, index+1, 10).Trim().ToLower();
+                            if (mime == "image/jpeg")
+                            {
+                                index += 11;
+                                frameSize -= 11;
+                                while ((v2[index] != 0xff || v2[index + 1] != 0xd8 || v2[index + 2] != 0xff || v2[index + 3] != 0xe0) && frameSize > 4)
+                                {
+                                    index++;
+                                    frameSize--;
+                                }
+
+                                byte[] pic = new byte[frameSize];
+                                Array.Copy(v2, index, pic, 0, frameSize);
+                                index += frameSize;
+                                try
+                                {
+                                    MemoryStream mb = new MemoryStream(pic);
+                                    img = System.Drawing.Image.FromStream(mb);
+                                }
+                                catch
+                                {
+                                    img=null;
+                                }
+                            }
+                            else
+                            {
+                                index += frameSize;
+                            }
+                        }
+                        else if (frameID[0] == 'T')
+                        {
+                            byte[] v3 = new byte[frameSize - 1];
+                            Array.Copy(v2, index + 1, v3, 0, frameSize - 1);
                             Encoding enc2 = Common.GetCode(v3);
 
                             enc = Encoding.Default;// Unicode; // UTF-16LE

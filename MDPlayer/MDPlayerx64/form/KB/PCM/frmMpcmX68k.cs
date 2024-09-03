@@ -103,27 +103,33 @@ namespace MDPlayer.form
 
         }
 
-        public void screenChangeParams()
+        private void GetMPCMInstance(out ZMS.MPCMSt[] MPCMSt, out mpcmX68k mpcm, out mpcmpp mpcmpp)
         {
-            ZMS.MPCMSt[] MPCMSt;
-            mpcmX68k mpcm;
+            MPCMSt = null;
+            mpcm = null;
+            mpcmpp = null;
+
             if (Audio.DriverVirtual is ZMS)
             {
                 ZMS zms = Audio.DriverVirtual as ZMS;
                 MPCMSt = zms.mpcmSt;
                 mpcm = zms.mpcm;
+                mpcmpp = zms.mpcmpp;
             }
             else if (Audio.DriverVirtual is mndrv)
             {
                 mndrv mnd = Audio.DriverVirtual as mndrv;
                 MPCMSt = mnd.mpcmSt;
-                mpcm = mnd.m_MPCM;
+                mpcm = mnd.mpcm;
+                mpcmpp = mnd.mpcmpp;
             }
-            else
-            {
-                return;
-            }
-            if (mpcm == null) return;
+            return;
+        }
+
+        public void screenChangeParams()
+        {
+            GetMPCMInstance(out MPCMSt[] MPCMSt, out mpcmX68k mpcm, out mpcmpp mpcmpp);
+            if (mpcm == null && mpcmpp == null) return;
 
             for (int ch = 0; ch < MPCMSt.Length; ch++)
             {
@@ -136,8 +142,16 @@ namespace MDPlayer.form
                     nyc.adr[3] = (uint)MPCMSt[ch].end;
                     nyc.adr[4] = (uint)MPCMSt[ch].count;
                     nyc.adr[5] = (uint)MPCMSt[ch].frq;
-                    nyc.adr[6] = (uint)mpcm.m[chipID].work[ch].pitch;
-                    nyc.sadr = mpcm.m[chipID].work[ch].type;// MPCMSt[ch].type;
+                    if (mpcm != null)
+                    {
+                        nyc.adr[6] = (uint)mpcm.m[chipID].work[ch].pitch;
+                        nyc.sadr = mpcm.m[chipID].work[ch].type;// MPCMSt[ch].type;
+                    }
+                    if (mpcmpp != null)
+                    {
+                        nyc.adr[6] = (uint)mpcmpp.m[chipID].work[ch].pitch;
+                        nyc.sadr = mpcmpp.m[chipID].work[ch].type;// MPCMSt[ch].type;
+                    }
                     if (MPCMSt[ch].pan < 0x80)
                     {
                         //1:left 3:center 2:right
@@ -166,8 +180,8 @@ namespace MDPlayer.form
                     }
 
                     nyc.volume = (int)MPCMSt[ch].volume;
-                    nyc.volumeL = Math.Min(Math.Max((int)(MPCMSt[ch].volume / 10.0), 0), 19) * ((nyc.pan & 2) != 0 ? 1 : 0);
-                    nyc.volumeR = Math.Min(Math.Max((int)(MPCMSt[ch].volume / 10.0), 0), 19) * ((nyc.pan & 1) != 0 ? 1 : 0);
+                    nyc.volumeL = Math.Min(Math.Max((int)(MPCMSt[ch].volume ), 1), 19) * ((nyc.pan & 2) != 0 ? 1 : 0);
+                    nyc.volumeR = Math.Min(Math.Max((int)(MPCMSt[ch].volume ), 1), 19) * ((nyc.pan & 1) != 0 ? 1 : 0);
 
                     int orig = 440 << 6;
                     if (MPCMSt[ch].orig != 0)
@@ -182,36 +196,13 @@ namespace MDPlayer.form
                     {
                         //pitch = (uint)(0x10000 * MPCMSt[ch].base_);
                         pitch = 0x1_0000;
+                        if (mpcm != null) nyc.note = searchMPCMX68kNote(mpcm, pitch, mpcm.m[chipID].work[ch].base_);// * mpcm.m[0].rate);
+                        if (mpcmpp != null) nyc.note = searchMPCMppNote(mpcmpp, pitch, mpcmpp.m[chipID].work[ch].base_);// * mpcm.m[0].rate);
                     }
                     else
                     {
-                        dnote -= orig;
-                        if (dnote == 0)
-                        {
-                            //nyc.note = 9 + 3 * 12;//dummy
-                                                  //pitch = (uint)(0x10000 * MPCMSt[ch].base_);
-                            pitch = 0x1_0000;
-                        }
-                        else if (dnote > 0)
-                        {
-                            for (dnote -= 64 * 12; dnote >= 0; dnote -= 64 * 12, doct++) ;
-                            dnote += 64 * 12;
-                            pitch += mpcm.pitchtbl[dnote];
-                            pitch <<= doct;
-                            //nyc.note = dnote / 64 + doct * 12;
-                            //nyc.note = dnote / 64 + (doct + 2) * 12 -3;
-                        }
-                        else
-                        {
-                            for (; dnote < 0; dnote += 64 * 12, doct--) ;
-                            pitch += mpcm.pitchtbl[dnote];
-                            pitch >>= doct;
-                            //nyc.note = dnote / 64 + doct * 12;
-                            //nyc.note = dnote / 64 + doct * 12 - 3;
-                        }
+                        nyc.note = dnote / 64 - 24;
                     }
-
-                    nyc.note = searchMPCMX68kNote(mpcm, pitch, mpcm.m[chipID].work[ch].base_);// * mpcm.m[0].rate);
 
                     MPCMSt[ch].Keyon = false;
                     MPCMSt[ch].Keyoff = false;
@@ -256,6 +247,31 @@ namespace MDPlayer.form
             return n-5+12;
         }
 
+        private int searchMPCMppNote(mpcmpp mpcm, uint pitch, float base_)
+        {
+            int freq = (int)(pitch * base_);
+            int clock = (int)mpcm.m[chipID].rate;
+            int hz = (int)(clock / (0x10000 / (double)freq));
+            double m = double.MaxValue;
+
+            int n = 0;
+            for (int i = 0; i < 12 * 8; i++)
+            {
+                int a = (int)(
+                    4000.0
+                    * Tables.pcmMulTbl[i % 12 + 12]
+                    * Math.Pow(2, (i / 12 - 3 + 2))
+                    );
+
+                if (hz > a)
+                {
+                    m = a;
+                    n = i;
+                }
+            }
+            return n - 5 + 12;
+        }
+
         public void screenDrawParams()
         {
             MDChipParams.MPCMX68k ost = oldParam;
@@ -281,7 +297,7 @@ namespace MDPlayer.form
                 DrawBuff.font4Hex32Bit(frameBuffer, (x + 36) * 4, (c + 1) * 8, 0, ref oyc.adr[4], nyc.adr[4]);//count
                 if (oyc.adr[5] != nyc.adr[5])
                 {
-                    DrawBuff.drawFont4(frameBuffer, (x + 44) * 4, (c + 1) * 8, 1, frqStr[Math.Min(Math.Max(nyc.adr[5], 0), 7)]);//frq
+                    DrawBuff.drawFont4(frameBuffer, (x + 44) * 4, (c + 1) * 8, 1, frqStr[Math.Min(Math.Max(nyc.adr[5], 0), frqStr.Length)]);//frq
                     oyc.adr[5] = nyc.adr[5];
                 }
                 DrawBuff.font4Hex32Bit(frameBuffer, (x + 54) * 4, (c + 1) * 8, 0, ref oyc.adr[6], nyc.adr[6]);//pitch
@@ -294,18 +310,64 @@ namespace MDPlayer.form
         }
 
         string[] frqStr = new string[]{
-            "  3900HZ ",
-            "  5200HZ ",
-            "  7800HZ ",
-            " 10400HZ ",
-            " 15600HZ ",
-            " 20800HZ ",
-            " 31200HZ ",
-            "OVER SPEC"
+            "AD 3906HZ",//0
+            "AD 5208HZ",//1
+            "AD 7812HZ",//2
+            "AD10416HZ",//3
+            "AD15625HZ",//4
+            "WM20800HZ",//5
+            "BM31200HZ",//6
+            "WMTHROUGH",//7
+            "WM15625HZ",//8
+            "WM16000HZ",//9
+            "WM22050HZ",//10
+            "WM24000HZ",//11
+            "WM32000HZ",//12
+            "WM44100HZ",//13
+            "WM48000HZ",//14
+            "WMVARIABL",//15
+            "BM15625HZ",//16
+            "BM16000HZ",//17
+            "BM22050HZ",//18
+            "BM24000HZ",//19
+            "BM32000HZ",//20
+            "BM44100HZ",//21
+            "BM48000HZ",//22
+            "BMVARIABL",//23
+            "WS15625HZ",//24
+            "WS16000HZ",//25
+            "WS22050HZ",//26
+            "WS24000HZ",//27
+            "WS32000HZ",//28
+            "WS44100HZ",//29
+            "WS48000HZ",//30
+            "WSVARIABL",//31
+            "BS15625HZ",//32
+            "BS16000HZ",//33
+            "BS22050HZ",//34
+            "BS24000HZ",//35
+            "BS32000HZ",//36
+            "BS44100HZ",//37
+            "BS48000HZ",//38
+            "BSVARIABL",//39
+            "ADVARIABL",//40
+            "WMVARIABL",//41
+            "         ",//42
         };
 
         public void screenInit()
         {
+            for (int ch = 0; ch < 16; ch++)
+            {
+                newParam.channels[ch].note = -1;
+                for (int i = 0; i < 7; i++)
+                {
+                    newParam.channels[ch].adr[i] = 0;
+                }
+                newParam.channels[ch].adr[5] = 42;
+                newParam.channels[ch].sadr = 0;
+                newParam.channels[ch].pan = 3;
+            }
         }
 
         private void pbScreen_MouseClick(object sender, MouseEventArgs e)
@@ -321,7 +383,6 @@ namespace MDPlayer.form
                 {
                     for (int ch = 0; ch < 16; ch++)
                     {
-
                         if (newParam.channels[ch].mask == true)
                             parent.ResetChannelMask(EnmChip.MPCMX68k, chipID, ch);
                         else
@@ -336,6 +397,7 @@ namespace MDPlayer.form
             {
                 int ch = (py / 8) - 1;
                 if (ch < 0) return;
+
                 if (e.Button == MouseButtons.Left)
                 {
                     //マスク

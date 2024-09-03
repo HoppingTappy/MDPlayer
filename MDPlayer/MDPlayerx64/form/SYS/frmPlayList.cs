@@ -4,6 +4,9 @@ using MDPlayerx64.Properties;
 using MDPlayer.Properties;
 #endif
 using System.Diagnostics;
+using System.Security.Cryptography;
+using static MDPlayer.PlayList;
+//using static System.Net.Mime.MediaTypeNames;
 
 namespace MDPlayer.form
 {
@@ -20,6 +23,7 @@ namespace MDPlayer.form
         public EnmArcType playArcType = EnmArcType.unknown;
         public int playSongNum = -1;
 
+        private List<string> plList = null;
         private PlayList playList = null;
         private frmMain frmMain = null;
 
@@ -30,7 +34,7 @@ namespace MDPlayer.form
         private Random rand = new System.Random();
         private bool IsInitialOpenFolder = true;
 
-        private string[] sext = ".vgm;.vgz;.zip;.lzh;.nrd;.xgm;.xgz;.zgm;.s98;.nsf;.hes;.sid;.mnd;.mgs;.bgm;.msd;.mdr;.mdx;.mub;.muc;.m;.m2;.mz;.mml;.mpi;.mvi;.mzi;.opi;.ovi;.ozi;.mid;.zms;.zmd;.rcp;.wav;.mp3;.aiff;.m3u".Split(new string[] { ";" }, StringSplitOptions.RemoveEmptyEntries);
+        private string[] sext = ".vgm;.vgz;.zip;.lzh;.nrd;.xgm;.xgz;.zgm;.s98;.nsf;.hes;.sid;.ay;.mnd;.mgs;.bgm;.msd;.mdr;.mdx;.mub;.muc;.m;.m2;.mz;.mml;.mpi;.mvi;.mzi;.opi;.ovi;.ozi;.mid;.zms;.zmd;.rcp;.rcs;.wav;.mp3;.aiff;.m3u".Split(new string[] { ";" }, StringSplitOptions.RemoveEmptyEntries);
 
         public frmPlayList(frmMain frm)
         {
@@ -38,11 +42,58 @@ namespace MDPlayer.form
             setting = frm.setting;
             InitializeComponent();
 
-            playList = PlayList.Load(null);
+            plList = setting.playList.plList == null ? null : setting.playList.plList.ToList();
+            setting.playList.currentPlayList = (plList == null || plList.Count < 1) ? 0 : Math.Min(Math.Max(setting.playList.currentPlayList, 0), plList.Count);
+            string currentPlayList = (plList == null || plList.Count < 1 || setting.playList.currentPlayList == 0)
+                ? null
+                : plList[Math.Max(setting.playList.currentPlayList - 1, 0)];
+
+            playList = null;
+            if (currentPlayList == null)
+            {
+                playList = PlayList.Load(null);
+            }
+            else if (Path.GetExtension(currentPlayList).ToLower() == ".m3u")
+            {
+                playList = PlayList.LoadM3U(currentPlayList);
+            }
+            else
+            {
+                playList = PlayList.Load(currentPlayList);
+            }
             playList.SetDGV(dgvList);
             playIndex = -1;
 
             oldPlayIndex = -1;
+        }
+
+        private void MakePlList(int currentPlayList)
+        {
+            dgvPlayList.Rows.Clear();
+
+            DataGridViewRow row = new();
+            row.CreateCells(dgvPlayList);
+            row.Cells[dgvPlayList.Columns["clmPL_FileName"].Index].Value = null;
+            row.Cells[dgvPlayList.Columns["clmPL_Title"].Index].Value = "(default)";
+            dgvPlayList.Rows.Add(row);
+
+            if (plList != null && plList.Count > 0)
+            {
+                foreach (string s in plList)
+                {
+                    row = new();
+                    row.CreateCells(dgvPlayList);
+                    row.Cells[dgvPlayList.Columns["clmPL_FileName"].Index].Value = s;
+                    row.Cells[dgvPlayList.Columns["clmPL_Title"].Index].Value = Path.GetFileName(s);
+                    dgvPlayList.Rows.Add(row);
+                }
+            }
+
+            for (int i = 0; i < dgvPlayList.SelectedRows.Count; i++)
+            {
+                dgvPlayList.Rows[dgvPlayList.SelectedRows[i].Index].Selected = false;
+            }
+            dgvPlayList.Rows[currentPlayList].Selected = true;
         }
 
         public bool isPlaying()
@@ -60,7 +111,7 @@ namespace MDPlayer.form
             return playList;
         }
 
-        public Tuple<int, int, string, string> setStart(int n)
+        public Tuple<int, int, string, string, string[], string> setStart(int n)
         {
             updatePlayingIndex(n);
 
@@ -74,8 +125,18 @@ namespace MDPlayer.form
                 m = playList.LstMusic[playIndex].type[0] - 'A';
                 if (m < 0 || m > 9) m = 0;
             }
+            string[] spFn = null;
+            if (playList.LstMusic[playIndex].supportFileName != null)
+            {
+                spFn = playList.LstMusic[playIndex].supportFileName.Split(';');
+            }
+            string useCom = null;
+            if (playList.LstMusic[playIndex].useCompiler != null)
+            {
+                useCom = playList.LstMusic[playIndex].useCompiler;
+            }
 
-            return new Tuple<int, int, string, string>(m, songNo, fn, zfn);
+            return new Tuple<int, int, string, string, string[], string>(m, songNo, fn, zfn, spFn, useCom);
         }
 
         public void Play()
@@ -124,11 +185,14 @@ namespace MDPlayer.form
         {
             tsbJapanese.Checked = setting.playList.isJP;
             ChangeLang(setting.playList.isJP);
+
+            SetDisplayIndex(setting.playList.clmInfo);
             if (setting.playList.cwExt != -1) dgvList.Columns["clmExt"].Width = setting.playList.cwExt;
             if (setting.playList.cwType != -1) dgvList.Columns["clmType"].Width = setting.playList.cwType;
             if (setting.playList.cwTitle != -1) dgvList.Columns["clmTitle"].Width = setting.playList.cwTitle;
             if (setting.playList.cwTitleJ != -1) dgvList.Columns["clmTitleJ"].Width = setting.playList.cwTitleJ;
             if (setting.playList.cwFilename != -1) dgvList.Columns["clmDispFileName"].Width = setting.playList.cwFilename;
+            if (setting.playList.cwSupportFilename != -1) dgvList.Columns["clmDispSupportFileName"].Width = setting.playList.cwSupportFilename;
             if (setting.playList.cwGame != -1) dgvList.Columns["clmGame"].Width = setting.playList.cwGame;
             if (setting.playList.cwGameJ != -1) dgvList.Columns["clmGameJ"].Width = setting.playList.cwGameJ;
             if (setting.playList.cwComposer != -1) dgvList.Columns["clmComposer"].Width = setting.playList.cwComposer;
@@ -138,6 +202,14 @@ namespace MDPlayer.form
             if (setting.playList.cwDuration != -1) dgvList.Columns["clmDuration"].Width = setting.playList.cwDuration;
             if (setting.playList.cwVersion != -1) dgvList.Columns["ClmVersion"].Width = setting.playList.cwVersion;
             if (setting.playList.cwUseChips != -1) dgvList.Columns["ClmUseChips"].Width = setting.playList.cwUseChips;
+
+            if (setting.playList.cwPL_FileName != -1) dgvPlayList.Columns["clmPL_FileName"].Width = setting.playList.cwPL_FileName;
+            if (setting.playList.cwPL_Title != -1) dgvPlayList.Columns["clmPL_Title"].Width = setting.playList.cwPL_Title;
+
+            splitContainer1.SplitterDistance = setting.playList.splitterDistance;
+
+            MakePlList(setting.playList.currentPlayList);
+
         }
 
         private void frmPlayList_Load(object sender, EventArgs e)
@@ -162,12 +234,14 @@ namespace MDPlayer.form
                 setting.location.PPlayListWH = new Point(RestoreBounds.Size.Width, RestoreBounds.Size.Height);
             }
 
+            setting.playList.clmInfo = getDisplayIndex();
             setting.playList.isJP = tsbJapanese.Checked;
             setting.playList.cwExt = dgvList.Columns["clmExt"].Width;
             setting.playList.cwType = dgvList.Columns["clmType"].Width;
             setting.playList.cwTitle = dgvList.Columns["clmTitle"].Width;
             setting.playList.cwTitleJ = dgvList.Columns["clmTitleJ"].Width;
             setting.playList.cwFilename = dgvList.Columns["clmDispFileName"].Width;
+            setting.playList.cwSupportFilename = dgvList.Columns["clmDispSupportFileName"].Width;
             setting.playList.cwGame = dgvList.Columns["clmGame"].Width;
             setting.playList.cwGameJ = dgvList.Columns["clmGameJ"].Width;
             setting.playList.cwComposer = dgvList.Columns["clmComposer"].Width;
@@ -178,8 +252,69 @@ namespace MDPlayer.form
             setting.playList.cwVersion = dgvList.Columns["ClmVersion"].Width;
             setting.playList.cwUseChips = dgvList.Columns["ClmUseChips"].Width;
 
+            setting.playList.cwPL_FileName = dgvPlayList.Columns["clmPL_FileName"].Width;
+            setting.playList.cwPL_Title = dgvPlayList.Columns["clmPL_Title"].Width;
+
+            setting.playList.splitterDistance = splitContainer1.SplitterDistance;
+
+            if (plList == null) plList = new List<string>();
+
+            plList.Clear();
+            foreach (DataGridViewRow row in dgvPlayList.Rows)
+            {
+                if (row.Cells[dgvPlayList.Columns["clmPL_FileName"].Index].Value == null) continue;
+                plList.Add(row.Cells[dgvPlayList.Columns["clmPL_FileName"].Index].Value.ToString());
+            }
+
+            setting.playList.plList = (plList == null || plList.Count < 1) ? null : plList.ToArray();
+            setting.playList.currentPlayList = 0;
+            if (dgvPlayList.SelectedRows != null && dgvPlayList.SelectedRows.Count > 0)
+            {
+                setting.playList.currentPlayList = dgvPlayList.SelectedRows[0].Index;
+            }
+
             this.Visible = false;
             e.Cancel = true;
+        }
+
+        private dgvColumnInfo[] getDisplayIndex()
+        {
+            List<dgvColumnInfo> ret = new List<dgvColumnInfo>();
+
+            DataGridView dgv = dgvList;
+            for (int i = 0; i < dgv.Columns.Count; i++)
+            {
+                dgvColumnInfo info = (dgvColumnInfo)dgv.Columns[i].Tag;
+                if (info == null)
+                {
+                    info = new dgvColumnInfo();
+                }
+
+                info.columnName = dgv.Columns[i].Name;
+                info.displayIndex = dgv.Columns[i].DisplayIndex;
+                info.size = dgv.Columns[i].Width;
+                info.visible = dgv.Columns[i].Visible;
+
+                ret.Add(info);
+            }
+
+            return ret.ToArray();
+        }
+
+        private void SetDisplayIndex(dgvColumnInfo[] aryIndex)
+        {
+            if (aryIndex == null) return;
+
+            DataGridView dgv = dgvList;
+
+            foreach (dgvColumnInfo info in aryIndex)
+            {
+                if (info == null) continue;
+                if (!dgv.Columns.Contains(info.columnName)) continue;
+                dgv.Columns[info.columnName].DisplayIndex = info.displayIndex;
+                dgv.Columns[info.columnName].Visible = info.visible;
+            }
+
         }
 
         public new void Refresh()
@@ -239,28 +374,6 @@ namespace MDPlayer.form
             }
         }
 
-        private void dgvList_CellMouseClick(object sender, DataGridViewCellMouseEventArgs e)
-        {
-            if (e.RowIndex < 0) return;
-            dgvList.Rows[e.RowIndex].Selected = true;
-
-            if (e.Button == MouseButtons.Right)
-            {
-                if (dgvList.SelectedRows.Count > 1)
-                {
-                    tsmiDelThis.Text = "選択した曲を除去";
-                }
-                else
-                {
-                    tsmiDelThis.Text = "この曲を除去";
-                }
-                cmsPlayList.Show();
-                Point p = Control.MousePosition;
-                cmsPlayList.Top = p.Y;
-                cmsPlayList.Left = p.X;
-            }
-        }
-
         private void tsmiDelThis_Click(object sender, EventArgs e)
         {
             if (dgvList.SelectedRows.Count < 1) return;
@@ -314,8 +427,18 @@ namespace MDPlayer.form
                 m = dgvList.Rows[pi].Cells[dgvList.Columns["clmType"].Index].Value.ToString()[0] - 'A';
                 if (m < 0 || m > 9) m = 0;
             }
+            string[] spFn = null;
+            if (dgvList.Rows[pi].Cells["clmSupportFile"].Value != null)
+            {
+                spFn = dgvList.Rows[pi].Cells["clmSupportFile"].Value.ToString().Split(';');
+            }
+            string useCom = null;
+            if (dgvList.Rows[pi].Cells["clmUseCompiler"].Value != null)
+            {
+                useCom = dgvList.Rows[pi].Cells["clmUseCompiler"].Value.ToString();
+            }
 
-            frmMain.loadAndPlay(m, songNo, fn, zfn);
+            frmMain.loadAndPlay(m, songNo, fn, zfn, spFn, useCom);
             if (Audio.ErrMsg != "")
             {
                 playing = false;
@@ -397,8 +520,18 @@ namespace MDPlayer.form
             {
                 songNo = 0;
             }
+            string[] spFn = null;
+            if (dgvList.Rows[pi].Cells["clmSupportFile"].Value != null)
+            {
+                spFn = dgvList.Rows[pi].Cells["clmSupportFile"].Value.ToString().Split(';');
+            }
+            string useCom = null;
+            if (dgvList.Rows[pi].Cells["clmUseCompiler"].Value != null)
+            {
+                useCom = dgvList.Rows[pi].Cells["clmUseCompiler"].Value.ToString();
+            }
 
-            if (!frmMain.loadAndPlay(m, songNo, fn, zfn))
+            if (!frmMain.loadAndPlay(m, songNo, fn, zfn, spFn, useCom))
             {
                 playing = false;
                 return;
@@ -478,10 +611,120 @@ namespace MDPlayer.form
             {
                 songNo = 0;
             }
+            string[] spFn = null;
+            if (dgvList.Rows[pi].Cells["clmSupportFile"].Value != null)
+            {
+                spFn = dgvList.Rows[pi].Cells["clmSupportFile"].Value.ToString().Split(';');
+            }
+            string useCom = null;
+            if (dgvList.Rows[pi].Cells["clmUseCompiler"].Value != null)
+            {
+                useCom = dgvList.Rows[pi].Cells["clmUseCompiler"].Value.ToString();
+            }
 
-            frmMain.loadAndPlay(m, songNo, fn, zfn);
+            frmMain.loadAndPlay(m, songNo, fn, zfn, spFn, useCom);
             updatePlayingIndex(pi);
             playing = true;
+        }
+
+        private void dgvList_CellMouseClick(object sender, DataGridViewCellMouseEventArgs e)
+        {
+            if (e.RowIndex < 0)
+            {
+                SetupHeaderSwitch(e.ColumnIndex);
+                cmsHeaderSwitch.Show();
+                Point p = Control.MousePosition;
+                cmsHeaderSwitch.Top = p.Y;
+                cmsHeaderSwitch.Left = p.X;
+                return;
+            }
+
+            dgvList.Rows[e.RowIndex].Selected = true;
+
+            if (e.Button == MouseButtons.Right)
+            {
+                tsmiSelectSupportFile.Enabled = false;
+                tsmiRemoveSupportFile.Enabled = false;
+                tsmiSelectCompiler.Enabled = false;
+                if (dgvList.SelectedRows.Count > 1)
+                {
+                    tsmiDelThis.Text = "選択した曲を除去";
+                }
+                else
+                {
+                    tsmiDelThis.Text = "この曲を除去";
+                }
+
+                bool fnd = false;
+                bool fndUseCom = false;
+                foreach (DataGridViewRow row in dgvList.SelectedRows)
+                {
+                    string ext = row.Cells["clmExt"].Value.ToString().ToUpper();
+                    if (ext != ".ZMS" && ext != ".ZMD" && ext != ".RCS")
+                    {
+                        fnd = true;
+                    }
+                    if (ext != ".ZMS")
+                    {
+                        fndUseCom = true;
+                    }
+                }
+                if (!fnd)
+                {
+                    tsmiSelectSupportFile.Enabled = true;
+                    tsmiRemoveSupportFile.Enabled = true;
+                }
+                if (!fndUseCom)
+                {
+                    tsmiSelectCompiler.Enabled = true;
+                }
+
+                cmsPlayList.Show();
+                Point p = Control.MousePosition;
+                cmsPlayList.Top = p.Y;
+                cmsPlayList.Left = p.X;
+            }
+        }
+
+        private void SetupHeaderSwitch(int col)
+        {
+            cmsHeaderSwitch.Items.Clear();
+            ToolStripMenuItem tsi;
+
+            if (dgvList.Columns[col].Name != "clmSpacer")
+            {
+                tsi = new ToolStripMenuItem("Hide this item");
+                tsi.Click += header_Click;
+                tsi.Tag = dgvList.Columns[col];
+                cmsHeaderSwitch.Items.Add(tsi);
+            }
+
+            tsi = new ToolStripMenuItem("Show all");
+            tsi.Click += showAll_Click;
+            cmsHeaderSwitch.Items.Add(tsi);
+        }
+
+        private void header_Click(object sender, EventArgs e)
+        {
+            ToolStripMenuItem tsi = (ToolStripMenuItem)sender;
+            DataGridViewColumn dgvc = (DataGridViewColumn)tsi.Tag;
+            dgvc.Visible = false;
+        }
+
+        private void showAll_Click(object sender, EventArgs e)
+        {
+            foreach (DataGridViewColumn col in dgvList.Columns)
+            {
+                if (col.Name == "clmSpacer") { col.Visible = true; continue; }
+                if (col.Name == "clmKey"
+                    || col.Name == "clmSongNo"
+                    || col.Name == "clmZipFileName"
+                    || col.Name == "clmFileName"
+                    || col.Name == "clmSupportFile"
+                    || col.Name == "clmUseCompiler"
+                    ) continue;
+                col.Visible = true;
+            }
         }
 
         private void dgvList_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
@@ -511,8 +754,18 @@ namespace MDPlayer.form
                     m = dgvList.Rows[e.RowIndex].Cells[dgvList.Columns["clmType"].Index].Value.ToString()[0] - 'A';
                     if (m < 0 || m > 9) m = 0;
                 }
+                string[] spFn = null;
+                if (dgvList.Rows[e.RowIndex].Cells["clmSupportFile"].Value != null)
+                {
+                    spFn = dgvList.Rows[e.RowIndex].Cells["clmSupportFile"].Value.ToString().Split(';');
+                }
+                string useCom = null;
+                if (dgvList.Rows[e.RowIndex].Cells["clmUseCompiler"].Value != null)
+                {
+                    useCom = dgvList.Rows[e.RowIndex].Cells["clmUseCompiler"].Value.ToString();
+                }
 
-                if (!frmMain.loadAndPlay(m, songNo, fn, zfn)) return;
+                if (!frmMain.loadAndPlay(m, songNo, fn, zfn, spFn, useCom)) return;
                 updatePlayingIndex(e.RowIndex);
 
                 playing = true;
@@ -523,6 +776,65 @@ namespace MDPlayer.form
                 dgvList.Enabled = true;
                 dgvList.Rows[e.RowIndex].Selected = true;
             }
+        }
+
+        private void dgvPlayList_CellMouseClick(object sender, DataGridViewCellMouseEventArgs e)
+        {
+            if (e.RowIndex < 0) return;
+            dgvPlayList.Rows[e.RowIndex].Selected = true;
+
+            //if (e.Button == MouseButtons.Right)
+            //{
+            //    cmsPLList.Show();
+            //    Point p = Control.MousePosition;
+            //    cmsPLList.Top = p.Y;
+            //    cmsPLList.Left = p.X;
+            //}
+        }
+        private void dgvPlayList_MouseDown(object sender, MouseEventArgs e)
+        {
+            DataGridView.HitTestInfo inf = dgvPlayList.HitTest(e.Location.X, e.Location.Y);
+            if (inf.Type == DataGridViewHitTestType.Cell)
+            {
+                dgvPlayList.Rows[inf.RowIndex].Selected = true;
+            }
+
+            if (e.Button == MouseButtons.Right)
+            {
+                cmsPLList.Show();
+                Point p = Control.MousePosition;
+                cmsPLList.Top = p.Y;
+                cmsPLList.Left = p.X;
+            }
+        }
+
+        private void dgvPlayList_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
+        {
+            if (e.RowIndex < 0) return;
+
+            if (dgvPlayList.Rows[e.RowIndex].Cells[dgvPlayList.Columns["clmPL_FileName"].Index].Value == null)
+            {
+                playList = PlayList.Load(null);
+
+            }
+            else
+            {
+                string currentPlayList = dgvPlayList.Rows[e.RowIndex].Cells[dgvPlayList.Columns["clmPL_FileName"].Index].Value.ToString();
+                playList = null;
+                if (Path.GetExtension(currentPlayList).ToLower() == ".m3u")
+                {
+                    playList = PlayList.LoadM3U(currentPlayList);
+                }
+                else
+                {
+                    playList = PlayList.Load(currentPlayList);
+                }
+            }
+            playList.SetDGV(dgvList);
+            playIndex = -1;
+
+            oldPlayIndex = -1;
+            Refresh();
         }
 
         private void tsmiPlayThis_Click(object sender, EventArgs e)
@@ -548,8 +860,18 @@ namespace MDPlayer.form
             {
                 songNo = 0;
             }
+            string[] spFn = null;
+            if (dgvList.SelectedRows[0].Cells["clmSupportFile"].Value != null)
+            {
+                spFn = dgvList.SelectedRows[0].Cells["clmSupportFile"].Value.ToString().Split(';');
+            }
+            string useCom = null;
+            if (dgvList.Rows[0].Cells["clmUseCompiler"].Value != null)
+            {
+                useCom = dgvList.Rows[0].Cells["clmUseCompiler"].Value.ToString();
+            }
 
-            frmMain.loadAndPlay(m, songNo, fn, zfn);
+            frmMain.loadAndPlay(m, songNo, fn, zfn, spFn, useCom);
             updatePlayingIndex(dgvList.SelectedRows[0].Index);
 
             playing = true;
@@ -822,9 +1144,19 @@ namespace MDPlayer.form
 
         }
 
+        private void tsbAll_Click(object sender, EventArgs e)
+        {
+            showAll_Click(null, null);
+        }
+
+        private void tsbEnglish_Click(object sender, EventArgs e)
+        {
+            ChangeLang(false);
+        }
+
         private void toolStripButton1_Click(object sender, EventArgs e)
         {
-            ChangeLang(tsbJapanese.Checked);
+            ChangeLang(true);
         }
 
         private void ChangeLang(bool isJP)
@@ -873,8 +1205,18 @@ namespace MDPlayer.form
                     {
                         songNo = 0;
                     }
+                    string[] spFn = null;
+                    if (dgvList.SelectedRows[0].Cells["clmSupportFile"].Value != null)
+                    {
+                        spFn = dgvList.SelectedRows[0].Cells["clmSupportFile"].Value.ToString().Split(';');
+                    }
+                    string useCom = null;
+                    if (dgvList.Rows[0].Cells["clmUseCompiler"].Value != null)
+                    {
+                        useCom = dgvList.Rows[0].Cells["clmUseCompiler"].Value.ToString();
+                    }
 
-                    frmMain.loadAndPlay(m, songNo, fn, zfn);
+                    frmMain.loadAndPlay(m, songNo, fn, zfn, spFn, useCom);
                     updatePlayingIndex(index);
 
                     playing = true;
@@ -973,7 +1315,7 @@ namespace MDPlayer.form
                     //&& fn.ToLower().LastIndexOf(".sid") == -1
                     )
                 {
-                    frmMain.loadAndPlay(0, 0, fn);
+                    frmMain.loadAndPlay(0, 0, fn, null, null, null);
                     setStart(i);// -1);
                     frmMain.oldParam = new MDChipParams();
                     Play();
@@ -1201,5 +1543,200 @@ namespace MDPlayer.form
             KeyEventArgs kea = new KeyEventArgs(Keys.Enter);
             frmPlayList_KeyDown(null, kea);
         }
+
+        private void tsmiSelectSupportFile_Click(object sender, EventArgs e)
+        {
+            int chk = 0;
+            foreach (DataGridViewRow row in dgvList.SelectedRows)
+            {
+                if (row.Cells["clmEXT"].Value.ToString() == ".RCS") { chk |= 1; }
+                else chk |= 2;
+            }
+            if (chk == 3)
+            {
+                MessageBox.Show("Select files of the same type.", "Information", MessageBoxButtons.OK);
+                return;
+            }
+
+            OpenFileDialog ofd = new OpenFileDialog();
+            if (chk == 1) ofd.Filter = "support file(*.rcp;*.g36)|*.rcp;*.g36";
+            else if (chk == 2) ofd.Filter = "support file(*.zmd;*.zms;*.zpd)|*.zmd;*.zms;*.zpd";
+            ofd.Title = "サポートファイルを選択";
+            if (frmMain.setting.other.DefaultDataPath != "" && Directory.Exists(frmMain.setting.other.DefaultDataPath) && IsInitialOpenFolder)
+            {
+                ofd.InitialDirectory = frmMain.setting.other.DefaultDataPath;
+            }
+            else
+            {
+                ofd.RestoreDirectory = true;
+            }
+            ofd.CheckPathExists = true;
+            ofd.Multiselect = true;
+
+            if (ofd.ShowDialog() != DialogResult.OK)
+            {
+                return;
+            }
+
+            foreach (DataGridViewRow row in dgvList.SelectedRows)
+            {
+                string fs = "";
+                string ffs = "";
+                foreach (string f in ofd.FileNames)
+                {
+                    fs += f + ";";
+                    ffs += Path.GetFileName(f) + ";";
+                }
+                if (fs.Length > 0) fs = fs.Substring(0, fs.Length - 1);
+                if (ffs.Length > 0) ffs = ffs.Substring(0, ffs.Length - 1);
+                row.Cells["clmSupportFile"].Value = fs;
+                row.Cells["clmDispSupportFileName"].Value = string.IsNullOrEmpty(ffs) ? "-" : ffs;
+                row.Cells["clmDispSupportFileName"].ToolTipText = fs;
+                playList.LstMusic[row.Index].supportFileName = fs;
+            }
+
+            Refresh();
+
+        }
+
+        private void tsmiRemoveSupportFile_Click(object sender, EventArgs e)
+        {
+            foreach (DataGridViewRow row in dgvList.SelectedRows)
+            {
+                row.Cells["clmSupportFile"].Value = null;
+                row.Cells["clmDispSupportFileName"].Value = "-";
+                row.Cells["clmDispSupportFileName"].ToolTipText = null;
+                playList.LstMusic[row.Index].supportFileName = null;
+            }
+
+            Refresh();
+
+        }
+
+        private void tsmiSelectCompiler_default_Click(object sender, EventArgs e)
+        {
+            foreach (DataGridViewRow row in dgvList.SelectedRows)
+            {
+                row.Cells["clmUseCompiler"].Value = null;
+                row.Cells["clmDispUseCompiler"].Value = "-";
+                playList.LstMusic[row.Index].useCompiler = null;
+            }
+
+            Refresh();
+
+        }
+
+        private void tsmiSelectCompiler_zmusicV2_Click(object sender, EventArgs e)
+        {
+            foreach (DataGridViewRow row in dgvList.SelectedRows)
+            {
+                row.Cells["clmUseCompiler"].Value = "zmusic v2";
+                row.Cells["clmDispUseCompiler"].Value = "zmusic v2";
+                playList.LstMusic[row.Index].useCompiler = "zmusic v2";
+            }
+
+            Refresh();
+
+        }
+
+        private void tsmiSelectCompiler_zmusicV3_Click(object sender, EventArgs e)
+        {
+            foreach (DataGridViewRow row in dgvList.SelectedRows)
+            {
+                row.Cells["clmUseCompiler"].Value = "zmusic v3";
+                row.Cells["clmDispUseCompiler"].Value = "zmusic v3";
+                playList.LstMusic[row.Index].useCompiler = "zmusic v3";
+            }
+
+            Refresh();
+        }
+
+        private void tsmiAddPlayList_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog ofd = new OpenFileDialog();
+            ofd.Filter = "M3Uファイル(*.m3u)|*.m3u|XMLファイル(*.xml)|*.xml";
+            ofd.Title = "PlayListファイルを選択してください";
+            ofd.FilterIndex = setting.other.FilterIndex;
+
+            if (frmMain.setting.other.DefaultDataPath != "" && Directory.Exists(frmMain.setting.other.DefaultDataPath) && IsInitialOpenFolder)
+            {
+                ofd.InitialDirectory = frmMain.setting.other.DefaultDataPath;
+            }
+            else
+            {
+                ofd.RestoreDirectory = true;
+            }
+            ofd.CheckPathExists = true;
+            ofd.Multiselect = true;
+
+            if (ofd.ShowDialog() != DialogResult.OK)
+            {
+                return;
+            }
+
+            IsInitialOpenFolder = false;
+            setting.other.FilterIndex = ofd.FilterIndex;
+
+            try
+            {
+                foreach (string fn in ofd.FileNames)
+                {
+                    DataGridViewRow row = new();
+                    row.CreateCells(dgvPlayList);
+                    row.Cells[dgvPlayList.Columns["clmPL_FileName"].Index].Value = fn;
+                    row.Cells[dgvPlayList.Columns["clmPL_Title"].Index].Value = Path.GetFileName(fn);
+                    dgvPlayList.Rows.Add(row);
+                }
+            }
+            catch (Exception ex)
+            {
+                log.ForcedWrite(ex);
+            }
+
+
+        }
+
+        private void tsmiRemovePlayList_Click(object sender, EventArgs e)
+        {
+            int row = 1;
+            for (; row < dgvPlayList.Rows.Count; row++)
+            {
+                if (!dgvPlayList.Rows[row].Selected) continue;
+                dgvPlayList.Rows.RemoveAt(row);
+                row--;
+            }
+        }
+
+        public void UpdateDuration(string pfn, string paf, int minutes, int second, int millisecond)
+        {
+            pfn = string.IsNullOrEmpty(pfn) ? "" : pfn;
+            paf = string.IsNullOrEmpty(paf) ? "" : paf;
+
+            for (int row = 0; row < dgvList.Rows.Count; row++)
+            {
+                string fn = (string)dgvList.Rows[row].Cells["clmFileName"].Value;
+                fn = string.IsNullOrEmpty(fn) ? "" : fn;
+                if (pfn != fn) continue;
+                string zfn = (string)dgvList.Rows[row].Cells["clmZipFileName"].Value;
+                zfn = string.IsNullOrEmpty(zfn) ? "" : zfn;
+                if (paf != zfn) continue;
+
+                dgvList.Rows[row].Cells["clmDuration"].Value = string.Format("{0:d02}:{1:d02}.{2:d02}", minutes, second, millisecond);
+            }
+
+            for (int row = 0; row < playList.LstMusic.Count; row++)
+            {
+                string fn = (string)playList.LstMusic[row].fileName;
+                fn = string.IsNullOrEmpty(fn) ? "" : fn;
+                if (pfn != fn) continue;
+                string zfn = (string)playList.LstMusic[row].arcFileName;
+                zfn = string.IsNullOrEmpty(zfn) ? "" : zfn;
+                if (paf != zfn) continue;
+
+                playList.LstMusic[row].duration = string.Format("{0:d02}:{1:d02}.{2:d02}", minutes, second, millisecond);
+            }
+
+        }
+
     }
 }

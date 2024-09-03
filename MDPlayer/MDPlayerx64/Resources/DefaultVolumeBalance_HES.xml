@@ -46,6 +46,12 @@
   <MultiPCMVolume>-192</MultiPCMVolume>
   <QSoundVolume>-192</QSoundVolume>
   <K051649Volume>-192</K051649Volume>
-  <GimicOPNVolume>0</GimicOPNVolume>
+
+	<PPZ8Volume>-192</PPZ8Volume>
+	<PCM8Volume>-192</PCM8Volume>
+	<PCM8PPVolume>-192</PCM8PPVolume>
+	<MPCMX68kVolume>-192</MPCMX68kVolume>
+
+	<GimicOPNVolume>0</GimicOPNVolume>
   <GimicOPNAVolume>0</GimicOPNAVolume>
 </Balance>

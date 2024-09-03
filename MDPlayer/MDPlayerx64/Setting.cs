@@ -613,6 +613,20 @@ namespace MDPlayer
             }
         }
 
+        private int _playMode = 0;
+        public int playMode
+        {
+            get
+            {
+                return _playMode;
+            }
+
+            set
+            {
+                _playMode = value;
+            }
+        }
+
         private Other _other = new();
         public Other other
         {
@@ -798,6 +812,48 @@ namespace MDPlayer
             set
             {
                 _Zmusic = value;
+            }
+        }
+
+        private Mxdrv _Mxdrv = new();
+        public Mxdrv mxdrv
+        {
+            get
+            {
+                return _Mxdrv;
+            }
+
+            set
+            {
+                _Mxdrv = value;
+            }
+        }
+
+        private Mndrv _Mndrv = new();
+        public Mndrv mndrv
+        {
+            get
+            {
+                return _Mndrv;
+            }
+
+            set
+            {
+                _Mndrv = value;
+            }
+        }
+
+        private Rcs _Rcs = new();
+        public Rcs rcs
+        {
+            get
+            {
+                return _Rcs;
+            }
+
+            set
+            {
+                _Rcs = value;
             }
         }
 
@@ -2222,22 +2278,6 @@ namespace MDPlayer
                 }
             }
 
-            private int _PPZ8Volume = 0;
-            public int PPZ8Volume
-            {
-                get
-                {
-                    if (_PPZ8Volume > 20 || _PPZ8Volume < -192) _PPZ8Volume = 0;
-                    return _PPZ8Volume;
-                }
-
-                set
-                {
-                    _PPZ8Volume = value;
-                    if (_PPZ8Volume > 20 || _PPZ8Volume < -192) _PPZ8Volume = 0;
-                }
-            }
-
             private int _X1_010Volume = 0;
             public int X1_010Volume
             {
@@ -2574,6 +2614,72 @@ namespace MDPlayer
                 }
             }
 
+
+            private int _PPZ8Volume = 0;
+            public int PPZ8Volume
+            {
+                get
+                {
+                    if (_PPZ8Volume > 20 || _PPZ8Volume < -192) _PPZ8Volume = 0;
+                    return _PPZ8Volume;
+                }
+
+                set
+                {
+                    _PPZ8Volume = value;
+                    if (_PPZ8Volume > 20 || _PPZ8Volume < -192) _PPZ8Volume = 0;
+                }
+            }
+
+            private int _PCM8Volume = 0;
+            public int PCM8Volume
+            {
+                get
+                {
+                    if (_PCM8Volume > 20 || _PCM8Volume < -192) _PCM8Volume = 0;
+                    return _PCM8Volume;
+                }
+
+                set
+                {
+                    _PCM8Volume = value;
+                    if (_PCM8Volume > 20 || _PCM8Volume < -192) _PCM8Volume = 0;
+                }
+            }
+
+            private int _PCM8PPVolume = 0;
+            public int PCM8PPVolume
+            {
+                get
+                {
+                    if (_PCM8PPVolume > 20 || _PCM8PPVolume < -192) _PCM8PPVolume = 0;
+                    return _PCM8PPVolume;
+                }
+
+                set
+                {
+                    _PCM8PPVolume = value;
+                    if (_PCM8PPVolume > 20 || _PCM8PPVolume < -192) _PCM8PPVolume = 0;
+                }
+            }
+
+            private int _MPCMX68kVolume = 0;
+            public int MPCMX68kVolume
+            {
+                get
+                {
+                    if (_MPCMX68kVolume > 20 || _MPCMX68kVolume < -192) _MPCMX68kVolume = 0;
+                    return _MPCMX68kVolume;
+                }
+
+                set
+                {
+                    _MPCMX68kVolume = value;
+                    if (_MPCMX68kVolume > 20 || _MPCMX68kVolume < -192) _MPCMX68kVolume = 0;
+                }
+            }
+
+
             private int _GimicOPNVolume = 0;
             public int GimicOPNVolume
             {
@@ -2667,6 +2773,10 @@ namespace MDPlayer
                     YM3812Volume = this.YM3812Volume,
 
                     PPZ8Volume = this.PPZ8Volume,
+                    PCM8Volume = this.PCM8Volume,
+                    PCM8PPVolume = this.PCM8PPVolume,
+                    MPCMX68kVolume = this.MPCMX68kVolume,
+
                     GimicOPNVolume = this.GimicOPNVolume,
                     GimicOPNAVolume = this.GimicOPNAVolume
                 };
@@ -5422,13 +5532,69 @@ namespace MDPlayer
         {
             public int compilePriority = 0;
             public int pcm8type = 1;
+            public int mpcmtype = 1;
+            public int waitNextPlay = 1000;
+            public int pcm8ppSoption = -1;
 
             public Zmusic Copy()
             {
                 Zmusic p = new()
                 {
                     compilePriority = this.compilePriority,
-                    pcm8type = this.pcm8type
+                    pcm8type = this.pcm8type,
+                    mpcmtype = this.mpcmtype,
+                    waitNextPlay = this.waitNextPlay,
+                    pcm8ppSoption=this.pcm8ppSoption,
+                };
+
+                return p;
+            }
+        }
+
+        [Serializable]
+        public class Mxdrv
+        {
+            public int pcm8type = 1;
+            public int pcm8ppSoption = -1;
+
+            public Mxdrv Copy()
+            {
+                Mxdrv p = new()
+                {
+                    pcm8type = this.pcm8type,
+                    pcm8ppSoption = this.pcm8ppSoption,
+                };
+
+                return p;
+            }
+        }
+
+        [Serializable]
+        public class Mndrv
+        {
+            public int mpcmtype = 1;
+
+            public Mndrv Copy()
+            {
+                Mndrv p = new()
+                {
+                    mpcmtype = this.mpcmtype,
+                };
+
+                return p;
+            }
+        }
+
+        [Serializable]
+        public class Rcs
+        {
+            public int pcm8type = 1;//PCM8PPがデフォルト
+
+            public Rcs Copy()
+            {
+                Rcs p = new()
+                {
+                    pcm8type = this.pcm8type,
                 };
 
                 return p;
@@ -5438,12 +5604,15 @@ namespace MDPlayer
         [Serializable]
         public class PlayList
         {
+            public dgvColumnInfo[] clmInfo { get; set; } = null;
+
             public bool isJP { get; set; } = false;
             public int cwExt { get; set; } = -1;
             public int cwType { get; set; } = -1;
             public int cwTitle { get; set; } = -1;
             public int cwTitleJ { get; set; } = -1;
             public int cwFilename { get; set; } = -1;
+            public int cwSupportFilename { get; set; } = -1;
             public int cwGame { get; set; } = -1;
             public int cwGameJ { get; set; } = -1;
             public int cwComposer { get; set; } = -1;
@@ -5454,17 +5623,24 @@ namespace MDPlayer
             public int cwDuration { get; set; } = -1;
             public int cwVersion { get; set; } = -1;
             public int cwUseChips { get; set; } = -1;
+            public int cwPL_FileName { get; set; } = -1;
+            public int cwPL_Title { get; set; } = -1;
+            public int splitterDistance { get; set; } = 0;
+            public string[] plList { get; set; } = null;
+            public int currentPlayList { get; set; } = 0;
 
             public PlayList Copy()
             {
                 PlayList p = new PlayList()
                 {
+                    clmInfo=this.clmInfo,
                     isJP = this.isJP,
                     cwExt = this.cwExt,
                     cwType = this.cwType,
                     cwTitle = this.cwTitle,
                     cwTitleJ = this.cwTitleJ,
                     cwFilename = this.cwFilename,
+                    cwSupportFilename = this.cwSupportFilename,
                     cwGame = this.cwGame,
                     cwGameJ = this.cwGameJ,
                     cwComposer = this.cwComposer,
@@ -5474,7 +5650,12 @@ namespace MDPlayer
                     cwNotes = this.cwNotes,
                     cwDuration = this.cwDuration,
                     cwVersion = this.cwVersion,
-                    cwUseChips = this.cwUseChips
+                    cwUseChips = this.cwUseChips,
+                    cwPL_FileName = this.cwPL_FileName,
+                    cwPL_Title = this.cwPL_Title,
+                    splitterDistance = this.splitterDistance,
+                    plList = this.plList,
+                    currentPlayList = this.currentPlayList,
                 };
 
                 return p;
@@ -5910,26 +6091,14 @@ namespace MDPlayer
             setting.unuseRealChip = this.unuseRealChip;
             setting.FileSearchPathList = this.FileSearchPathList;
 
-            //setting.YM2151SType = this.YM2151SType.Copy();
-            //setting.YM2203SType = this.YM2203SType.Copy();
-            //setting.YM2413SType = this.YM2413SType.Copy();
-            //setting.AY8910SType = this.AY8910SType.Copy();
-            //setting.YM2608SType = this.YM2608SType.Copy();
-            //setting.YM2610SType = this.YM2610SType.Copy();
-            //setting.YM2612SType = this.YM2612SType.Copy();
-            //setting.YM3526SType = this.YM3526SType.Copy();
-            //setting.YM3812SType = this.YM3812SType.Copy();
-            //setting.YMF262SType = this.YMF262SType.Copy();
-            //setting.SN76489SType = this.SN76489SType.Copy();
-            //setting.C140SType = this.C140SType.Copy();
-            //setting.SEGAPCMSType = this.SEGAPCMSType.Copy();
-
             setting.other = this.other.Copy();
             setting.debug = this.debug.Copy();
             setting.balance = this.balance.Copy();
             setting.LatencyEmulation = this.LatencyEmulation;
             setting.LatencySCCI = this.LatencySCCI;
             setting.HiyorimiMode = this.HiyorimiMode;
+            setting.playMode = this.playMode;
+
             setting.location = this.location.Copy();
             setting.midiExport = this.midiExport.Copy();
             setting.midiKbd = this.midiKbd.Copy();
@@ -5941,6 +6110,9 @@ namespace MDPlayer
             setting.autoBalance = this.autoBalance.Copy();
             setting.pmdDotNET = this.pmdDotNET.Copy();
             setting.zmusic = this.zmusic.Copy();
+            setting.mxdrv = this.mxdrv.Copy();
+            setting.mndrv = this.mndrv.Copy();
+            setting.rcs = this.rcs.Copy();
             setting.playList = this.playList.Copy();
 
             setting.keyBoardHook = this.keyBoardHook.Copy();

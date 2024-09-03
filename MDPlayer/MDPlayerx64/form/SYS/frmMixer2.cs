@@ -112,9 +112,9 @@ namespace MDPlayer.form
                 null,
                 null,
                 oldParam.PPZ8,
-                null,
-                null,
-                null,
+                oldParam.PCM8,
+                oldParam.PCM8PP,
+                oldParam.MPCMX68k,
                 null,
                 null,
                 null,
@@ -192,9 +192,9 @@ namespace MDPlayer.form
                 null,
                 null,
                 newParam.PPZ8,
-                null,
-                null,
-                null,
+                newParam.PCM8,
+                newParam.PCM8PP,
+                newParam.MPCMX68k,
                 null,
                 null,
                 null,
@@ -323,7 +323,6 @@ namespace MDPlayer.form
             newParam.C140.Volume = parent.setting.balance.C140Volume;
             newParam.C352.Volume = parent.setting.balance.C352Volume;
             newParam.SAA1099.Volume = parent.setting.balance.SAA1099Volume;
-            newParam.PPZ8.Volume = parent.setting.balance.PPZ8Volume;
             newParam.SEGAPCM.Volume = parent.setting.balance.SEGAPCMVolume;
             newParam.MultiPCM.Volume = parent.setting.balance.MultiPCMVolume;
             newParam.K051649.Volume = parent.setting.balance.K051649Volume;
@@ -341,6 +340,11 @@ namespace MDPlayer.form
             newParam.VRC7.Volume = parent.setting.balance.VRC7Volume;
             newParam.FME7.Volume = parent.setting.balance.FME7Volume;
             newParam.DMG.Volume = parent.setting.balance.DMGVolume;
+
+            newParam.PPZ8.Volume = parent.setting.balance.PPZ8Volume;
+            newParam.PCM8.Volume = parent.setting.balance.PCM8Volume;
+            newParam.PCM8PP.Volume = parent.setting.balance.PCM8PPVolume;
+            newParam.MPCMX68k.Volume = parent.setting.balance.MPCMX68kVolume;
 
             newParam.GimicOPN.Volume = parent.setting.balance.GimicOPNVolume;
             newParam.GimicOPNA.Volume = parent.setting.balance.GimicOPNAVolume;
@@ -597,13 +601,6 @@ namespace MDPlayer.form
                 newParam.SAA1099.VisVol2Cnt = 30;
             }
 
-            newParam.PPZ8.VisVolume1 = Common.Range(Audio.VisVolume.ppz8 / 200, 0, 44);//(short.MaxValue / 44);
-            if (newParam.PPZ8.VisVolume2 <= newParam.PPZ8.VisVolume1)
-            {
-                newParam.PPZ8.VisVolume2 = newParam.PPZ8.VisVolume1;
-                newParam.PPZ8.VisVol2Cnt = 30;
-            }
-
             newParam.SEGAPCM.VisVolume1 = Common.Range(Audio.VisVolume.segaPCM / 200, 0, 44);//(short.MaxValue / 44);
             if (newParam.SEGAPCM.VisVolume2 <= newParam.SEGAPCM.VisVolume1)
             {
@@ -714,6 +711,36 @@ namespace MDPlayer.form
                 newParam.DMG.VisVolume2 = newParam.DMG.VisVolume1;
                 newParam.DMG.VisVol2Cnt = 30;
             }
+
+
+            newParam.PPZ8.VisVolume1 = Common.Range(Audio.VisVolume.ppz8 / 200, 0, 44);//(short.MaxValue / 44);
+            if (newParam.PPZ8.VisVolume2 <= newParam.PPZ8.VisVolume1)
+            {
+                newParam.PPZ8.VisVolume2 = newParam.PPZ8.VisVolume1;
+                newParam.PPZ8.VisVol2Cnt = 30;
+            }
+
+            newParam.PCM8.VisVolume1 = Common.Range(Audio.VisVolume.pcm8 / 200, 0, 44);//(short.MaxValue / 44);
+            if (newParam.PCM8.VisVolume2 <= newParam.PCM8.VisVolume1)
+            {
+                newParam.PCM8.VisVolume2 = newParam.PCM8.VisVolume1;
+                newParam.PCM8.VisVol2Cnt = 30;
+            }
+
+            newParam.PCM8PP.VisVolume1 = Common.Range(Audio.VisVolume.pcm8pp / 200, 0, 44);//(short.MaxValue / 44);
+            if (newParam.PCM8PP.VisVolume2 <= newParam.PCM8PP.VisVolume1)
+            {
+                newParam.PCM8PP.VisVolume2 = newParam.PCM8PP.VisVolume1;
+                newParam.PCM8PP.VisVol2Cnt = 30;
+            }
+
+            newParam.MPCMX68k.VisVolume1 = Common.Range(Audio.VisVolume.mpcmX68k / 200, 0, 44);//(short.MaxValue / 44);
+            if (newParam.MPCMX68k.VisVolume2 <= newParam.MPCMX68k.VisVolume1)
+            {
+                newParam.MPCMX68k.VisVolume2 = newParam.MPCMX68k.VisVolume1;
+                newParam.MPCMX68k.VisVol2Cnt = 30;
+            }
+
         }
 
 
@@ -841,7 +868,6 @@ namespace MDPlayer.form
             Audio.VisVolume.c140 = -1;
             Audio.VisVolume.c352 = -1;
             Audio.VisVolume.saa1099 = -1;
-            Audio.VisVolume.ppz8 = -1;
             Audio.VisVolume.segaPCM = -1;
             Audio.VisVolume.multiPCM = -1;
             Audio.VisVolume.k051649 = -1;
@@ -860,6 +886,10 @@ namespace MDPlayer.form
             Audio.VisVolume.FME7 = 0;
             Audio.VisVolume.DMG = -1;
 
+            Audio.VisVolume.ppz8 = -1;
+            Audio.VisVolume.pcm8 = -1;
+            Audio.VisVolume.pcm8pp = -1;
+            Audio.VisVolume.mpcmX68k = -1;
         }
 
         private void pbScreen_MouseClick(object sender, MouseEventArgs e)
@@ -953,7 +983,7 @@ namespace MDPlayer.form
                 , Audio.SetOKIM6295Volume  , Audio.SetC140Volume         , Audio.SetC352Volume         , Audio.SetSegaPCMVolume
                 , Audio.SetMultiPCMVolume  , Audio.SetK051649Volume      , Audio.SetK053260Volume      , Audio.SetK054539Volume
                 , Audio.SetQSoundVolume    , Audio.SetGA20Volume         , null                        , null
-                , Audio.SetPPZ8Volume      , null                        , null                        , null
+                , Audio.SetPPZ8Volume      , Audio.SetPCM8Volume         , Audio.SetPCM8PPVolume       , Audio.SetMPCMX68kVolume
                 , null                     , null                        , null                        , Audio.SetGimicOPNVolume
                 , Audio.SetGimicOPNAVolume
         };

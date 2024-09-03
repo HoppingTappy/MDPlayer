@@ -71,9 +71,7 @@
 
   <ItemGroup>
     <Compile Update="form\KB\PCM\frmK054539.cs" />
-    <Compile Update="form\KB\PCM\frmGA20.cs">
-      <SubType>Form</SubType>
-    </Compile>
+    <Compile Update="form\KB\PCM\frmGA20.cs" />
     <Compile Update="form\KB\PCM\frmMpcmX68k.cs" />
     <Compile Update="Properties\Resources.Designer.cs">
       <DesignTime>True</DesignTime>

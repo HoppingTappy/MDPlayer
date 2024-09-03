@@ -1,4 +1,5 @@
 ﻿using System.IO.Compression;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Xml;
 
@@ -13,6 +14,8 @@ namespace MDPlayer
             public string playingNow;
             public string fileName;
             public string arcFileName;
+            public string supportFileName;
+            public string useCompiler;
             public EnmArcType arcType = EnmArcType.unknown;
             public string type = "-";
 
@@ -42,6 +45,9 @@ namespace MDPlayer
             public int songNo = -1;
         }
 
+        public string pl_title { get; set; } = "";
+        public string pl_filename { get; set; } = "";
+
         private List<Music> _lstMusic = new();
         public List<Music> LstMusic
         {
@@ -56,9 +62,13 @@ namespace MDPlayer
             }
         }
 
-        public static PlayList Copy()
+        public PlayList Copy()
         {
             PlayList playList = new();
+
+            playList.pl_title = this.pl_title;
+            playList.pl_filename = this.pl_filename;
+            playList.LstMusic = this.LstMusic;
 
             return playList;
         }
@@ -187,8 +197,13 @@ namespace MDPlayer
                 row.Cells[dgvList.Columns["clmKey"].Index].Value = 0;
                 row.Cells[dgvList.Columns["clmFileName"].Index].Value = music.fileName;
                 row.Cells[dgvList.Columns["clmZipFileName"].Index].Value = music.arcFileName;
+                row.Cells[dgvList.Columns["clmSupportFile"].Index].Value = music.supportFileName;
+                row.Cells[dgvList.Columns["clmUseCompiler"].Index].Value = music.useCompiler;
                 row.Cells[dgvList.Columns["clmDispFileName"].Index].Value = Path.GetFileName(music.fileName);
                 row.Cells[dgvList.Columns["clmDispFileName"].Index].ToolTipText = music.fileName;
+                row.Cells[dgvList.Columns["clmDispSupportFileName"].Index].Value = string.IsNullOrEmpty(music.supportFileName) ? "-" : Path.GetFileName(music.supportFileName);
+                row.Cells[dgvList.Columns["clmDispSupportFileName"].Index].ToolTipText = music.supportFileName;
+                row.Cells[dgvList.Columns["clmDispUseCompiler"].Index].Value = string.IsNullOrEmpty(music.useCompiler) ? "-" : music.useCompiler;
                 row.Cells[dgvList.Columns["clmEXT"].Index].Value = Path.GetExtension(music.fileName).ToUpper();
                 row.Cells[dgvList.Columns["clmType"].Index].Value = music.type;
                 row.Cells[dgvList.Columns["clmTitle"].Index].Value = music.title;
@@ -295,6 +310,9 @@ namespace MDPlayer
                 case EnmFileFormat.SID:
                     AddFileSID(mc, entry);
                     break;
+                case EnmFileFormat.AY:
+                    AddFileAY(mc, entry);
+                    break;
                 case EnmFileFormat.MDR:
                     AddFileMDR(mc, entry);
                     break;
@@ -336,6 +354,9 @@ namespace MDPlayer
                     break;
                 case EnmFileFormat.RCP:
                     AddFileRCP(mc, entry);
+                    break;
+                case EnmFileFormat.RCS:
+                    AddFileRCS(mc, entry);
                     break;
                 case EnmFileFormat.S98:
                     AddFileS98(mc, entry);
@@ -423,6 +444,9 @@ namespace MDPlayer
                     break;
                 case EnmFileFormat.RCP:
                     AddFileRCP(ref index, mc, entry);
+                    break;
+                case EnmFileFormat.RCS:
+                    AddFileRCS(ref index, mc, entry);
                     break;
                 case EnmFileFormat.S98:
                     AddFileS98(ref index, mc, entry);
@@ -648,6 +672,16 @@ namespace MDPlayer
         }
 
         private void AddFileRCP(ref int index, Music mc, object entry = null)
+        {
+            AddFilexxx(ref index, mc, entry);
+        }
+
+        private void AddFileRCS(Music mc, object entry = null)
+        {
+            AddFilexxx(mc, entry);
+        }
+
+        private void AddFileRCS(ref int index, Music mc, object entry = null)
         {
             AddFilexxx(ref index, mc, entry);
         }
@@ -1555,6 +1589,63 @@ namespace MDPlayer
                 dgvList.Rows.InsertRange(index, rows.ToArray());
                 LstMusic.InsertRange(index, musics);
                 index += rows.Count;
+            }
+            catch (Exception ex)
+            {
+                log.ForcedWrite(ex);
+            }
+        }
+
+        private void AddFileAY(Music mc, object entry = null)
+        {
+            try
+            {
+                byte[] buf = null;
+                if (entry == null)
+                {
+                    buf = File.ReadAllBytes(mc.fileName);
+                }
+                else
+                {
+                    if (entry is ZipArchiveEntry entry1)
+                    {
+
+                        using BinaryReader reader = new(entry1.Open());
+                        buf = reader.ReadBytes((int)entry1.Length);
+                    }
+                    else
+                    {
+                        UnlhaWrap.UnlhaCmd cmd = new();
+                        buf = cmd.GetFileByte(((Tuple<string, string>)entry).Item1, ((Tuple<string, string>)entry).Item2);
+                    }
+                }
+
+                List<PlayList.Music> musics;
+                if (entry == null) musics = Audio.GetMusic(mc.fileName, buf);
+                else musics = Audio.GetMusic(mc.fileName, buf, mc.arcFileName, entry);
+
+                if (mc.songNo != -1)
+                {
+                    PlayList.Music music = null;
+                    if (musics.Count > 0)
+                    {
+                        music = musics[0];
+                        music.songNo = mc.songNo;
+                        music.title = mc.title;
+                        music.titleJ = mc.titleJ;
+
+                        musics.Clear();
+                        musics.Add(music);
+                    }
+                    else
+                    {
+                        musics.Clear();
+                    }
+                }
+
+                List<DataGridViewRow> rows = MakeRow(musics);
+                foreach (DataGridViewRow row in rows) dgvList.Rows.Add(row);
+                foreach (PlayList.Music music in musics) LstMusic.Add(music);
             }
             catch (Exception ex)
             {

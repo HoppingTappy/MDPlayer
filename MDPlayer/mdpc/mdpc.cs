@@ -197,7 +197,7 @@ namespace mdpc
             //Audio.isCommandLine = true;
             Audio.EmuOnly = emuOnly;
             Audio.Init(setting);
-            Audio.SetVGMBuffer(format, vgmBuf, srcFn, "", 0, 0, null);
+            Audio.SetVGMBuffer(format, vgmBuf, srcFn, "", 0, 0, null, null, null);
             Audio.Play(setting);
             Audio.GO();
         }

@@ -13,6 +13,7 @@
         public int LCminutes = -1;
         public int LCsecond = -1;
         public int LCmillisecond = -1;
+        public long LTCounter = -1;
 
         public ChipLEDs chipLED = new();
         public int Master = -255;
@@ -107,7 +108,7 @@
             public bool[] xpcmKeyOn = new bool[4] { false, false, false, false };
             public bool[] xpcmHiSpeed = new bool[4] { false, false, false, false };
 
-            public Channel[] channels = new Channel[9] { new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel() };
+            public Channel[] channels = new Channel[13] { new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel() };
 
         }
         public YM2612[] ym2612 = new YM2612[] { new YM2612(), new YM2612() };
@@ -235,7 +236,9 @@
 
         public class PCM8
         {
-            public Channel[] channels = new Channel[8] {
+            public Channel[] channels = new Channel[16] {
+                new Channel(), new Channel(), new Channel(), new Channel(),
+                new Channel(), new Channel(), new Channel(), new Channel(),
                 new Channel(), new Channel(), new Channel(), new Channel(),
                 new Channel(), new Channel(), new Channel(), new Channel()
             };
@@ -669,6 +672,10 @@
             public VolumeInfo DMG = new();
 
             public VolumeInfo PPZ8 = new();
+            public VolumeInfo PCM8 = new();
+            public VolumeInfo PCM8PP = new();
+            public VolumeInfo MPCMX68k = new();
+
             public VolumeInfo GimicOPN = new();
             public VolumeInfo GimicOPNA = new();
         }

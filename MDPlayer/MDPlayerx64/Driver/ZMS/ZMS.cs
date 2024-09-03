@@ -11,8 +11,10 @@ namespace MDPlayer.Driver.ZMS
         private readonly EnmFileFormat format = format;
         private nise68.nise68 nise68;
         public mpcmX68k mpcm;
-        public MDSound.ym2151_x68sound opmPCM;
-        public MDSound.PCM8PP pcm8pp;
+        public mpcmpp mpcmpp;
+        public int mpcmtype = 0;
+        public ym2151_x68sound opmPCM;
+        public PCM8PP pcm8pp;
         public int pcm8type = 0;
 
         private int checkCounter = 0;
@@ -42,6 +44,7 @@ namespace MDPlayer.Driver.ZMS
         }
 
         public string PlayingFileName { get; internal set; }
+        public List<Tuple<byte[], string>> SupportFileBinaryAndName;
         public byte[] CompiledData { get; set; }
 
         public override GD3 getGD3Info(byte[] buf, uint vgmGd3)
@@ -160,6 +163,8 @@ namespace MDPlayer.Driver.ZMS
         {
             try
             {
+                if (waitNextPlay-- > 0) return;
+
                 vgmSpeedCounter += (double)Common.VGMProcSampleRate / setting.outputDevice.SampleRate * vgmSpeed;
                 while (vgmSpeedCounter >= 1.0)
                 {
@@ -183,8 +188,9 @@ namespace MDPlayer.Driver.ZMS
                             while (nise68.IntTimer())
                             {
 #if DEBUG
-                                nise68.Trap(0x8e, true, true, true);
-                                //nise68.Trap(0x8e);
+                                //if (model != EnmModel.RealModel) 
+                                //nise68.Trap(0x8e, true, true, true);
+                                nise68.Trap(0x8e);
 #else
         nise68.Trap(0x8e);
 #endif
@@ -207,7 +213,34 @@ namespace MDPlayer.Driver.ZMS
                         nise68.Trap(3 + 32);
                         uint d0 = nise68.reg.GetDl(0);
                         if (d0 == 0)
-                            Stopped = true;
+                        {
+                            if (preData.Count < 1) Stopped = true;
+                            else
+                            {
+                                preData.RemoveAt(0);
+                                byte[] zmd = null;
+                                if (preData.Count == 0)
+                                {
+                                    if (nise68.hmn.fb.ContainsKey(fnZMD)) zmd = nise68.hmn.fb[fnZMD];
+                                }
+                                else
+                                {
+                                    if (nise68.hmn.fb.ContainsKey(preData[0])) zmd = nise68.hmn.fb[preData[0]];
+                                }
+                                uint fileSize = (uint)zmd.Length;
+                                uint filePtr = (uint)nise68.hmn.memMng.Malloc(fileSize);
+                                for (int i = 0; i < zmd.Length; i++)
+                                {
+                                    nise68.mem.PokeB((uint)(filePtr + i), zmd[i]);
+                                }
+
+                                nise68.reg.SetDl(1, 0x11);//play_cnv_data
+                                nise68.reg.SetDl(2, (uint)(zmd.Length - 7));
+                                nise68.reg.SetAl(1, filePtr + 7);
+                                nise68.Trap(trp);//, true, true, true);
+                                waitNextPlay = (int)(setting.outputDevice.SampleRate * (double)setting.zmusic.waitNextPlay / 1000.0);
+                            }
+                        }
 
                         //ループ回数チェック
                         nise68.reg.SetDl(1, 0x4d);//get_loop_time
@@ -246,6 +279,7 @@ namespace MDPlayer.Driver.ZMS
         private void Run(byte[] vgmBuf)
         {
             //if (model == EnmModel.RealModel) { return; }
+
             string fn = PlayingFileName;
             string withoutExtFn;
             string? dn = Path.GetDirectoryName(fn);
@@ -279,6 +313,11 @@ namespace MDPlayer.Driver.ZMS
             Play();
         }
 
+        private List<string> preData = new List<string>();
+        private string fnZMD;
+        private int trp = 3 + 32;
+        private int waitNextPlay = 0;
+
         private void Play()
         {
             string fn = PlayingFileName;
@@ -286,7 +325,7 @@ namespace MDPlayer.Driver.ZMS
             string? dn = Path.GetDirectoryName(fn);
             if (!string.IsNullOrEmpty(dn)) withoutExtFn = Path.Combine(dn, Path.GetFileNameWithoutExtension(fn));
             else withoutExtFn = Path.GetFileNameWithoutExtension(fn);
-            string fnZMD = withoutExtFn + ".ZMD";
+            fnZMD = withoutExtFn + ".ZMD";
             string crntDir = Path.GetDirectoryName(Application.ExecutablePath);
             string zmsc3 = Path.Combine(crntDir, "ZMSC3.X");
             if (!File.Exists(zmsc3))
@@ -301,12 +340,44 @@ namespace MDPlayer.Driver.ZMS
                 throw new FileNotFoundException(zmusic);
             }
 
-            int trp = 3 + 32;
+            trp = 3 + 32;
 
             if (version == 2)
             {
                 timerOPM = new FMTimer(true, null, 4000000);//, Common.VGMProcSampleRate);
-                if (nise68.LoadRun(zmusic, "-P9212 -T2048", Path.GetDirectoryName(fnZMD), 0x00012000
+
+                //zpdの指定がある場合は事前読み込みをzmusicに指定する
+                string optionZpd = "";
+                string optionZmd = "";
+                preData.Clear();
+                if (SupportFileBinaryAndName != null)
+                {
+                    foreach (Tuple<byte[], string> s in SupportFileBinaryAndName)
+                    {
+                        string ext = Path.GetExtension(s.Item2).ToUpper();
+                        if (ext == ".ZPD")
+                        {
+                            optionZpd = " -B" + Path.GetFileName(s.Item2);
+                            if (!nise68.hmn.fb.ContainsKey(s.Item2))
+                            {
+                                nise68.hmn.fb.Add(s.Item2, s.Item1);
+                            }
+                        }
+                        if (ext == ".ZMD"|| ext == ".ZMS")
+                        {
+                            optionZmd = " -N";
+                            if (!nise68.hmn.fb.ContainsKey(s.Item2))
+                            {
+                                nise68.hmn.fb.Add(s.Item2, s.Item1);
+                                preData.Add(s.Item2);
+                            }
+                        }
+                    }
+                }
+
+                nise68.hmn.memMng = new memMng((uint)(0x0001_2000 + (9212 + 2048) * 1024 + File.ReadAllBytes(zmusic).Length));
+
+                if (nise68.LoadRun(zmusic, "-P9212 -T2048" + optionZpd + optionZmd, Path.GetDirectoryName(fnZMD), 0x00012000
                 , true, true, true
                 ) != 0) throw new Exception("zmusic regident Error");
 
@@ -315,19 +386,29 @@ namespace MDPlayer.Driver.ZMS
 
                 //演奏
                 byte[] zmd = null;
-                if (File.Exists(fnZMD))
+                if (preData.Count < 1)
                 {
-                    zmd = File.ReadAllBytes(fnZMD);
-                    if (!nise68.hmn.fb.ContainsKey(fnZMD))
+                    if (File.Exists(fnZMD))
                     {
-                        nise68.hmn.fb.Add(fnZMD, zmd);
+                        zmd = File.ReadAllBytes(fnZMD);
+                        if (!nise68.hmn.fb.ContainsKey(fnZMD))
+                        {
+                            nise68.hmn.fb.Add(fnZMD, zmd);
+                        }
+                    }
+                    else
+                    {
+                        if (nise68.hmn.fb.ContainsKey(fnZMD))
+                        {
+                            zmd = nise68.hmn.fb[fnZMD];
+                        }
                     }
                 }
                 else
                 {
-                    if (nise68.hmn.fb.ContainsKey(fnZMD))
+                    if (nise68.hmn.fb.ContainsKey(preData[0]))
                     {
-                        zmd = nise68.hmn.fb[fnZMD];
+                        zmd = nise68.hmn.fb[preData[0]];
                     }
                 }
                 if (zmd == null)
@@ -413,9 +494,8 @@ namespace MDPlayer.Driver.ZMS
 
         }
 
-        public bool Compile(byte[] vgmBuf)
+        public bool Compile(byte[] vgmBuf,string fn)
         {
-            string fn = PlayingFileName;
             string withoutExtFn;
             string? dn = Path.GetDirectoryName(fn);
             if (!string.IsNullOrEmpty(dn)) withoutExtFn = Path.Combine(dn, Path.GetFileNameWithoutExtension(fn));
@@ -452,9 +532,9 @@ namespace MDPlayer.Driver.ZMS
             return true;
         }
 
-        public bool Compilev2(byte[] vgmBuf)
+        public bool Compilev2(byte[] vgmBuf,string fn)
         {
-            string fn = PlayingFileName;
+            //string fn = PlayingFileName;
             string withoutExtFn;
             string? dn = Path.GetDirectoryName(fn);
             if (!string.IsNullOrEmpty(dn)) withoutExtFn = Path.Combine(dn, Path.GetFileNameWithoutExtension(fn));
@@ -498,56 +578,96 @@ namespace MDPlayer.Driver.ZMS
 
         private int MPCMCallBack(int n)
         {
+            int ch = n & 0xf;
             switch (n & 0xfff0)
             {
                 case 0x0000:
                     //Log.WriteLine(LogLevel.Trace2, "MPCM #M_KEY_ON(${0:X04})", n);
-                    mpcm?.KeyOn(0, n & 0xf);
-                    mpcmSt[n&0xf].Keyon = true;
+                    if (mpcmtype == 0) mpcm?.KeyOn(0, ch);
+                    else mpcmpp?.KeyOn(0, ch);
+                    mpcmSt[ch].Keyon = true;
                     break;
                 case 0x0100:
                     //Log.WriteLine(LogLevel.Trace2, "MPCM #M_KEY_OFF(${0:X04})", n);
-                    mpcm?.KeyOff(0, n & 0xf);
-                    mpcmSt[n & 0xf].Keyoff = true;
+                    if (mpcmtype == 0) mpcm?.KeyOff(0, ch);
+                    else mpcmpp?.KeyOff(0, ch);
+                    mpcmSt[ch].Keyoff = true;
                     break;
                 case 0x0200:
                     //Log.WriteLine(LogLevel.Trace2, "MPCM #M_SET_PCM(${0:X04})", n);
-                    MDSound.mpcmX68k.SETPCM ptr = new mpcmX68k.SETPCM();
-                    ptr.adrs_buf = nise68.mem.mem;
-                    mpcmSt[n & 0xf].type = ptr.type = nise68.mem.PeekB(0x00 + nise68.reg.GetAl(1));
-                    mpcmSt[n & 0xf].orig = ptr.orig = nise68.mem.PeekB(0x01 + nise68.reg.GetAl(1));
-                    mpcmSt[n & 0xf].adrs_ptr = ptr.adrs_ptr = (int)nise68.mem.PeekL(0x04 + nise68.reg.GetAl(1));
-                    mpcmSt[n & 0xf].size = ptr.size = nise68.mem.PeekL(0x08 + nise68.reg.GetAl(1));
-                    mpcmSt[n & 0xf].start = ptr.start = nise68.mem.PeekL(0x0c + nise68.reg.GetAl(1));
-                    mpcmSt[n & 0xf].end = ptr.end = nise68.mem.PeekL(0x10 + nise68.reg.GetAl(1));
-                    mpcmSt[n & 0xf].count = ptr.count = nise68.mem.PeekL(0x14 + nise68.reg.GetAl(1));
-                    if (mpcm != null)
+                    if (mpcmtype == 0)
                     {
-                        mpcmSt[n & 0xf].rate = mpcm.m[0].rate;
-                        mpcmSt[n & 0xf].base_ = mpcm.m[0].base_;
-                    }
+                        MDSound.mpcmX68k.SETPCM ptr = new mpcmX68k.SETPCM();
+                        ptr.adrs_buf = nise68.mem.mem;
+                        mpcmSt[ch].type = ptr.type = nise68.mem.PeekB(0x00 + nise68.reg.GetAl(1));
+                        mpcmSt[ch].orig = ptr.orig = nise68.mem.PeekB(0x01 + nise68.reg.GetAl(1));
+                        mpcmSt[ch].adrs_ptr = ptr.adrs_ptr = (int)nise68.mem.PeekL(0x04 + nise68.reg.GetAl(1));
+                        mpcmSt[ch].size = ptr.size = nise68.mem.PeekL(0x08 + nise68.reg.GetAl(1));
+                        mpcmSt[ch].start = ptr.start = nise68.mem.PeekL(0x0c + nise68.reg.GetAl(1));
+                        mpcmSt[ch].end = ptr.end = nise68.mem.PeekL(0x10 + nise68.reg.GetAl(1));
+                        mpcmSt[ch].count = ptr.count = nise68.mem.PeekL(0x14 + nise68.reg.GetAl(1));
+                        //mpcmSt[ch].frq = mpcmSt[ch].type == 0xff ? 4 : (mpcmSt[ch].type == 1 ? 8 : (mpcmSt[ch].type == 2 ? 0x10 : 0));
+                        if (mpcm != null)
+                        {
+                            mpcmSt[ch].rate = mpcm.m[0].rate;
+                            mpcmSt[ch].base_ = mpcm.m[0].base_;
+                        }
 
-                    //nise68.DumpMemory((uint)ptr.adrs_ptr, (uint)(ptr.adrs_ptr + ptr.size));
-                    mpcm?.SetPcm(0, n & 0xf, ptr);
+                        //nise68.DumpMemory((uint)ptr.adrs_ptr, (uint)(ptr.adrs_ptr + ptr.size));
+                        mpcm?.SetPcm(0, ch, ptr);
+                    }
+                    else
+                    {
+                        MDSound.mpcmpp.SETPCM ptr = new mpcmpp.SETPCM();
+                        ptr.adrs_buf = nise68.mem.mem;
+                        mpcmSt[ch].type = ptr.type = nise68.mem.PeekB(0x00 + nise68.reg.GetAl(1));
+                        mpcmSt[ch].orig = ptr.orig = nise68.mem.PeekB(0x01 + nise68.reg.GetAl(1));
+                        mpcmSt[ch].adrs_ptr = ptr.adrs_ptr = (int)nise68.mem.PeekL(0x04 + nise68.reg.GetAl(1));
+                        mpcmSt[ch].size = ptr.size = nise68.mem.PeekL(0x08 + nise68.reg.GetAl(1));
+                        mpcmSt[ch].start = ptr.start = nise68.mem.PeekL(0x0c + nise68.reg.GetAl(1));
+                        mpcmSt[ch].end = ptr.end = nise68.mem.PeekL(0x10 + nise68.reg.GetAl(1));
+                        mpcmSt[ch].count = ptr.count = nise68.mem.PeekL(0x14 + nise68.reg.GetAl(1));
+                        //mpcmSt[ch].frq = mpcmSt[ch].type == 0xff ? 4 : (mpcmSt[ch].type == 1 ? 8 : (mpcmSt[ch].type == 2 ? 0x10 : 0));
+                        if (mpcmpp != null)
+                        {
+                            mpcmSt[ch].rate = mpcmpp.m[0].rate;
+                            mpcmSt[ch].base_ = mpcmpp.m[0].base_;
+                        }
+
+                        //nise68.DumpMemory((uint)ptr.adrs_ptr, (uint)(ptr.adrs_ptr + ptr.size));
+                        mpcmpp?.SetPcm(0, ch, ptr);
+                    }
                     break;
                 case 0x0300:
                     //Log.WriteLine(LogLevel.Trace2, "MPCM #M_SET_FRQ(${0:X04}) D1${1:X08}", n, nise68.reg.GetDl(1));
-                    mpcm?.SetFreq(0, n & 0xf, (int)nise68.reg.GetDl(1));
-                    mpcmSt[n & 0xf].frq = (int)nise68.reg.GetDl(1);
+                    if (mpcmtype == 0)
+                        mpcm?.SetFreq(0, ch, (int)nise68.reg.GetDl(1));
+                    else
+                        mpcmpp?.SetFreq(0, ch, (int)nise68.reg.GetDl(1));
+                    mpcmSt[ch].frq = (int)nise68.reg.GetDl(1);
                     break;
                 case 0x0400:
                     //Log.WriteLine(LogLevel.Trace2, "MPCM #M_SET_PITCH(${0:X04}) D1${1:X04}", n, nise68.reg.GetDl(1));
-                    mpcm?.SetPitch(0, n & 0xf, (int)nise68.reg.GetDl(1));
-                    mpcmSt[n & 0xf].pitch = (int)nise68.reg.GetDl(1);
+                    if (mpcmtype == 0)
+                        mpcm?.SetPitch(0, ch, (int)nise68.reg.GetDl(1));
+                    else
+                        mpcmpp?.SetPitch(0, ch, (int)nise68.reg.GetDl(1));
+                    mpcmSt[ch].pitch = (int)nise68.reg.GetDl(1);
                     break;
                 case 0x0500:
                     //Log.WriteLine(LogLevel.Trace2, "MPCM #M_SET_VOL(${0:X04}) = ${1:X02}", n, nise68.reg.GetDb(1));
-                    mpcm?.SetVol(0, n & 0xf, (int)nise68.reg.GetDb(1));
+                    if (mpcmtype == 0)
+                        mpcm?.SetVol(0, ch, (int)nise68.reg.GetDb(1));
+                    else
+                        mpcmpp?.SetVol(0, ch, (int)nise68.reg.GetDb(1));
                     mpcmSt[n & 0xf].volume = (int)nise68.reg.GetDb(1);
                     break;
                 case 0x0600:
                     //Log.WriteLine(LogLevel.Trace2, "MPCM #M_SET_PAN(${0:X04}) = ${1:X02}", n, nise68.reg.GetDb(1));
-                    mpcm?.SetPan(0, n & 0xf, (int)nise68.reg.GetDb(1));
+                    if (mpcmtype == 0)
+                        mpcm?.SetPan(0, ch, (int)nise68.reg.GetDb(1));
+                    else
+                        mpcmpp?.SetPan(0, ch, (int)nise68.reg.GetDb(1));
                     mpcmSt[n & 0xf].pan = (int)nise68.reg.GetDb(1);
                     break;
                 case 0x8000://
@@ -558,7 +678,10 @@ namespace MDPlayer.Driver.ZMS
                             break;
                         case 0x2://
                                  //Log.WriteLine(LogLevel.Trace2, "MPCM #M_INIT(${0:X04})", n);
-                            mpcm?.Reset(0);
+                            if (mpcmtype == 0)
+                                mpcm?.Reset(0);
+                            else
+                                mpcmpp?.Reset(0);
                             break;
                         case 0x5://
                                  //Log.WriteLine(LogLevel.Trace2, "MPCM #M_SET_VOLTBL(${0:X04})", n);
@@ -567,7 +690,10 @@ namespace MDPlayer.Driver.ZMS
                             {
                                 vtbl[i] = (int)(nise68.mem.PeekW((uint)(nise68.reg.GetAl(1) + (i * 2))));
                             }
-                            mpcm?.SetVolTableZms(0, (int)nise68.reg.GetDl(1), vtbl);
+                            if (mpcmtype == 0)
+                                mpcm?.SetVolTableZms(0, (int)nise68.reg.GetDl(1), vtbl);
+                            else
+                                mpcmpp?.SetVolTableZms(0, (int)nise68.reg.GetDl(1), vtbl);
                             break;
                     }
                     break;
@@ -587,7 +713,7 @@ namespace MDPlayer.Driver.ZMS
                     //File.WriteAllBytes("c:\\temp\\test.bin", nise68.mem.mem);
                     if (pcm8type == 0) opmPCM?.x68sound[0].X68Sound_Pcm8_Out((int)n & 0xff, null, nise68.reg.GetAl(1), (int)nise68.reg.GetDl(1), (int)nise68.reg.GetDl(2));//指定チャンネル発音開始
                     else pcm8pp?.KeyOn((int)n & 0xff, nise68.reg.GetAl(1), (int)nise68.reg.GetDl(1), (int)nise68.reg.GetDl(2));//指定チャンネル発音開始
-                    //Debug.WriteLine("adrsPtr = 0x{0:x08};  mode = 0x{1:x08}; len = 0x{2:x08};", nise68.reg.GetAl(1), (int)nise68.reg.GetDl(1), (int)nise68.reg.GetDl(2), (int)n & 0xff);
+                    //Debug.WriteLine("{3} adrsPtr = 0x{0:x08};  mode = 0x{1:x08}; len = 0x{2:x08};", nise68.reg.GetAl(1), (int)nise68.reg.GetDl(1), (int)nise68.reg.GetDl(2), (int)n & 0xff);
                     ch = (int)((n & 0xff) % 8);
                     pcm8St[ch].tablePtr = nise68.reg.GetAl(1);
                     pcm8St[ch].mode = nise68.reg.GetDl(1);
