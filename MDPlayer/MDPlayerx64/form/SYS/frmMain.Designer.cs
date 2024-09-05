@@ -1818,6 +1818,7 @@ namespace MDPlayer.form
             opeButtonSetting.FlatAppearance.MouseDownBackColor = Color.Black;
             opeButtonSetting.FlatAppearance.MouseOverBackColor = Color.Black;
             opeButtonSetting.Name = "opeButtonSetting";
+            opeButtonSetting.TabStop = false;
             opeButtonSetting.Tag = "0";
             toolTip1.SetToolTip(opeButtonSetting, resources.GetString("opeButtonSetting.ToolTip"));
             opeButtonSetting.UseVisualStyleBackColor = false;
@@ -1838,6 +1839,7 @@ namespace MDPlayer.form
             opeButtonStop.FlatAppearance.MouseDownBackColor = Color.Black;
             opeButtonStop.FlatAppearance.MouseOverBackColor = Color.Black;
             opeButtonStop.Name = "opeButtonStop";
+            opeButtonStop.TabStop = false;
             opeButtonStop.Tag = "1";
             toolTip1.SetToolTip(opeButtonStop, resources.GetString("opeButtonStop.ToolTip"));
             opeButtonStop.UseVisualStyleBackColor = false;
@@ -1858,6 +1860,7 @@ namespace MDPlayer.form
             opeButtonPause.FlatAppearance.MouseDownBackColor = Color.Black;
             opeButtonPause.FlatAppearance.MouseOverBackColor = Color.Black;
             opeButtonPause.Name = "opeButtonPause";
+            opeButtonPause.TabStop = false;
             opeButtonPause.Tag = "2";
             toolTip1.SetToolTip(opeButtonPause, resources.GetString("opeButtonPause.ToolTip"));
             opeButtonPause.UseVisualStyleBackColor = false;
@@ -1878,6 +1881,7 @@ namespace MDPlayer.form
             opeButtonFadeout.FlatAppearance.MouseDownBackColor = Color.Black;
             opeButtonFadeout.FlatAppearance.MouseOverBackColor = Color.Black;
             opeButtonFadeout.Name = "opeButtonFadeout";
+            opeButtonFadeout.TabStop = false;
             opeButtonFadeout.Tag = "3";
             toolTip1.SetToolTip(opeButtonFadeout, resources.GetString("opeButtonFadeout.ToolTip"));
             opeButtonFadeout.UseVisualStyleBackColor = false;
@@ -1898,6 +1902,7 @@ namespace MDPlayer.form
             opeButtonPrevious.FlatAppearance.MouseDownBackColor = Color.Black;
             opeButtonPrevious.FlatAppearance.MouseOverBackColor = Color.Black;
             opeButtonPrevious.Name = "opeButtonPrevious";
+            opeButtonPrevious.TabStop = false;
             opeButtonPrevious.Tag = "4";
             toolTip1.SetToolTip(opeButtonPrevious, resources.GetString("opeButtonPrevious.ToolTip"));
             opeButtonPrevious.UseVisualStyleBackColor = false;
@@ -1918,6 +1923,7 @@ namespace MDPlayer.form
             opeButtonSlow.FlatAppearance.MouseDownBackColor = Color.Black;
             opeButtonSlow.FlatAppearance.MouseOverBackColor = Color.Black;
             opeButtonSlow.Name = "opeButtonSlow";
+            opeButtonSlow.TabStop = false;
             opeButtonSlow.Tag = "5";
             toolTip1.SetToolTip(opeButtonSlow, resources.GetString("opeButtonSlow.ToolTip"));
             opeButtonSlow.UseVisualStyleBackColor = false;
@@ -1938,6 +1944,7 @@ namespace MDPlayer.form
             opeButtonPlay.FlatAppearance.MouseDownBackColor = Color.Black;
             opeButtonPlay.FlatAppearance.MouseOverBackColor = Color.Black;
             opeButtonPlay.Name = "opeButtonPlay";
+            opeButtonPlay.TabStop = false;
             opeButtonPlay.Tag = "6";
             toolTip1.SetToolTip(opeButtonPlay, resources.GetString("opeButtonPlay.ToolTip"));
             opeButtonPlay.UseVisualStyleBackColor = false;
@@ -1958,6 +1965,7 @@ namespace MDPlayer.form
             opeButtonFast.FlatAppearance.MouseDownBackColor = Color.Black;
             opeButtonFast.FlatAppearance.MouseOverBackColor = Color.Black;
             opeButtonFast.Name = "opeButtonFast";
+            opeButtonFast.TabStop = false;
             opeButtonFast.Tag = "7";
             toolTip1.SetToolTip(opeButtonFast, resources.GetString("opeButtonFast.ToolTip"));
             opeButtonFast.UseVisualStyleBackColor = false;
@@ -1978,6 +1986,7 @@ namespace MDPlayer.form
             opeButtonNext.FlatAppearance.MouseDownBackColor = Color.Black;
             opeButtonNext.FlatAppearance.MouseOverBackColor = Color.Black;
             opeButtonNext.Name = "opeButtonNext";
+            opeButtonNext.TabStop = false;
             opeButtonNext.Tag = "8";
             toolTip1.SetToolTip(opeButtonNext, resources.GetString("opeButtonNext.ToolTip"));
             opeButtonNext.UseVisualStyleBackColor = false;
@@ -1998,6 +2007,7 @@ namespace MDPlayer.form
             opeButtonZoom.FlatAppearance.MouseDownBackColor = Color.Black;
             opeButtonZoom.FlatAppearance.MouseOverBackColor = Color.Black;
             opeButtonZoom.Name = "opeButtonZoom";
+            opeButtonZoom.TabStop = false;
             opeButtonZoom.Tag = "17";
             toolTip1.SetToolTip(opeButtonZoom, resources.GetString("opeButtonZoom.ToolTip"));
             opeButtonZoom.UseVisualStyleBackColor = false;
@@ -2018,6 +2028,7 @@ namespace MDPlayer.form
             opeButtonMIDIKBD.FlatAppearance.MouseDownBackColor = Color.Black;
             opeButtonMIDIKBD.FlatAppearance.MouseOverBackColor = Color.Black;
             opeButtonMIDIKBD.Name = "opeButtonMIDIKBD";
+            opeButtonMIDIKBD.TabStop = false;
             opeButtonMIDIKBD.Tag = "16";
             toolTip1.SetToolTip(opeButtonMIDIKBD, resources.GetString("opeButtonMIDIKBD.ToolTip"));
             opeButtonMIDIKBD.UseVisualStyleBackColor = false;
@@ -2038,6 +2049,7 @@ namespace MDPlayer.form
             opeButtonVST.FlatAppearance.MouseDownBackColor = Color.Black;
             opeButtonVST.FlatAppearance.MouseOverBackColor = Color.Black;
             opeButtonVST.Name = "opeButtonVST";
+            opeButtonVST.TabStop = false;
             opeButtonVST.Tag = "15";
             toolTip1.SetToolTip(opeButtonVST, resources.GetString("opeButtonVST.ToolTip"));
             opeButtonVST.UseVisualStyleBackColor = false;
@@ -2058,6 +2070,7 @@ namespace MDPlayer.form
             opeButtonKBD.FlatAppearance.MouseDownBackColor = Color.Black;
             opeButtonKBD.FlatAppearance.MouseOverBackColor = Color.Black;
             opeButtonKBD.Name = "opeButtonKBD";
+            opeButtonKBD.TabStop = false;
             opeButtonKBD.Tag = "14";
             toolTip1.SetToolTip(opeButtonKBD, resources.GetString("opeButtonKBD.ToolTip"));
             opeButtonKBD.UseVisualStyleBackColor = false;
@@ -2078,6 +2091,7 @@ namespace MDPlayer.form
             opeButtonMixer.FlatAppearance.MouseDownBackColor = Color.Black;
             opeButtonMixer.FlatAppearance.MouseOverBackColor = Color.Black;
             opeButtonMixer.Name = "opeButtonMixer";
+            opeButtonMixer.TabStop = false;
             opeButtonMixer.Tag = "13";
             toolTip1.SetToolTip(opeButtonMixer, resources.GetString("opeButtonMixer.ToolTip"));
             opeButtonMixer.UseVisualStyleBackColor = false;
@@ -2098,6 +2112,7 @@ namespace MDPlayer.form
             opeButtonInformation.FlatAppearance.MouseDownBackColor = Color.Black;
             opeButtonInformation.FlatAppearance.MouseOverBackColor = Color.Black;
             opeButtonInformation.Name = "opeButtonInformation";
+            opeButtonInformation.TabStop = false;
             opeButtonInformation.Tag = "12";
             toolTip1.SetToolTip(opeButtonInformation, resources.GetString("opeButtonInformation.ToolTip"));
             opeButtonInformation.UseVisualStyleBackColor = false;
@@ -2118,6 +2133,7 @@ namespace MDPlayer.form
             opeButtonPlayList.FlatAppearance.MouseDownBackColor = Color.Black;
             opeButtonPlayList.FlatAppearance.MouseOverBackColor = Color.Black;
             opeButtonPlayList.Name = "opeButtonPlayList";
+            opeButtonPlayList.TabStop = false;
             opeButtonPlayList.Tag = "11";
             toolTip1.SetToolTip(opeButtonPlayList, resources.GetString("opeButtonPlayList.ToolTip"));
             opeButtonPlayList.UseVisualStyleBackColor = false;
@@ -2138,6 +2154,7 @@ namespace MDPlayer.form
             opeButtonOpen.FlatAppearance.MouseDownBackColor = Color.Black;
             opeButtonOpen.FlatAppearance.MouseOverBackColor = Color.Black;
             opeButtonOpen.Name = "opeButtonOpen";
+            opeButtonOpen.TabStop = false;
             opeButtonOpen.Tag = "10";
             toolTip1.SetToolTip(opeButtonOpen, resources.GetString("opeButtonOpen.ToolTip"));
             opeButtonOpen.UseVisualStyleBackColor = false;
@@ -2158,6 +2175,7 @@ namespace MDPlayer.form
             opeButtonMode.FlatAppearance.MouseDownBackColor = Color.Black;
             opeButtonMode.FlatAppearance.MouseOverBackColor = Color.Black;
             opeButtonMode.Name = "opeButtonMode";
+            opeButtonMode.TabStop = false;
             opeButtonMode.Tag = "9";
             toolTip1.SetToolTip(opeButtonMode, resources.GetString("opeButtonMode.ToolTip"));
             opeButtonMode.UseVisualStyleBackColor = false;

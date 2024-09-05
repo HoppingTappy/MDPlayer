@@ -10566,6 +10566,7 @@ namespace MDPlayer.form
         private void keyboardHook1_KeyboardHooked(object sender, HongliangSoft.Utilities.Gui.KeyboardHookedEventArgs e)
         {
             if (e.UpDown != HongliangSoft.Utilities.Gui.KeyboardUpDown.Up) return;
+            ActiveControl = null;
 
             if (keyHookMeth != null)
             {
@@ -10760,6 +10761,7 @@ namespace MDPlayer.form
             if (fn != null)
                 AddFileAndPlay(fn);
 
+            ActiveControl = null;
         }
 
         private void AddFileAndPlay(string[] fn)
@@ -10807,6 +10809,7 @@ namespace MDPlayer.form
         private void TsmiExit_Click(object sender, EventArgs e)
         {
             this.Close();
+            ActiveControl = null;
         }
 
         private void TsmiPlay_Click(object sender, EventArgs e)
@@ -10822,44 +10825,52 @@ namespace MDPlayer.form
             {
                 Next();
             }
+            ActiveControl = null;
         }
 
         private void TsmiStop_Click(object sender, EventArgs e)
         {
             frmPlayList.Stop();
             Stop();
+            ActiveControl = null;
         }
 
         private void TsmiPause_Click(object sender, EventArgs e)
         {
             Pause();
+            ActiveControl = null;
         }
 
         private void TsmiFadeOut_Click(object sender, EventArgs e)
         {
             Fadeout();
             frmPlayList.Stop();
+            ActiveControl = null;
         }
 
         private void TsmiSlow_Click(object sender, EventArgs e)
         {
             Slow();
+            ActiveControl = null;
         }
 
         private void TsmiFf_Click(object sender, EventArgs e)
         {
             Ff();
+            ActiveControl = null;
         }
 
         private void TsmiNext_Click(object sender, EventArgs e)
         {
             Next();
             oldParam = new MDChipParams();
+            ActiveControl = null;
         }
 
         private void TsmiPlayMode_Click(object sender, EventArgs e)
         {
             PlayMode();
+            ActiveControl = null;
         }
 
         private void TsmiOption_Click(object sender, EventArgs e)
@@ -10870,16 +10881,19 @@ namespace MDPlayer.form
         private void TsmiPlayList_Click(object sender, EventArgs e)
         {
             DispPlayList();
+            ActiveControl = null;
         }
 
         private void TsmiOpenInfo_Click(object sender, EventArgs e)
         {
             openInfo();
+            ActiveControl = null;
         }
 
         private void TsmiOpenMixer_Click(object sender, EventArgs e)
         {
             openMixer();
+            ActiveControl = null;
         }
 
         private void TsmiChangeZoom_Click(object sender, EventArgs e)
@@ -10892,6 +10906,7 @@ namespace MDPlayer.form
                 setting.other.Zoom = (setting.other.Zoom == 4) ? 1 : (setting.other.Zoom + 1);
             CheckTsmiChangeZoomItem();
             changeZoom();
+            ActiveControl = null;
         }
 
         private void CheckTsmiChangeZoomItem()
@@ -10909,16 +10924,19 @@ namespace MDPlayer.form
         private void TsmiVST_Click(object sender, EventArgs e)
         {
             DispVSTList();
+            ActiveControl = null;
         }
 
         private void TsmiMIDIkbd_Click(object sender, EventArgs e)
         {
             openMIDIKeyboard();
+            ActiveControl = null;
         }
 
         private void TsmiKBrd_Click(object sender, EventArgs e)
         {
             ShowContextMenu();
+            ActiveControl = null;
         }
 
         private void RegisterDumpMenuItem_Click(object sender, EventArgs e)
@@ -10941,6 +10959,7 @@ namespace MDPlayer.form
             else if (sender == yM3812ToolStripMenuItem) OpenFormRegTest(0, EnmChip.YM3812);
             else if (sender == sIDToolStripMenuItem) OpenFormRegTest(0, EnmChip.SID);
             else OpenFormRegTest(0);
+            ActiveControl = null;
         }
 
         private void setupControlImages()
@@ -11171,93 +11190,111 @@ namespace MDPlayer.form
         private void opeButtonSetting_Click(object sender, EventArgs e)
         {
             TsmiOption_Click(null, null);
+            ActiveControl = null;
         }
 
         private void opeButtonStop_Click(object sender, EventArgs e)
         {
             TsmiStop_Click(null, null);
+            ActiveControl = null;
         }
 
         private void opeButtonPause_Click(object sender, EventArgs e)
         {
             TsmiPause_Click(null, null);
+            ActiveControl = null;
         }
 
         private void opeButtonFadeout_Click(object sender, EventArgs e)
         {
             TsmiFadeOut_Click(null, null);
+            ActiveControl = null;
         }
 
         private void opeButtonPrevious_Click(object sender, EventArgs e)
         {
             Prev();
             oldParam = new MDChipParams();
+            ActiveControl = null;
         }
 
         private void opeButtonSlow_Click(object sender, EventArgs e)
         {
             TsmiSlow_Click(null, null);
+            ActiveControl = null;
         }
 
         private void opeButtonPlay_Click(object sender, EventArgs e)
         {
             TsmiPlay_Click(null, null);
+            ActiveControl = null;
         }
 
         private void opeButtonFast_Click(object sender, EventArgs e)
         {
             TsmiFf_Click(null, null);
+            ActiveControl = null;
         }
 
         private void opeButtonNext_Click(object sender, EventArgs e)
         {
             TsmiNext_Click(null, null);
+            ActiveControl = null;
         }
 
         private void opeButtonMode_Click(object sender, EventArgs e)
         {
             TsmiPlayMode_Click(null, null);
             opeButton_MouseEnter(opeButtonMode, null);
+            ActiveControl = null;
         }
 
         private void opeButtonOpen_Click(object sender, EventArgs e)
         {
             tsmiOpenFile_Click(null, null);
+            ActiveControl = null;
         }
 
         private void opeButtonPlayList_Click(object sender, EventArgs e)
         {
             TsmiPlayList_Click(null, null);
+            ActiveControl = null;
         }
 
         private void opeButtonInformation_Click(object sender, EventArgs e)
         {
             TsmiOpenInfo_Click(null, null);
+            ActiveControl = null;
         }
 
         private void opeButtonMixer_Click(object sender, EventArgs e)
         {
             TsmiOpenMixer_Click(null, null);
+            ActiveControl = null;
         }
 
         private void opeButtonKBD_Click(object sender, EventArgs e)
         {
             TsmiKBrd_Click(null, null);
+            ActiveControl = null;
         }
 
         private void opeButtonVST_Click(object sender, EventArgs e)
         {
             TsmiVST_Click(null, null);
+            ActiveControl = null;
         }
 
         private void opeButtonMIDIKBD_Click(object sender, EventArgs e)
         {
             TsmiMIDIkbd_Click(null, null);
+            ActiveControl = null;
         }
 
         private void opeButtonZoom_Click(object sender, EventArgs e)
         {
             TsmiChangeZoom_Click(null, null);
+            ActiveControl = null;
         }
 
         private void UpdateOpeButtonActiveState()
@@ -11273,6 +11310,7 @@ namespace MDPlayer.form
         private void tsmiOutputwavFile_Click(object sender, EventArgs e)
         {
             setting.other.WavSwitch = tsmiOutputwavFile.Checked;
+            ActiveControl = null;
         }
 
         public void OpenPicWindow(Image pic)
