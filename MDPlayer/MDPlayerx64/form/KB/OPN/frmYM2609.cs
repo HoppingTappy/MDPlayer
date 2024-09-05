@@ -368,7 +368,7 @@ namespace MDPlayer.form
                     int ct = ym2609Register[psgPort[p]][psgAdr[p] + 0x01 + c * 2] & 0xf;
                     int tp = (ct << 8) | ft;
                     channel.freq = tp;
-                    if (tp == 0)
+                    if (tp == 0 && (ym2609Register[psgPort[p]][psgAdr[p] + 0x08 + c] & 0x10) == 0)
                     {
                         channel.note = -1;
                     }

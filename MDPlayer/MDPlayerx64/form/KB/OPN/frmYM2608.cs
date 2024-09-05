@@ -291,7 +291,7 @@ namespace MDPlayer.form
                 int tp = (ct << 8) | ft;
                 channel.freq = tp;
 
-                if (channel.volumeL == 0)
+                if (channel.volumeL == 0 && (ym2608Register[0][0x08 + ch] & 0x10) == 0)
                 {
                     channel.note = -1;
                 }
@@ -308,7 +308,7 @@ namespace MDPlayer.form
                         channel.note = Common.searchSSGNote(ftone);
                     }
                 }
-                channel.ex = (ym2608Register[0][0x08 + ch] & 0xf0) != 0;
+                channel.ex = (ym2608Register[0][0x08 + ch] & 0x10) != 0;
             }
 
             newParam.nfrq = ym2608Register[0][0x06] & 0x1f;
@@ -399,7 +399,7 @@ namespace MDPlayer.form
                 DrawBuff.ChYM2608(frameBuffer, c + 9, ref oyc.mask, nyc.mask, tp);
                 DrawBuff.font4Hex16Bit(frameBuffer, 1 + 4 * 78, 8 + (c + 6) * 8, 0, ref oyc.freq, nyc.freq);
                 DrawBuff.font4HexByte(frameBuffer, 272 + 1, 8 + (c + 6) * 8, 0, ref oyc.volumeL, nyc.volumeL);
-                DrawBuff.drawNESSw(frameBuffer, 268 + 1, 8 + c * 8, ref oyc.ex, nyc.ex);
+                DrawBuff.drawNESSw(frameBuffer, 268 + 1, 8 + (c + 6) * 8, ref oyc.ex, nyc.ex);
             }
 
             //ADPCM

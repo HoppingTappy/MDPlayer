@@ -265,7 +265,7 @@ namespace MDPlayer.form
                     channel.volume--;
                 }
 
-                if (channel.volume == 0)
+                if (channel.volume == 0 && (ym2203Register[0x08 + ch] & 0x10) == 0)
                 {
                     channel.note = -1;
                 }
@@ -342,7 +342,7 @@ namespace MDPlayer.form
                 DrawBuff.Tn(frameBuffer, 6, 2, c + 3, ref oyc.tn, nyc.tn, ref oyc.tntp, tp * 2);
 
                 DrawBuff.ChYM2203(frameBuffer, c + 6, ref oyc.mask, nyc.mask, tp);
-                DrawBuff.drawNESSw(frameBuffer, 268 + 0, 8 + c * 8, ref oyc.ex, nyc.ex);
+                DrawBuff.drawNESSw(frameBuffer, 268 + 0, 8 + (c + 3) * 8, ref oyc.ex, nyc.ex);
                 DrawBuff.font4Hex16Bit(frameBuffer, 0 + 4 * 78, 8 + (c + 3) * 8, 0, ref oyc.freq, nyc.freq);
                 DrawBuff.font4HexByte(frameBuffer, 272 + 0, 8 + (c + 3) * 8, 0, ref oyc.volumeL, nyc.volumeL);
 
