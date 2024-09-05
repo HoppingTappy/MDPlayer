@@ -8984,6 +8984,637 @@ namespace MDPlayer.form
 
             return buf;
         }
+        public bool IsMasked(EnmChip chip, int chipID)
+        {
+            switch (chip)
+            {
+                case EnmChip.YM2203:
+                    {
+                        var info = newParam.ym2203[chipID];
+                        for (int ch = 0; ch < info.channels.Length; ch++)
+                        {
+                            if ((bool)info.channels[ch].mask)
+                            {
+                                return true;
+                            }
+                        }
+                    }
+                    break;
+                case EnmChip.YM2413:
+                    {
+                        var info = newParam.ym2413[chipID];
+                        for (int ch = 0; ch < info.channels.Length; ch++)
+                        {
+                            if ((bool)info.channels[ch].mask)
+                            {
+                                return true;
+                            }
+                        }
+                    }
+                    break;
+                case EnmChip.YM3526:
+                    {
+                        var info = newParam.ym3526[chipID];
+                        for (int ch = 0; ch < info.channels.Length; ch++)
+                        {
+                            if ((bool)info.channels[ch].mask)
+                            {
+                                return true;
+                            }
+                        }
+                    }
+                    break;
+                case EnmChip.Y8950:
+                    {
+                        var info = newParam.y8950[chipID];
+                        for (int ch = 0; ch < info.channels.Length; ch++)
+                        {
+                            if ((bool)info.channels[ch].mask)
+                            {
+                                return true;
+                            }
+                        }
+                    }
+                    break;
+                case EnmChip.YM3812:
+                    {
+                        var info = newParam.ym3812[chipID];
+                        for (int ch = 0; ch < info.channels.Length; ch++)
+                        {
+                            if ((bool)info.channels[ch].mask)
+                            {
+                                return true;
+                            }
+                        }
+                    }
+                    break;
+                case EnmChip.YMF262:
+                    {
+                        var info = newParam.ymf262[chipID];
+                        for (int ch = 0; ch < info.channels.Length; ch++)
+                        {
+                            if ((bool)info.channels[ch].mask)
+                            {
+                                return true;
+                            }
+                        }
+                    }
+                    break;
+                case EnmChip.YMF278B:
+                    {
+                        var info = newParam.ymf278b[chipID];
+                        for (int ch = 0; ch < info.channels.Length; ch++)
+                        {
+                            if ((bool)info.channels[ch].mask)
+                            {
+                                return true;
+                            }
+                        }
+                    }
+                    break;
+                case EnmChip.YM2608:
+                    {
+                        var info = newParam.ym2608[chipID];
+                        for (int ch = 0; ch < info.channels.Length; ch++)
+                        {
+                            if ((bool)info.channels[ch].mask)
+                            {
+                                return true;
+                            }
+                        }
+                    }
+                    break;
+                case EnmChip.YM2610:
+                    {
+                        var info = newParam.ym2610[chipID];
+                        for (int ch = 0; ch < 20; ch++)
+                        {
+                            int c = ch;
+                            if (ch >= 14) c = ch - 1;
+                            else if (ch == 13) c = 12;
+
+                            if ((bool)info.channels[c].mask)
+                            {
+                                return true;
+                            }
+
+                            ////FM(2ch) FMex
+                            //if ((ch == 2) || (ch >= 9 && ch < 12))
+                            //{
+                            //    newParam.ym2610[chipID].channels[2].mask = true;
+                            //    newParam.ym2610[chipID].channels[9].mask = true;
+                            //    newParam.ym2610[chipID].channels[10].mask = true;
+                            //    newParam.ym2610[chipID].channels[11].mask = true;
+                            //}
+                        }
+                    }
+                    break;
+                case EnmChip.YM2612:
+                    {
+                        var info = newParam.ym2612[chipID];
+                        for (int ch = 0; ch < info.channels.Length; ch++)
+                        {
+                            if ((bool)info.channels[ch].mask)
+                            {
+                                return true;
+                            }
+                            ////FM(2ch) FMex
+                            //if ((ch == 2) || (ch >= 6 && ch < 9))
+                            //{
+                            //    newParam.ym2612[chipID].channels[2].mask = true;
+                            //    newParam.ym2612[chipID].channels[6].mask = true;
+                            //    newParam.ym2612[chipID].channels[7].mask = true;
+                            //    newParam.ym2612[chipID].channels[8].mask = true;
+                            //}
+                        }
+                    }
+                    break;
+                case EnmChip.SN76489:
+                    {
+                        var info = newParam.sn76489[chipID];
+                        for (int ch = 0; ch < info.channels.Length; ch++)
+                        {
+                            if ((bool)info.channels[ch].mask)
+                            {
+                                return true;
+                            }
+                        }
+                    }
+                    break;
+                case EnmChip.RF5C164:
+                    {
+                        var info = newParam.rf5c164[chipID];
+                        for (int ch = 0; ch < info.channels.Length; ch++)
+                        {
+                            if ((bool)info.channels[ch].mask)
+                            {
+                                return true;
+                            }
+                        }
+                    }
+                    break;
+                case EnmChip.RF5C68:
+                    {
+                        var info = newParam.rf5c68[chipID];
+                        for (int ch = 0; ch < info.channels.Length; ch++)
+                        {
+                            if ((bool)info.channels[ch].mask)
+                            {
+                                return true;
+                            }
+                        }
+                    }
+                    break;
+                case EnmChip.YM2151:
+                    {
+                        var info = newParam.ym2151[chipID];
+                        for (int ch = 0; ch < info.channels.Length; ch++)
+                        {
+                            if ((bool)info.channels[ch].mask)
+                            {
+                                return true;
+                            }
+                        }
+                    }
+                    break;
+                case EnmChip.C140:
+                    {
+                        var info = newParam.c140[chipID];
+                        for (int ch = 0; ch < info.channels.Length; ch++)
+                        {
+                            if ((bool)info.channels[ch].mask)
+                            {
+                                return true;
+                            }
+                        }
+                    }
+                    break;
+                case EnmChip.PPZ8:
+                    {
+                        var info = newParam.ppz8[chipID];
+                        for (int ch = 0; ch < info.channels.Length; ch++)
+                        {
+                            if ((bool)info.channels[ch].mask)
+                            {
+                                return true;
+                            }
+                        }
+                    }
+                    break;
+                case EnmChip.PCM8:
+                    {
+                        var info = newParam.pcm8[chipID];
+                        for (int ch = 0; ch < info.channels.Length; ch++)
+                        {
+                            if ((bool)info.channels[ch].mask)
+                            {
+                                return true;
+                            }
+                        }
+                    }
+                    break;
+                case EnmChip.MPCMX68k:
+                    {
+                        var info = newParam.mpcmX68k[chipID];
+                        for (int ch = 0; ch < info.channels.Length; ch++)
+                        {
+                            if ((bool)info.channels[ch].mask)
+                            {
+                                return true;
+                            }
+                        }
+                    }
+                    break;
+                case EnmChip.C352:
+                    {
+                        var info = newParam.c352[chipID];
+                        for (int ch = 0; ch < info.channels.Length; ch++)
+                        {
+                            if ((bool)info.channels[ch].mask)
+                            {
+                                return true;
+                            }
+                        }
+                    }
+                    break;
+                case EnmChip.GA20:
+                    {
+                        var info = newParam.ga20[chipID];
+                        for (int ch = 0; ch < info.channels.Length; ch++)
+                        {
+                            if ((bool)info.channels[ch].mask)
+                            {
+                                return true;
+                            }
+                        }
+                    }
+                    break;
+                case EnmChip.K054539:
+                    {
+                        var info = newParam.k054539[chipID];
+                        for (int ch = 0; ch < info.channels.Length; ch++)
+                        {
+                            if ((bool)info.channels[ch].mask)
+                            {
+                                return true;
+                            }
+                        }
+                    }
+                    break;
+                case EnmChip.SEGAPCM:
+                    {
+                        var info = newParam.segaPcm[chipID];
+                        for (int ch = 0; ch < info.channels.Length; ch++)
+                        {
+                            if ((bool)info.channels[ch].mask)
+                            {
+                                return true;
+                            }
+                        }
+                    }
+                    break;
+                case EnmChip.QSound:
+                    {
+                        var info = newParam.qSound[chipID];
+                        for (int ch = 0; ch < info.channels.Length; ch++)
+                        {
+                            if ((bool)info.channels[ch].mask)
+                            {
+                                return true;
+                            }
+                        }
+                    }
+                    break;
+                case EnmChip.AY8910:
+                    {
+                        var info = newParam.ay8910[chipID];
+                        for (int ch = 0; ch < info.channels.Length; ch++)
+                        {
+                            if ((bool)info.channels[ch].mask)
+                            {
+                                return true;
+                            }
+                        }
+                    }
+                    break;
+                case EnmChip.HuC6280:
+                    {
+                        var info = newParam.huc6280[chipID];
+                        for (int ch = 0; ch < info.channels.Length; ch++)
+                        {
+                            if ((bool)info.channels[ch].mask)
+                            {
+                                return true;
+                            }
+                        }
+                    }
+                    break;
+                case EnmChip.OKIM6258:
+                    {
+                        return (bool)newParam.okim6258[chipID].mask;
+                    }
+                case EnmChip.OKIM6295:
+                    {
+                        var info = newParam.okim6295[chipID];
+                        for (int ch = 0; ch < info.channels.Length; ch++)
+                        {
+                            if ((bool)info.channels[ch].mask)
+                            {
+                                return true;
+                            }
+                        }
+                    }
+                    break;
+                case EnmChip.NES:
+                    {
+                        var info = newParam.nesdmc[chipID];
+                        for (int ch = 0; ch < info.sqrChannels.Length; ch++)
+                        {
+                            if ((bool)info.sqrChannels[ch].mask)
+                            {
+                                return true;
+                            }
+                        }
+                    }
+                    break;
+                case EnmChip.DMC:
+                    {
+                        var info = newParam.nesdmc[chipID];
+                        if ((bool)info.triChannel.mask) { return true; }
+                        if ((bool)info.noiseChannel.mask) { return true; }
+                        if ((bool)info.dmcChannel.mask) { return true; }
+                    }
+                    break;
+                case EnmChip.FDS:
+                    return (bool)newParam.fds[chipID].channel.mask;
+                case EnmChip.MMC5:
+                    {
+                        var info = newParam.mmc5[chipID];
+                        if ((bool)info.sqrChannels[0].mask) { return true; }
+                        if ((bool)info.sqrChannels[1].mask) { return true; }
+                        if ((bool)info.pcmChannel.mask) { return true; }
+                    }
+                    break;
+                case EnmChip.VRC7:
+                    {
+                        var info = newParam.vrc7[chipID];
+                        for (int ch = 0; ch < info.channels.Length; ch++)
+                        {
+                            if ((bool)info.channels[ch].mask)
+                            {
+                                return true;
+                            }
+                        }
+                    }
+                    break;
+                case EnmChip.K051649:
+                    {
+                        var info = newParam.k051649[chipID];
+                        for (int ch = 0; ch < info.channels.Length; ch++)
+                        {
+                            if ((bool)info.channels[ch].mask)
+                            {
+                                return true;
+                            }
+                        }
+                    }
+                    break;
+                case EnmChip.K053260:
+                    {
+                        var info = newParam.k053260[chipID];
+                        for (int ch = 0; ch < info.channels.Length; ch++)
+                        {
+                            if ((bool)info.channels[ch].mask)
+                            {
+                                return true;
+                            }
+                        }
+                    }
+                    break;
+                case EnmChip.DMG:
+                    {
+                        var info = newParam.dmg[chipID];
+                        for (int ch = 0; ch < info.channels.Length; ch++)
+                        {
+                            if ((bool)info.channels[ch].mask)
+                            {
+                                return true;
+                            }
+                        }
+                    }
+                    break;
+                case EnmChip.VRC6:
+                    {
+                        var info = newParam.vrc6[chipID];
+                        for (int ch = 0; ch < info.channels.Length; ch++)
+                        {
+                            if ((bool)info.channels[ch].mask)
+                            {
+                                return true;
+                            }
+                        }
+                    }
+                    break;
+                case EnmChip.N163:
+                    {
+                        var info = newParam.n106[chipID];
+                        for (int ch = 0; ch < info.channels.Length; ch++)
+                        {
+                            if ((bool)info.channels[ch].mask)
+                            {
+                                return true;
+                            }
+                        }
+                    }
+                    break;
+            }
+            return false;
+        }
+        public bool? GetChannelMask(EnmChip chip, int chipID, int ch)
+        {
+            switch (chip)
+            {
+                case EnmChip.YM2203:
+                    if (ch >= 0 && ch < 9)
+                    {
+                        return newParam.ym2203[chipID].channels[ch].mask;
+                    }
+                    break;
+                case EnmChip.YM2413:
+                    if (ch >= 0 && ch < 14)
+                    {
+                        return newParam.ym2413[chipID].channels[ch].mask;
+                    }
+                    break;
+                case EnmChip.YM3526:
+                    if (ch >= 0 && ch < 14)
+                    {
+                        return newParam.ym3526[chipID].channels[ch].mask;
+                    }
+                    break;
+                case EnmChip.Y8950:
+                    if (ch >= 0 && ch < 15)
+                    {
+                        return newParam.y8950[chipID].channels[ch].mask;
+                    }
+                    break;
+                case EnmChip.YM3812:
+                    if (ch >= 0 && ch < 14)
+                    {
+                        return newParam.ym3812[chipID].channels[ch].mask;
+                    }
+                    break;
+                case EnmChip.YMF262:
+                    if (ch >= 0 && ch < 23)
+                    {
+                        return newParam.ymf262[chipID].channels[ch].mask;
+                    }
+                    break;
+                case EnmChip.YMF278B:
+                    if (ch >= 0 && ch < 47)
+                    {
+                        return newParam.ymf278b[chipID].channels[ch].mask;
+                    }
+                    break;
+                case EnmChip.YM2608:
+                    if (ch >= 0 && ch < 19)
+                    {
+                        return newParam.ym2608[chipID].channels[ch].mask;
+                    }
+                    break;
+                case EnmChip.YM2610:
+                    if (ch >= 0 && ch < 20)
+                    {
+                        int c = ch;
+                        if (ch >= 14) c = ch - 1;
+                        else if (ch == 13) c = 12;
+
+                        return newParam.ym2610[chipID].channels[c].mask;
+
+                        ////FM(2ch) FMex
+                        //if ((ch == 2) || (ch >= 9 && ch < 12))
+                        //{
+                        //    newParam.ym2610[chipID].channels[2].mask = true;
+                        //    newParam.ym2610[chipID].channels[9].mask = true;
+                        //    newParam.ym2610[chipID].channels[10].mask = true;
+                        //    newParam.ym2610[chipID].channels[11].mask = true;
+                        //}
+                    }
+                    break;
+                case EnmChip.YM2612:
+                    if (ch >= 0 && ch < 13)
+                    {
+                        return newParam.ym2612[chipID].channels[ch].mask;
+
+                        ////FM(2ch) FMex
+                        //if ((ch == 2) || (ch >= 6 && ch < 9))
+                        //{
+                        //    newParam.ym2612[chipID].channels[2].mask = true;
+                        //    newParam.ym2612[chipID].channels[6].mask = true;
+                        //    newParam.ym2612[chipID].channels[7].mask = true;
+                        //    newParam.ym2612[chipID].channels[8].mask = true;
+                        //}
+                    }
+                    break;
+                case EnmChip.SN76489:
+                    return newParam.sn76489[chipID].channels[ch].mask;
+                case EnmChip.RF5C164:
+                    return newParam.rf5c164[chipID].channels[ch].mask;
+                case EnmChip.RF5C68:
+                    return newParam.rf5c68[chipID].channels[ch].mask;
+                case EnmChip.YM2151:
+                    return newParam.ym2151[chipID].channels[ch].mask;
+                case EnmChip.C140:
+                    return newParam.c140[chipID].channels[ch].mask;
+                case EnmChip.PPZ8:
+                    return newParam.ppz8[chipID].channels[ch].mask;
+                case EnmChip.PCM8:
+                    return newParam.pcm8[chipID].channels[ch].mask;
+                case EnmChip.MPCMX68k:
+                    return newParam.mpcmX68k[chipID].channels[ch].mask;
+                case EnmChip.C352:
+                    return newParam.c352[chipID].channels[ch].mask;
+                case EnmChip.GA20:
+                    return newParam.ga20[chipID].channels[ch].mask;
+                case EnmChip.K054539:
+                    return newParam.k054539[chipID].channels[ch].mask;
+                case EnmChip.SEGAPCM:
+                    return newParam.segaPcm[chipID].channels[ch].mask;
+                case EnmChip.QSound:
+                    return newParam.qSound[chipID].channels[ch].mask;
+                case EnmChip.AY8910:
+                    return newParam.ay8910[chipID].channels[ch].mask;
+                case EnmChip.HuC6280:
+                    return newParam.huc6280[chipID].channels[ch].mask;
+                case EnmChip.OKIM6258:
+                    return newParam.okim6258[chipID].mask;
+                case EnmChip.OKIM6295:
+                    return newParam.okim6295[chipID].channels[ch].mask;
+                case EnmChip.NES:
+                    return newParam.nesdmc[chipID].sqrChannels[ch].mask;
+                case EnmChip.DMC:
+                    switch (ch)
+                    {
+                        case 0:
+                            return newParam.nesdmc[chipID].triChannel.mask;
+                        case 1:
+                            return newParam.nesdmc[chipID].noiseChannel.mask;
+                        case 2:
+                            return newParam.nesdmc[chipID].dmcChannel.mask;
+                    }
+                    break;
+                case EnmChip.FDS:
+                    return newParam.fds[chipID].channel.mask;
+                case EnmChip.MMC5:
+                    switch (ch)
+                    {
+                        case 0:
+                            return newParam.mmc5[chipID].sqrChannels[0].mask;
+                        case 1:
+                            return newParam.mmc5[chipID].sqrChannels[1].mask;
+                        case 2:
+                            return newParam.mmc5[chipID].pcmChannel.mask;
+                    }
+                    break;
+                case EnmChip.VRC7:
+                    if (ch >= 0 && ch < 6)
+                    {
+                        return newParam.vrc7[chipID].channels[ch].mask;
+                    }
+                    break;
+                case EnmChip.K051649:
+                    if (ch >= 0 && ch < 5)
+                    {
+                        return newParam.k051649[chipID].channels[ch].mask;
+                    }
+                    break;
+                case EnmChip.K053260:
+                    if (ch >= 0 && ch < 4)
+                    {
+                        return newParam.k053260[chipID].channels[ch].mask;
+                    }
+                    break;
+                case EnmChip.DMG:
+                    if (ch >= 0 && ch < 4)
+                    {
+                        return newParam.dmg[chipID].channels[ch].mask;
+                    }
+                    break;
+                case EnmChip.VRC6:
+                    if (ch >= 0 && ch < 3)
+                    {
+                        return newParam.vrc6[chipID].channels[ch].mask;
+                    }
+                    break;
+                case EnmChip.N163:
+                    if (ch >= 0 && ch < 8)
+                    {
+                        return newParam.n106[chipID].channels[ch].mask;
+                    }
+                    break;
+            }
+            return null;
+        }
 
         public void SetChannelMask(EnmChip chip, int chipID, int ch)
         {

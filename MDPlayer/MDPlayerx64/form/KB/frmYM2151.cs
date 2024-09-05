@@ -115,6 +115,30 @@ namespace MDPlayer.form
             {
                 if (e.Button == MouseButtons.Left)
                 {
+                    if (Control.ModifierKeys == Keys.Shift) {
+                        parent.ResetChannelMask(EnmChip.YM2151, chipID, ch);
+                        if (parent.IsMasked(EnmChip.YM2151, chipID))
+                        {
+                            for (int i = 0; i < 8; i++)
+                            {
+                                bool mask = true;
+                                if (i == ch) { mask = false; }
+                                else if (!(bool)parent.GetChannelMask(EnmChip.YM2151, chipID, i)) { mask = false; }
+                                parent.ForceChannelMask(EnmChip.YM2151, chipID, i, mask);
+                            }
+                        }
+                        else
+                        {
+                            for (int i = 0; i < 8; i++)
+                            {
+                                bool mask = true;
+                                if (i == ch) { mask = false; }
+                                parent.ForceChannelMask(EnmChip.YM2151, chipID, i, mask);
+                            }
+                        }
+                        return;
+                    }
+
                     parent.SetChannelMask(EnmChip.YM2151, chipID, ch);
                     return;
                 }
