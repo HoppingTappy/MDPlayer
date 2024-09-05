@@ -2808,6 +2808,7 @@ namespace MDPlayer.form
 
             frmMain.keyHookMeth = KeyHookMeth;
 
+            ActiveControl = null;
         }
 
         private void BtPauseSet_Click(object sender, EventArgs e)
@@ -2826,6 +2827,7 @@ namespace MDPlayer.form
 
             frmMain.keyHookMeth = KeyHookMeth;
 
+            ActiveControl = null;
         }
 
         private void BtFadeoutSet_Click(object sender, EventArgs e)
@@ -2843,6 +2845,8 @@ namespace MDPlayer.form
             lblKeyBoardHookNotice.Visible = true;
 
             frmMain.keyHookMeth = KeyHookMeth;
+
+            ActiveControl = null;
         }
 
         private void BtPrevSet_Click(object sender, EventArgs e)
@@ -2860,6 +2864,8 @@ namespace MDPlayer.form
             lblKeyBoardHookNotice.Visible = true;
 
             frmMain.keyHookMeth = KeyHookMeth;
+
+            ActiveControl = null;
         }
 
         private void BtSlowSet_Click(object sender, EventArgs e)
@@ -2877,6 +2883,8 @@ namespace MDPlayer.form
             lblKeyBoardHookNotice.Visible = true;
 
             frmMain.keyHookMeth = KeyHookMeth;
+
+            ActiveControl = null;
         }
 
         private void BtPlaySet_Click(object sender, EventArgs e)
@@ -2894,6 +2902,8 @@ namespace MDPlayer.form
             lblKeyBoardHookNotice.Visible = true;
 
             frmMain.keyHookMeth = KeyHookMeth;
+
+            ActiveControl = null;
         }
 
         private void BtFastSet_Click(object sender, EventArgs e)
@@ -2911,6 +2921,8 @@ namespace MDPlayer.form
             lblKeyBoardHookNotice.Visible = true;
 
             frmMain.keyHookMeth = KeyHookMeth;
+
+            ActiveControl = null;
         }
 
         private void BtNextSet_Click(object sender, EventArgs e)
@@ -2928,6 +2940,8 @@ namespace MDPlayer.form
             lblKeyBoardHookNotice.Visible = true;
 
             frmMain.keyHookMeth = KeyHookMeth;
+
+            ActiveControl = null;
         }
 
         private void BtUmvSet_Click(object sender, EventArgs e)
@@ -2945,6 +2959,8 @@ namespace MDPlayer.form
             lblKeyBoardHookNotice.Visible = true;
 
             frmMain.keyHookMeth = KeyHookMeth;
+
+            ActiveControl = null;
         }
 
         private void BtUmvClr_Click(object sender, EventArgs e)
@@ -2991,6 +3007,8 @@ namespace MDPlayer.form
             lblKeyBoardHookNotice.Visible = true;
 
             frmMain.keyHookMeth = KeyHookMeth;
+
+            ActiveControl = null;
         }
 
         private void BtRmvClr_Click(object sender, EventArgs e)
@@ -3014,6 +3032,8 @@ namespace MDPlayer.form
             lblKeyBoardHookNotice.Visible = true;
 
             frmMain.keyHookMeth = KeyHookMeth;
+
+            ActiveControl = null;
         }
 
         private void BtUpcClr_Click(object sender, EventArgs e)
@@ -3037,6 +3057,8 @@ namespace MDPlayer.form
             lblKeyBoardHookNotice.Visible = true;
 
             frmMain.keyHookMeth = KeyHookMeth;
+
+            ActiveControl = null;
         }
 
         private void BtDpcClr_Click(object sender, EventArgs e)
@@ -3060,6 +3082,8 @@ namespace MDPlayer.form
             lblKeyBoardHookNotice.Visible = true;
 
             frmMain.keyHookMeth = KeyHookMeth;
+
+            ActiveControl = null;
         }
 
         private void BtPpcClr_Click(object sender, EventArgs e)
@@ -3083,6 +3107,8 @@ namespace MDPlayer.form
             lblKeyBoardHookNotice.Visible = true;
 
             frmMain.keyHookMeth = KeyHookMeth;
+
+            ActiveControl = null;
         }
 
         private void btnSuSet_Click(object sender, EventArgs e)
@@ -3100,6 +3126,8 @@ namespace MDPlayer.form
             lblKeyBoardHookNotice.Visible = true;
 
             frmMain.keyHookMeth = KeyHookMeth;
+
+            ActiveControl = null;
         }
 
         private void btSrSet_Click(object sender, EventArgs e)
@@ -3118,6 +3146,7 @@ namespace MDPlayer.form
 
             frmMain.keyHookMeth = KeyHookMeth;
 
+            ActiveControl = null;
         }
 
         private void btSdClr_Click(object sender, EventArgs e)
