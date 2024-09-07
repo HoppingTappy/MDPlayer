@@ -4682,7 +4682,7 @@ namespace MDPlayer
                 Paused = false;
                 oneTimeReset = false;
 
-                Thread.Sleep(500);
+                //Thread.Sleep(500);
 
                 ((NRTDRV)DriverVirtual).Call(1);//MPLAY
 
@@ -4909,7 +4909,7 @@ namespace MDPlayer
                 Paused = false;
                 oneTimeReset = false;
 
-                Thread.Sleep(500);
+                //Thread.Sleep(500);
 
                 return true;
             }
@@ -5154,7 +5154,7 @@ namespace MDPlayer
                     SetYM2608AdpcmVolume(true, setting.balance.YM2608AdpcmVolume);
                 }
 
-                Thread.Sleep(500);
+                //Thread.Sleep(500);
 
                 if (UseChip.Contains(EnmChip.YM2608))
                 {
@@ -5422,7 +5422,7 @@ namespace MDPlayer
                 Paused = false;
                 oneTimeReset = false;
 
-                Thread.Sleep(500);
+                //Thread.Sleep(500);
 
                 return true;
             }
@@ -5615,7 +5615,7 @@ namespace MDPlayer
                 Paused = false;
                 oneTimeReset = false;
 
-                Thread.Sleep(500);
+                //Thread.Sleep(500);
 
                 return true;
             }
@@ -5742,7 +5742,7 @@ namespace MDPlayer
                 Paused = false;
                 oneTimeReset = false;
 
-                Thread.Sleep(500);
+                //Thread.Sleep(500);
 
                 return true;
             }
@@ -6355,7 +6355,7 @@ namespace MDPlayer
                 Paused = false;
                 oneTimeReset = false;
 
-                Thread.Sleep(500);
+                //Thread.Sleep(500);
 
                 return true;
             }
@@ -6430,7 +6430,7 @@ namespace MDPlayer
                 Paused = false;
                 oneTimeReset = false;
 
-                Thread.Sleep(500);
+                //Thread.Sleep(500);
 
                 Stopped = false;
 
@@ -6506,7 +6506,7 @@ namespace MDPlayer
                 Paused = false;
                 oneTimeReset = false;
 
-                Thread.Sleep(500);
+                //Thread.Sleep(500);
 
                 return true;
             }
@@ -6633,7 +6633,7 @@ namespace MDPlayer
                 Paused = false;
                 oneTimeReset = false;
 
-                Thread.Sleep(500);
+                //Thread.Sleep(500);
 
                 return true;
             }
@@ -6867,7 +6867,7 @@ namespace MDPlayer
                 Paused = false;
                 oneTimeReset = false;
 
-                Thread.Sleep(500);
+                //Thread.Sleep(500);
 
                 return true;
             }
@@ -6970,7 +6970,7 @@ namespace MDPlayer
                 Paused = false;
                 oneTimeReset = false;
 
-                Thread.Sleep(500);
+                //Thread.Sleep(500);
 
                 return true;
             }
@@ -7037,7 +7037,7 @@ namespace MDPlayer
                 Paused = false;
                 oneTimeReset = false;
 
-                Thread.Sleep(500);
+                //Thread.Sleep(500);
 
                 return true;
             }
@@ -8666,7 +8666,7 @@ namespace MDPlayer
                 Paused = false;
                 oneTimeReset = false;
 
-                Thread.Sleep(500);
+                //Thread.Sleep(500);
 
                 //Stopped = false;
 
@@ -9083,7 +9083,7 @@ namespace MDPlayer
                 //chipRegister.outMIDIData_Close();
                 if (Setting.other.WavSwitch)
                 {
-                    Thread.Sleep(500);
+                    //Thread.Sleep(500);
                     waveWriter.Close();
                 }
 
