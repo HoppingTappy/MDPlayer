@@ -5771,8 +5771,8 @@ namespace MDPlayer.form
 
         public void Play()
         {
-            speedRatio = 1.0;
-            Audio.Speed(speedRatio);
+            //speedRatio = 1.0;
+            //Audio.Speed(speedRatio);
 
             if (Audio.IsPaused)
             {
@@ -5904,7 +5904,8 @@ namespace MDPlayer.form
                     }
                 }
 
-                speedRatio = 1.0;
+                //speedRatio = 1.0;
+                Audio.Speed(speedRatio);
 
                 reqAllScreenInit = true;
                 for (int chipID = 0; chipID < 2; chipID++)
