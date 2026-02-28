@@ -5948,26 +5948,33 @@ namespace MDPlayer.form
             frmPlayList.Stop();
 
             //if (srcBuf == null && frmPlayList.getMusicCount() < 1)
-            if (frmPlayList.getMusicCount() < 1)
+            if (srcBuf == null)
             {
-                fn = FileOpen(false);
-                if (fn == null) return;
-                frmPlayList.getPlayList().AddFile(fn[0]);
-                //frmPlayList.AddList(fn[0]);
-                playFn = frmPlayList.setStart(-1); //last
+                if (frmPlayList.getMusicCount() < 1)
+                {
+                    fn = FileOpen(false);
+                    if (fn == null) return;
+                    frmPlayList.getPlayList().AddFile(fn[0]);
+                    //frmPlayList.AddList(fn[0]);
+                    playFn = frmPlayList.setStart(-1); //last
+
+
+                }
+                else {
+                    fn = new string[1] { "" };
+                    playFn = frmPlayList.setStart(-2);//first 
+                }
+
+                if (loadAndPlay(playFn.Item1, playFn.Item2, playFn.Item3, playFn.Item4, playFn.Item5, playFn.Item6, null))
+                {
+                    frmPlayList.Play();
+                }
+
             }
             else
             {
-                fn = new string[1] { "" };
-                playFn = frmPlayList.setStart(-2);//first 
+                Playdata();
             }
-
-
-            if (loadAndPlay(playFn.Item1, playFn.Item2, playFn.Item3, playFn.Item4, playFn.Item5, playFn.Item6, null))
-            {
-                frmPlayList.Play();
-            }
-
             reqAllScreenInit = true;
         }
 
