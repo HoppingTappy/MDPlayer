@@ -213,7 +213,7 @@ namespace MDPlayer.Driver.HOOT
                     switch (args.Address)
                     {
                         case 0x7f11:
-                            chipRegister.setSN76489Register(0, args.Value, model);
+                            chipRegister.setSN76489Register(0, args.Value, model, 0);
                             break;
                         case 0x4000:
                         case 0x4002:

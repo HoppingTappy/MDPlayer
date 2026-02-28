@@ -37,10 +37,22 @@ Function test
   ${If} $0 != ""
     StrCpy $INSTDIR "$0"
   ${EndIf}
+
+    !define MUI_FINISHPAGE_RUN
+    !define MUI_FINISHPAGE_RUN_FUNCTION "LaunchLink"
+    !define MUI_FINISHPAGE_RUN_CHECKED
+#  ReadRegStr $0 HKLM ${RegistryKey} "RunAfterInstalled"
+#  ${If} $0 == ""
+#    !define MUI_FINISHPAGE_RUN_CHECKED
+#  ${Else}
+#    !define MUI_FINISHPAGE_RUN_UNCHECKED
+#  ${EndIf}
+
 FunctionEnd
 
 !insertmacro MUI_PAGE_DIRECTORY
 !insertmacro MUI_PAGE_INSTFILES
+
 !insertmacro MUI_PAGE_FINISH
 
 !insertmacro MUI_UNPAGE_WELCOME
@@ -68,6 +80,9 @@ Section "Install" SECTION_INSTALL
 
   # アンインストール情報をレジストリに登録
   WriteRegStr HKLM ${RegistryKey} "InstallDir" "$INSTDIR"
+#  インストール完了時のプログラム起動確認チェックボックスの
+# (ユーザーが選択した)状態を取得する方法が分からず未実装
+#  WriteRegStr HKLM ${RegistryKey} "RunAfterInstalled" "$RUN"
   WriteRegStr HKLM ${RegistryKey} "DisplayName" "${NAME}"
   WriteRegStr HKLM ${RegistryKey} "UninstallString" '"$INSTDIR\Uninstall.exe"'
   WriteRegStr HKLM ${RegistryKey} "Publisher" '"${PUBLISHER}"'
@@ -92,6 +107,14 @@ Section "Uninstall"
   # レジストリ キーを削除
   DeleteRegKey HKLM ${RegistryKey}
 SectionEnd
+
+Function LaunchLink
+  #MessageBox MB_OK "Reached LaunchLink $\r$\n \
+  #                 SMPROGRAMS: $SMPROGRAMS  $\r$\n \
+  #                 Start Menu Folder: $STARTMENU_FOLDER $\r$\n \
+  #                 InstallDirectory: $INSTDIR "
+  ExecShell "" "$INSTDIR\MDPlayerx64.exe"
+FunctionEnd
 
 # 署名する
 !finalize 'SignExe.bat "%1"'

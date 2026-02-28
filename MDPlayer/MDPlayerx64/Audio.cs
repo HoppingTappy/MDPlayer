@@ -1,18 +1,26 @@
-﻿using MDPlayer.Driver.FMP.Nise98;
+﻿using MDPlayer.Driver;
+using MDPlayer.Driver.FMP.Nise98;
 using MDPlayer.Driver.MNDRV;
 using MDPlayer.Driver.SID;
+using MDPlayer.Driver.ZMS.nise68;
 using MDPlayer.form;
+using MDPlayerx64;
 using MDPlayerx64.Driver;
 using MDSound;
 using MDSound.np.chip;
 using Microsoft.VisualBasic.Devices;
 using musicDriverInterface;
+using NAudio;
+using NAudio.Flac;
 using NAudio.Wave;
+using NAudio.Wave.SampleProviders;
 using System;
 using System.Diagnostics;
 using System.Diagnostics.Eventing.Reader;
 using System.Drawing;
 using System.IO.Compression;
+using System.Reflection.PortableExecutable;
+using System.Security.Policy;
 using System.Text;
 using static MDPlayer.MDChipParams;
 using static MDPlayer.Setting;
@@ -105,6 +113,7 @@ namespace MDPlayer
         private static RealChip realChip;
         private static ChipRegister chipRegister = null;
         public static HashSet<EnmChip> UseChip { get; set; } = new();
+        public static PianoRollMng pianoRollMng = new();
 
 
         private static Thread trdMain = null;
@@ -145,9 +154,14 @@ namespace MDPlayer
             }
         }
 
-        internal static object GetSIDRegister(int chipID)
+        public static object GetSIDRegister(int chipID)
         {
             return chipRegister.getSIDRegister(chipID);
+        }
+
+        public static object GetPokeyRegister(int chipID)
+        {
+            return chipRegister.getPokeyRegister(chipID);
         }
 
         internal static sid GetCurrentSIDContext()
@@ -164,7 +178,7 @@ namespace MDPlayer
         private static readonly double swFreq = Stopwatch.Frequency;
 
         private static byte[] vgmBuf = null;
-        private static double vgmSpeed;
+        public static double vgmSpeed;
         private static bool vgmFadeout;
         private static double vgmFadeoutCounter;
         private static double vgmFadeoutCounterV;
@@ -177,6 +191,8 @@ namespace MDPlayer
 
         public static baseDriver DriverVirtual { get; set; } = null;
         public static baseDriver DriverReal { get; set; } = null;
+        public static baseDriver DriverPianoRoll { get; set; } = null;
+
 
         private static bool oneTimeReset = false;
         private static int hiyorimiEven = 0;
@@ -221,8 +237,8 @@ namespace MDPlayer
         public static bool EmuOnly { get; set; }
         public static InstanceMarker MucomDotNETim { get; private set; }
         public static InstanceMarker PMDDotNETim { get; private set; }
-
         public static InstanceMarker MoonDriverDotNETim { get; private set; }
+        public static InstanceMarker muapDotNETim { get; private set; }
 
 
         public static List<vstMng.vstInfo2> GetVSTInfos()
@@ -258,8 +274,51 @@ namespace MDPlayer
                 return;
             }
 
-            if (mds == null) return;
-            mds.visWaveBuffer.Copy(dest);
+            if ((
+                naudioWaveFileReader != null
+                || naudioMp3FileReader != null
+                || naudioOggFileReader != null
+                || naudioM4aFileReader != null
+                || naudioAacFileReader != null
+                || naudioWmaFileReader != null
+                || naudioFlacFileReader != null
+                || naudioShoutcastWaveStream != null
+                )
+                && naudioBuff!=null)
+            {
+                //int s = 0;
+                //ushort bb = 0;
+                int p = 0;
+                int pp = 0;
+                foreach (short b in naudioBuff)
+                {
+                    if (pp == dest[0].Length) 
+                        break;
+                    //if (s == 0)
+                    //{
+                    //    bb = b;
+                    //    s++;
+                    //    continue;
+                    //}
+                    //else
+                    //{
+                    //    bb = (ushort)(bb | (b << 8));
+                    //    dest[p][pp] = (short)bb;
+                    //    s = 0;
+                    //}
+                    dest[p][pp] = b;
+                    p++;
+                    if (p == 2) { p = 0; pp++; }
+                }
+                return;
+            }
+
+            if (mds != null)
+            {
+                mds.visWaveBuffer.Copy(dest);
+                return;
+            }
+
         }
 
         public static List<PlayList.Music> GetMusic(string file, byte[] buf, string zipFile = null, object entry = null)
@@ -276,9 +335,9 @@ namespace MDPlayer
                 type = "-"
             };
 
-            if (!string.IsNullOrEmpty(zipFile)) music.arcType 
-                    = (Path.GetExtension(zipFile).ToLower()==".zip") 
-                    ? EnmArcType.ZIP : EnmArcType.LZH;
+            if (!string.IsNullOrEmpty(zipFile)) music.arcType
+                    = (Path.GetExtension(zipFile).ToLower() == ".zip")
+                    ? EnmArcType.ZIP : ((Path.GetExtension(zipFile).ToLower() == ".lzh") ? EnmArcType.LZH : EnmArcType.ZDF);
 
             string ext = Path.GetExtension(file).ToLower();
             if (ext == ".nrd")
@@ -347,6 +406,30 @@ namespace MDPlayer
                 if (gd3 == null)
                 {
                     //MessageBox.Show(".MSDのコンパイルに失敗しました", "PlayList", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    music.title = Path.GetFileName(file);
+                    music.titleJ = Path.GetFileName(file);
+                    music.notes = "";
+                }
+                else
+                {
+                    music.title = gd3.TrackName == "" ? Path.GetFileName(file) : gd3.TrackName;
+                    music.titleJ = gd3.TrackName == "" ? Path.GetFileName(file) : gd3.TrackNameJ;
+                    music.notes = gd3.Notes == "" ? "" : gd3.Notes;
+                }
+                music.game = "";
+                music.gameJ = "";
+                music.composer = "";
+                music.composerJ = "";
+                music.vgmby = "";
+                music.converted = "";
+            }
+            else if (ext == ".ndp")
+            {
+
+                music.format = EnmFileFormat.NDP;
+                GD3 gd3 = (new Driver.NDP.NDP()).getGD3Info(buf, 0);
+                if (gd3 == null)
+                {
                     music.title = Path.GetFileName(file);
                     music.titleJ = Path.GetFileName(file);
                     music.notes = "";
@@ -548,6 +631,40 @@ namespace MDPlayer
                 music.notes = gd3.Notes;
 
             }
+            else if (ext == ".mus")
+            {
+                music.format = EnmFileFormat.MUAP_src;
+                uint index = 0;
+                GD3 gd3 = new Driver.muapDotNET(muapDotNETim).getGD3Info(buf, index);
+                music.title = gd3.TrackName == "" ? Path.GetFileName(file) : gd3.TrackName;
+                music.titleJ = gd3.TrackName == "" ? Path.GetFileName(file) : gd3.TrackNameJ;
+                music.game = gd3.GameName;
+                music.gameJ = gd3.GameNameJ;
+                music.composer = gd3.Composer;
+                music.composerJ = gd3.ComposerJ;
+                music.vgmby = gd3.VGMBy;
+
+                music.converted = gd3.Converted;
+                music.notes = gd3.Notes;
+
+            }
+            else if (ext == ".o"|| ext == ".ox"|| ext == ".oy")
+            {
+                music.format = EnmFileFormat.MUAP;
+                uint index = 0;
+                GD3 gd3 = new Driver.muapDotNET(muapDotNETim).getGD3Info(buf, index);
+                music.title = gd3.TrackName == "" ? Path.GetFileName(file) : gd3.TrackName;
+                music.titleJ = gd3.TrackName == "" ? Path.GetFileName(file) : gd3.TrackNameJ;
+                music.game = gd3.GameName;
+                music.gameJ = gd3.GameNameJ;
+                music.composer = gd3.Composer;
+                music.composerJ = gd3.ComposerJ;
+                music.vgmby = gd3.VGMBy;
+
+                music.converted = gd3.Converted;
+                music.notes = gd3.Notes;
+
+            }
             else if (ext == ".xgm")
             {
                 GD3 gd3;
@@ -703,6 +820,50 @@ namespace MDPlayer
                 else
                 {
                     music.format = EnmFileFormat.NSF;
+                    music.fileName = file;
+                    music.arcFileName = zipFile;
+                    music.game = "unknown";
+                    music.type = "-";
+                    music.title = string.Format("({0})", System.IO.Path.GetFileName(file));
+                }
+
+            }
+            else if (ext == ".gbs")
+            {
+                gbs gbs = new(Setting);
+                GD3 gd3 = gbs.getGD3Info(buf, 0);
+
+                if (gd3 != null)
+                {
+                    for (int s = 0; s < gbs.songs; s++)
+                    {
+                        music = new PlayList.Music
+                        {
+                            format = EnmFileFormat.GBS,
+                            fileName = file,
+                            arcFileName = zipFile,
+                            arcType = EnmArcType.unknown,
+                            title = string.Format("{0} - Trk {1}", gd3.GameName, s + 1),
+                            titleJ = string.Format("{0} - Trk {1}", gd3.GameNameJ, s + 1),
+                            game = gd3.GameName,
+                            gameJ = gd3.GameNameJ,
+                            composer = gd3.Composer,
+                            composerJ = gd3.ComposerJ,
+                            vgmby = gd3.VGMBy,
+                            converted = gd3.Converted,
+                            notes = gd3.Notes,
+                            songNo = s
+                        };
+                        if (!string.IsNullOrEmpty(zipFile)) music.arcType = zipFile.ToLower().LastIndexOf(".zip") != -1 ? EnmArcType.ZIP : EnmArcType.LZH;
+
+                        musics.Add(music);
+                    }
+
+                    return musics;
+                }
+                else
+                {
+                    music.format = EnmFileFormat.GBS;
                     music.fileName = file;
                     music.arcFileName = zipFile;
                     music.game = "unknown";
@@ -953,7 +1114,144 @@ namespace MDPlayer
                 if (music.title == "" && music.titleJ == "")
                 {
                     music.title = string.Format("({0})", System.IO.Path.GetFileName(file));
-                }            }
+                }
+            }
+            else if (ext == ".ogg")
+            {
+                music.format = EnmFileFormat.OGG;
+                GD3 gd3 = new Ogg().getGD3Info(buf, 0);
+                if (gd3 != null)
+                {
+                    music.title = gd3.TrackName;
+                    music.titleJ = gd3.TrackNameJ;
+                    music.game = gd3.GameName;
+                    music.gameJ = gd3.GameNameJ;
+                    music.composer = gd3.Composer;
+                    music.composerJ = gd3.ComposerJ;
+                    music.vgmby = gd3.VGMBy;
+
+                    music.converted = gd3.Converted;
+                    music.notes = gd3.Notes;
+                }
+                else
+                {
+                    music.title = string.Format("({0})", System.IO.Path.GetFileName(file));
+                }
+
+                if (music.title == "" && music.titleJ == "")
+                {
+                    music.title = string.Format("({0})", System.IO.Path.GetFileName(file));
+                }
+            }
+            else if (ext == ".m4a")
+            {
+                music.format = EnmFileFormat.M4A;
+                GD3 gd3 = new M4a().getGD3Info(buf, 0);
+                if (gd3 != null)
+                {
+                    music.title = gd3.TrackName;
+                    music.titleJ = gd3.TrackNameJ;
+                    music.game = gd3.GameName;
+                    music.gameJ = gd3.GameNameJ;
+                    music.composer = gd3.Composer;
+                    music.composerJ = gd3.ComposerJ;
+                    music.vgmby = gd3.VGMBy;
+
+                    music.converted = gd3.Converted;
+                    music.notes = gd3.Notes;
+                }
+                else
+                {
+                    music.title = string.Format("({0})", System.IO.Path.GetFileName(file));
+                }
+
+                if (music.title == "" && music.titleJ == "")
+                {
+                    music.title = string.Format("({0})", System.IO.Path.GetFileName(file));
+                }
+            }
+            else if (ext == ".aac")
+            {
+                music.format = EnmFileFormat.AAC;
+                GD3 gd3 = new Aac().getGD3Info(buf, 0);
+                if (gd3 != null)
+                {
+                    music.title = gd3.TrackName;
+                    music.titleJ = gd3.TrackNameJ;
+                    music.game = gd3.GameName;
+                    music.gameJ = gd3.GameNameJ;
+                    music.composer = gd3.Composer;
+                    music.composerJ = gd3.ComposerJ;
+                    music.vgmby = gd3.VGMBy;
+
+                    music.converted = gd3.Converted;
+                    music.notes = gd3.Notes;
+                }
+                else
+                {
+                    music.title = string.Format("({0})", System.IO.Path.GetFileName(file));
+                }
+
+                if (music.title == "" && music.titleJ == "")
+                {
+                    music.title = string.Format("({0})", System.IO.Path.GetFileName(file));
+                }
+            }
+            else if (ext == ".wma")
+            {
+                music.format = EnmFileFormat.WMA;
+                GD3 gd3 = new Wma().getGD3Info(buf, 0);
+                if (gd3 != null)
+                {
+                    music.title = gd3.TrackName;
+                    music.titleJ = gd3.TrackNameJ;
+                    music.game = gd3.GameName;
+                    music.gameJ = gd3.GameNameJ;
+                    music.composer = gd3.Composer;
+                    music.composerJ = gd3.ComposerJ;
+                    music.vgmby = gd3.VGMBy;
+
+                    music.converted = gd3.Converted;
+                    music.notes = gd3.Notes;
+                }
+                else
+                {
+                    music.title = string.Format("({0})", System.IO.Path.GetFileName(file));
+                }
+
+                if (music.title == "" && music.titleJ == "")
+                {
+                    music.title = string.Format("({0})", System.IO.Path.GetFileName(file));
+                }
+            }
+            else if (ext == ".flac")
+            {
+                music.format = EnmFileFormat.FLAC;
+                GD3 gd3 = new Flac().getGD3Info(buf, 0);
+                if (gd3 != null)
+                {
+                    music.title = gd3.TrackName;
+                    music.titleJ = gd3.TrackNameJ;
+                    music.game = gd3.GameName;
+                    music.gameJ = gd3.GameNameJ;
+                    music.composer = gd3.Composer;
+                    music.composerJ = gd3.ComposerJ;
+                    music.vgmby = gd3.VGMBy;
+
+                    music.converted = gd3.Converted;
+                    music.notes = gd3.Notes;
+                }
+                else
+                {
+                    music.title = string.Format("({0})", System.IO.Path.GetFileName(file));
+                }
+
+                if (music.title == "" && music.titleJ == "")
+                {
+                    music.title = string.Format("({0})", System.IO.Path.GetFileName(file));
+                }
+            }
+
             else if (ext == ".xml")
             {
                 var xmlDoc = new XmlDocument();
@@ -1921,6 +2219,7 @@ namespace MDPlayer
 
             chipRegister = new ChipRegister(
                 setting
+                , pianoRollMng
                 , mds
                 , realChip
                 , VstMng
@@ -2033,6 +2332,9 @@ namespace MDPlayer
 #else
             moonDriverDotNETim.LoadDriverDll(Path.Combine(System.Windows.Forms.Application.StartupPath, "plugin\\driver\\moonDriverDotNETDriver.dll"));
 #endif
+            muapDotNETim = new InstanceMarker();
+            muapDotNETim.LoadCompilerDll(Path.Combine(System.Windows.Forms.Application.StartupPath, "plugin\\driver\\muapDotNETCompiler.dll"));
+            muapDotNETim.LoadDriverDll(Path.Combine(System.Windows.Forms.Application.StartupPath, "plugin\\driver\\muapDotNETDriver.dll"));
 
             log.ForcedWrite("Audio:Init:STEP 10");
 
@@ -2169,12 +2471,30 @@ namespace MDPlayer
             UseCompiler = useCom;
             Common.playingFilePath = Path.GetDirectoryName(playingFileName);
 
-            if (naudioWaveFileReader != null|| naudioMp3FileReader != null|| naudioAiffFileReader != null)
+            if (naudioWaveFileReader != null
+                || naudioMp3FileReader != null
+                || naudioAiffFileReader != null
+                || naudioOggFileReader != null
+                || naudioM4aFileReader != null
+                || naudioAacFileReader != null
+                || naudioWmaFileReader != null
+                || naudioFlacFileReader != null
+                || naudioShoutcastWaveStream != null
+                )
             {
                 NAudioStop();
             }
 
-            if (format == EnmFileFormat.WAV || format == EnmFileFormat.MP3 || format == EnmFileFormat.AIFF)
+            if (format == EnmFileFormat.WAV 
+                || format == EnmFileFormat.MP3 
+                || format == EnmFileFormat.AIFF
+                || format == EnmFileFormat.OGG
+                || format == EnmFileFormat.M4A
+                || format == EnmFileFormat.AAC
+                || format == EnmFileFormat.WMA
+                || format == EnmFileFormat.FLAC
+                || format == EnmFileFormat.shoutcast
+                )
             {
                 naudioFileName = playingFileName;
             }
@@ -2217,6 +2537,8 @@ namespace MDPlayer
             MDSound.MDSound.np_nes_vrc7_volume = 0;
 
 
+            pianoRollMng.Clear();
+
             if (PlayingFileFormat == EnmFileFormat.MGS)
             {
                 DriverVirtual = new Driver.MGSDRV.MGSDRV
@@ -2232,6 +2554,15 @@ namespace MDPlayer
                         setting = setting
                     };
                     ((Driver.MGSDRV.MGSDRV)DriverReal).PlayingFileName = PlayingFileName;
+                }
+                DriverPianoRoll = null;
+                if (setting.pianoRoll.usePianoRoll)
+                {
+                    DriverPianoRoll = new Driver.MGSDRV.MGSDRV
+                    {
+                        setting = setting
+                    };
+                    ((Driver.MGSDRV.MGSDRV)DriverPianoRoll).PlayingFileName = PlayingFileName;
                 }
                 return MgsPlay_mgsdrv(setting);
             }
@@ -2252,7 +2583,44 @@ namespace MDPlayer
                     };
                     ((Driver.MuSICA.MuSICA)DriverReal).PlayingFileName = PlayingFileName;
                 }
+                DriverPianoRoll = null;
+                if (setting.pianoRoll.usePianoRoll)
+                {
+                    DriverPianoRoll = new Driver.MuSICA.MuSICA
+                    {
+                        setting = setting
+                    };
+                    ((Driver.MuSICA.MuSICA)DriverPianoRoll).PlayingFileName = PlayingFileName;
+                }
                 return MscPlay_mscdrv(setting);
+            }
+
+            if (PlayingFileFormat == EnmFileFormat.NDP)
+            {
+                DriverVirtual = new Driver.NDP.NDP
+                {
+                    setting = setting
+                };
+                ((Driver.NDP.NDP)DriverVirtual).PlayingFileName = PlayingFileName;
+                DriverReal = null;
+                if (setting.outputDevice.DeviceType != Common.DEV_Null)
+                {
+                    DriverReal = new Driver.NDP.NDP
+                    {
+                        setting = setting
+                    };
+                    ((Driver.NDP.NDP)DriverReal).PlayingFileName = PlayingFileName;
+                }
+                DriverPianoRoll = null;
+                if (setting.pianoRoll.usePianoRoll)
+                {
+                    DriverPianoRoll = new Driver.NDP.NDP
+                    {
+                        setting = setting
+                    };
+                    ((Driver.NDP.NDP)DriverPianoRoll).PlayingFileName = PlayingFileName;
+                }
+                return NdpPlay_ndp(setting);
             }
 
             if (PlayingFileFormat == EnmFileFormat.MuSICA_src)
@@ -2283,6 +2651,15 @@ namespace MDPlayer
                     };
                     ((Driver.MuSICA.MuSICA)DriverReal).PlayingFileName = PlayingFileName;
                 }
+                DriverPianoRoll = null;
+                if (setting.pianoRoll.usePianoRoll)
+                {
+                    DriverPianoRoll = new Driver.MuSICA.MuSICA
+                    {
+                        setting = setting
+                    };
+                    ((Driver.MuSICA.MuSICA)DriverPianoRoll).PlayingFileName = PlayingFileName;
+                }
                 return MscPlay_mscdrv(setting);
             }
 
@@ -2301,6 +2678,15 @@ namespace MDPlayer
                         setting = setting
                     };
                     ((Driver.MucomDotNET)DriverReal).PlayingFileName = PlayingFileName;
+                }
+                DriverPianoRoll = null;
+                if (setting.pianoRoll.usePianoRoll)
+                {
+                    DriverPianoRoll = new Driver.MucomDotNET(MucomDotNETim)
+                    {
+                        setting = setting
+                    };
+                    ((Driver.MucomDotNET)DriverPianoRoll).PlayingFileName = PlayingFileName;
                 }
                 return MucPlay_mucomDotNET(setting, Driver.MucomDotNET.enmMUCOMFileType.MUB);
             }
@@ -2321,6 +2707,16 @@ namespace MDPlayer
                     };
                     ((Driver.MucomDotNET)DriverReal).PlayingFileName = PlayingFileName;
                 }
+                DriverPianoRoll = null;
+                if (setting.pianoRoll.usePianoRoll)
+                {
+                    DriverPianoRoll = new Driver.MucomDotNET(MucomDotNETim)
+                    {
+                        setting = setting
+                    };
+                    ((Driver.MucomDotNET)DriverPianoRoll).PlayingFileName = PlayingFileName;
+                }
+
 
                 return MucPlay_mucomDotNET(setting, Driver.MucomDotNET.enmMUCOMFileType.MUC);
             }
@@ -2340,6 +2736,15 @@ namespace MDPlayer
                         setting = setting
                     };
                     ((Driver.PMDDotNET)DriverReal).PlayingFileName = PlayingFileName;
+                }
+                DriverPianoRoll = null;
+                if (setting.pianoRoll.usePianoRoll)
+                {
+                    DriverPianoRoll = new Driver.PMDDotNET(PMDDotNETim)
+                    {
+                        setting = setting
+                    };
+                    ((Driver.PMDDotNET)DriverPianoRoll).PlayingFileName = PlayingFileName;
                 }
                 return MmlPlay_PMDDotNET(setting, PlayingFileFormat == EnmFileFormat.MML ? 0 : 1);
             }
@@ -2379,6 +2784,16 @@ namespace MDPlayer
                     ((Driver.FMP.FMP)DriverReal).PlayingFileName = PlayingFileName;
                     ((Driver.FMP.FMP)DriverReal).PlayingArcFileName = PlayingArcFileName;
                 }
+                DriverPianoRoll = null;
+                if (setting.pianoRoll.usePianoRoll)
+                {
+                    DriverPianoRoll = new Driver.FMP.FMP(ft)
+                    {
+                        setting = setting
+                    };
+                    ((Driver.FMP.FMP)DriverPianoRoll).PlayingFileName = PlayingFileName;
+                    ((Driver.FMP.FMP)DriverPianoRoll).PlayingArcFileName = PlayingArcFileName;
+                }
                 return OxiPlay_FMP(setting, ft);
             }
 
@@ -2389,6 +2804,7 @@ namespace MDPlayer
                     setting = setting
                 };
                 ((Driver.ZMS.ZMS)DriverVirtual).PlayingFileName = PlayingFileName;
+                ((Driver.ZMS.ZMS)DriverVirtual).PlayingArcFileName = PlayingArcFileName;
                 //((Driver.ZMS.ZMS)DriverVirtual).SupportFileName = SupportFile;
 
                 DriverReal = null;
@@ -2399,10 +2815,53 @@ namespace MDPlayer
                         setting = setting
                     };
                     ((Driver.ZMS.ZMS)DriverReal).PlayingFileName = PlayingFileName;
+                    ((Driver.ZMS.ZMS)DriverReal).PlayingArcFileName = PlayingArcFileName;
                     //((Driver.ZMS.ZMS)DriverReal).SupportFileName = SupportFile;
+                }
+                DriverPianoRoll = null;
+                if (setting.pianoRoll.usePianoRoll)
+                {
+                    DriverPianoRoll = new Driver.ZMS.ZMS(PlayingFileFormat)
+                    {
+                        setting = setting
+                    };
+                    ((Driver.ZMS.ZMS)DriverPianoRoll).PlayingFileName = PlayingFileName;
+                    ((Driver.ZMS.ZMS)DriverPianoRoll).PlayingArcFileName = PlayingArcFileName;
                 }
                 return ZmdPlay(setting, PlayingFileFormat);
             }
+
+            if (PlayingFileFormat == EnmFileFormat.MUAP_src|| PlayingFileFormat == EnmFileFormat.MUAP)
+            {
+                DriverVirtual = new Driver.muapDotNET(muapDotNETim)
+                {
+                    setting = setting
+                };
+                ((Driver.muapDotNET)DriverVirtual).PlayingFileName = PlayingFileName;
+
+                DriverReal = null;
+                if (setting.outputDevice.DeviceType != Common.DEV_Null)
+                {
+                    DriverReal = new Driver.muapDotNET(muapDotNETim)
+                    {
+                        setting = setting
+                    };
+
+                    ((Driver.muapDotNET)DriverReal).PlayingFileName = PlayingFileName;
+                }
+                DriverPianoRoll = null;
+                if (setting.pianoRoll.usePianoRoll)
+                {
+                    DriverPianoRoll = new Driver.muapDotNET(muapDotNETim)
+                    {
+                        setting = setting
+                    };
+
+                    ((Driver.muapDotNET)DriverPianoRoll).PlayingFileName = PlayingFileName;
+                }
+                return MuapPlay(setting, PlayingFileFormat);
+            }
+
 
             if (PlayingFileFormat == EnmFileFormat.NRT)
             {
@@ -2414,6 +2873,14 @@ namespace MDPlayer
                 if (setting.outputDevice.DeviceType != Common.DEV_Null)
                 {
                     DriverReal = new NRTDRV(setting)
+                    {
+                        setting = setting
+                    };
+                }
+                DriverPianoRoll = null;
+                if (setting.pianoRoll.usePianoRoll)
+                {
+                    DriverPianoRoll = new NRTDRV(setting)
                     {
                         setting = setting
                     };
@@ -2489,6 +2956,15 @@ namespace MDPlayer
                     };
                     ((Driver.MXDRV.MXDRV)DriverReal).ExtendFile = (ExtendFile != null && ExtendFile.Count > 0) ? ExtendFile[0] : null;
                 }
+                DriverPianoRoll = null;
+                if (setting.pianoRoll.usePianoRoll)
+                {
+                    DriverPianoRoll = new Driver.MXDRV.MXDRV
+                    {
+                        setting = setting
+                    };
+                    ((Driver.MXDRV.MXDRV)DriverPianoRoll).ExtendFile = (ExtendFile != null && ExtendFile.Count > 0) ? ExtendFile[0] : null;
+                }
                 return MdxPlay(setting);
             }
 
@@ -2509,6 +2985,15 @@ namespace MDPlayer
                     };
                     ((Driver.MNDRV.mndrv)DriverReal).ExtendFile = ExtendFile;
                 }
+                DriverPianoRoll = null;
+                if (setting.pianoRoll.usePianoRoll)
+                {
+                    DriverPianoRoll = new Driver.MNDRV.mndrv
+                    {
+                        setting = setting
+                    };
+                    ((Driver.MNDRV.mndrv)DriverPianoRoll).ExtendFile = ExtendFile;
+                }
                 return MndPlay(setting);
             }
 
@@ -2522,6 +3007,14 @@ namespace MDPlayer
                 if (setting.outputDevice.DeviceType != Common.DEV_Null)
                 {
                     DriverReal = new xgm(setting)
+                    {
+                        setting = setting
+                    };
+                }
+                DriverPianoRoll = null;
+                if (setting.pianoRoll.usePianoRoll)
+                {
+                    DriverPianoRoll = new xgm(setting)
                     {
                         setting = setting
                     };
@@ -2540,6 +3033,14 @@ namespace MDPlayer
                 if (setting.outputDevice.DeviceType != Common.DEV_Null)
                 {
                     DriverReal = new xgm2(setting)
+                    {
+                        setting = setting
+                    };
+                }
+                DriverPianoRoll = null;
+                if (setting.pianoRoll.usePianoRoll)
+                {
+                    DriverPianoRoll = new xgm2(setting)
                     {
                         setting = setting
                     };
@@ -2576,6 +3077,14 @@ namespace MDPlayer
                 if (setting.outputDevice.DeviceType != Common.DEV_Null)
                 {
                     DriverReal = new S98(setting)
+                    {
+                        setting = setting
+                    };
+                }
+                DriverPianoRoll = null;
+                if (setting.pianoRoll.usePianoRoll)
+                {
+                    DriverPianoRoll = new S98(setting)
                     {
                         setting = setting
                     };
@@ -2654,6 +3163,29 @@ namespace MDPlayer
                 return NsfPlay(setting);
             }
 
+            if (PlayingFileFormat == EnmFileFormat.GBS)
+            {
+                DriverVirtual = new gbs(setting)
+                {
+                    setting = setting
+                };
+                DriverReal = null;
+                //if (setting.outputDevice.DeviceType != Common.DEV_Null)
+                //{
+                //    driverReal = new nsf();
+                //    driverReal.setting = setting;
+                //}
+                DriverPianoRoll = null;
+                if (setting.pianoRoll.usePianoRoll)
+                {
+                    DriverPianoRoll = new gbs(setting)
+                    {
+                        setting = setting
+                    };
+                }
+                return GbsPlay(setting);
+            }
+
             if (PlayingFileFormat == EnmFileFormat.HES)
             {
                 DriverVirtual = new hes
@@ -2667,6 +3199,14 @@ namespace MDPlayer
                 //    driverReal = new hes();
                 //    driverReal.setting = setting;
                 //}
+                DriverPianoRoll = null;
+                if (setting.pianoRoll.usePianoRoll)
+                {
+                    DriverPianoRoll = new hes()
+                    {
+                        setting = setting
+                    };
+                }
                 return HesPlay(setting);
             }
 
@@ -2699,6 +3239,16 @@ namespace MDPlayer
                 //    driverReal = new Driver.SID.sid();
                 //    driverReal.setting = setting;
                 //}
+
+                DriverPianoRoll = null;
+                if (setting.pianoRoll.usePianoRoll)
+                {
+                    DriverPianoRoll = new Driver.AY.AY
+                    {
+                        setting = setting
+                    };
+                }
+
                 return AyPlay(setting);
             }
 
@@ -2722,14 +3272,51 @@ namespace MDPlayer
                     ((Vgm)DriverReal).dacControl.chipRegister = chipRegister;
                     ((Vgm)DriverReal).dacControl.model = EnmModel.RealModel;
                 }
+
+                DriverPianoRoll = null;
+                if(setting.pianoRoll.usePianoRoll)
+                {
+                    DriverPianoRoll = new Vgm(setting)
+                    {
+                        setting = setting
+                    };
+                    ((Vgm)DriverPianoRoll).dacControl.chipRegister = chipRegister;
+                    ((Vgm)DriverPianoRoll).dacControl.model = EnmModel.PianoRollModel;
+                }
+
                 return VgmPlay(setting);
             }
 
             if (PlayingFileFormat == EnmFileFormat.WAV)
             {
                 naudioWaveFileReader = new WaveFileReader(naudioFileName);
-                WaveFormat format = new WaveFormat(setting.outputDevice.SampleRate, 16, 2);
-                wfcp = new WaveFormatConversionProvider(format, naudioWaveFileReader);
+                AftertasteStream l = new AftertasteStream(naudioWaveFileReader);
+                IWaveProvider iwp = l;
+                var format = naudioWaveFileReader.WaveFormat;
+
+                if (format.Encoding == WaveFormatEncoding.IeeeFloat && format.BitsPerSample == 32)
+                    iwp = new Wave32To16Stream(l);
+                else if (format.Encoding == WaveFormatEncoding.Pcm && format.BitsPerSample == 24)
+                    iwp = new Wave24To16Stream(l);
+                else if (format.Encoding == WaveFormatEncoding.Pcm && format.BitsPerSample == 16)
+                    // そのまま使えるので変換不要
+                    iwp = l;
+                else
+                    // 未対応フォーマット
+                    throw new InvalidOperationException($"未対応のフォーマット: Encoding={format.Encoding}, BitsPerSample={format.BitsPerSample}");
+
+                // MediaFoundationResampler は ISampleProvider を使うので変換
+                var sampleProvider = iwp.ToSampleProvider();
+                // 出力フォーマットを指定（例：44100Hz, 2ch）
+                var desiredFormat = WaveFormat.CreateIeeeFloatWaveFormat(setting.outputDevice.SampleRate, 2);
+                // サンプルレート変換（float → float）
+                var resampled = new MediaFoundationResampler(sampleProvider.ToWaveProvider(), desiredFormat)
+                {
+                    ResamplerQuality = 60 // 1〜60（高いほど高音質）
+                };
+                // 最終的に 16bit PCM に変換
+                IWaveProvider finalProvider = new SampleToWaveProvider16(resampled.ToSampleProvider());
+                wfcp = finalProvider;
 
                 ChipLED = new ChipLEDs();
                 vgmSpeed = 1;
@@ -2754,8 +3341,14 @@ namespace MDPlayer
                     wavestreamGD3 = null;
                 }
                 naudioMp3FileReader = new Mp3FileReader(naudioFileName);
+                AftertasteStream l = new AftertasteStream(naudioMp3FileReader);
                 WaveFormat format = new WaveFormat(setting.outputDevice.SampleRate, 16, 2);
-                wfcp = new WaveFormatConversionProvider(format, naudioMp3FileReader);
+                IWaveProvider iwp = l;
+                if (naudioMp3FileReader.WaveFormat.BitsPerSample == 32)
+                    iwp = new Wave32To16Stream(l);
+                else if (naudioMp3FileReader.WaveFormat.BitsPerSample == 24)
+                    iwp = new Wave24To16Stream(l);
+                wfcp = new WaveFormatConversionProvider(format, iwp);
 
                 ChipLED = new ChipLEDs();
                 vgmSpeed = 1;
@@ -2782,8 +3375,39 @@ namespace MDPlayer
                 }
 
                 naudioAiffFileReader = new AiffFileReader(naudioFileName);
+                AftertasteStream l = new AftertasteStream(naudioAiffFileReader);
                 WaveFormat format = new WaveFormat(setting.outputDevice.SampleRate, 16, 2);
-                wfcp = new WaveFormatConversionProvider(format, naudioAiffFileReader);
+                IWaveProvider iwp = l;
+                if (naudioAiffFileReader.WaveFormat.BitsPerSample == 32)
+                    iwp = new Wave32To16Stream(l);
+                else if (naudioAiffFileReader.WaveFormat.BitsPerSample == 24)
+                    iwp = new Wave24To16Stream(l);
+                wfcp = new WaveFormatConversionProvider(format, iwp);
+
+                ChipLED = new ChipLEDs();
+                vgmSpeed = 1;
+                vgmFadeout = false;
+                vgmFadeoutCounter = 1.0;
+                vgmFadeoutCounterV = 0.00001;
+                DriverVirtual = null;
+                DriverReal = null;
+                naudioSampleCounter = 0;
+                naudioDummyCount = 0;
+
+                return true;
+            }
+
+            if (PlayingFileFormat == EnmFileFormat.OGG)
+            {
+                Ogg ogg = new Ogg();
+                try
+                {
+                    wavestreamGD3 = ogg.getGD3Info(File.ReadAllBytes(naudioFileName), 0);
+                }
+                catch
+                {
+                    wavestreamGD3 = null;
+                }
                 
                 ChipLED = new ChipLEDs();
                 vgmSpeed = 1;
@@ -2804,6 +3428,177 @@ namespace MDPlayer
                 DriverVirtual.setting = setting;
 
                 DriverReal = null;
+                naudioSampleCounter = 0;
+                naudioDummyCount = 0;
+
+                return true;
+            }
+
+            if (PlayingFileFormat == EnmFileFormat.shoutcast)
+            {
+                // --- 既存のヘッダー解析処理 ---
+                ShoutCastDrv scd = new ShoutCastDrv();
+                try { wavestreamGD3 = scd.getGD3Info(null, 0); } catch { wavestreamGD3 = null; }
+
+                using var client = new HttpClient();
+                client.DefaultRequestHeaders.Add("Icy-MetaData", "1");
+                var response = client.GetAsync(naudioFileName, HttpCompletionOption.ResponseHeadersRead).GetAwaiter().GetResult();
+
+                string contentType = response.Content.Headers.ContentType?.MediaType.ToLower() ?? "";
+                bool isAac = contentType.Contains("aac") || contentType.Contains("audio/aacp") || contentType.Contains("video/mp4");
+
+                // メタデータ間隔・ビットレート・サンプリングレート取得
+                int metaInt = 0;
+                if (response.Headers.TryGetValues("icy-metaint", out var mv)) int.TryParse(mv.FirstOrDefault(), out metaInt);
+                int sr = 44100;
+                if (response.Headers.TryGetValues("icy-sr", out var mvs)) int.TryParse(mvs.FirstOrDefault(), out sr);
+
+                // メタデータ抽出用ストリームの生成
+                var rawStream = response.Content.ReadAsStreamAsync().GetAwaiter().GetResult();
+                naudioShoutcastWaveStream = new ShoutcastWaveStream(rawStream, metaInt, new WaveFormat(sr, 16, 2));
+                naudioShoutcastWaveStream.MetadataReceived += (s, meta) => System.Diagnostics.Debug.WriteLine($"[Metadata] {meta}");
+
+                WaveFormat targetFormat = new WaveFormat(setting.outputDevice.SampleRate, 16, 2);
+
+                if (isAac)
+                {
+                    // --- AAC 再生: URL直接指定でCOMエラー回避 ---
+                    var aacDecoder = new MediaFoundationReader(naudioFileName);
+
+                    // メタデータ用ストリームを別スレッドで空回し（リトライ対応版）
+                    _ = Task.Run(async () => {
+                        try
+                        {
+                            byte[] discardBuffer = new byte[4096];
+                            int retryCount = 0;
+                            while (retryCount < 10) // 最大10回リトライ
+                            {
+                                int r = await naudioShoutcastWaveStream.ReadAsync(discardBuffer, 0, discardBuffer.Length);
+                                if (r <= 0)
+                                {
+                                    retryCount++;
+                                    await Task.Delay(1000); // 1秒待機して再試行
+                                    continue;
+                                }
+                                retryCount = 0; // 読めたらリセット
+                            }
+                        }
+                        catch { }
+                    });
+
+                    IWaveProvider lastProvider = aacDecoder;
+                    if (aacDecoder.WaveFormat.Encoding == WaveFormatEncoding.IeeeFloat)
+                        lastProvider = new SampleToWaveProvider16(new WaveToSampleProvider(aacDecoder));
+
+                    wfcp = new WaveFormatConversionProvider(targetFormat, lastProvider);
+                }
+                else
+                {
+                    // --- MP3 再生ロジック (VBR対応・ネットワークリトライ版) ---
+
+                    Mp3Frame frame = Mp3Frame.LoadFromStream(naudioShoutcastWaveStream);
+                    if (frame == null)
+                    {
+                        throw new Exception("MP3フレームが見つかりません。");
+                    }
+
+                    var mp3Format = new Mp3WaveFormat(frame.SampleRate,
+                                                      frame.ChannelMode == ChannelMode.Mono ? 1 : 2,
+                                                      0,
+                                                      frame.BitRate);
+
+                    var bufferedWaveProvider = new BufferedWaveProvider(new WaveFormat(frame.SampleRate, 16, frame.ChannelMode == ChannelMode.Mono ? 1 : 2))
+                    {
+                        BufferDuration = TimeSpan.FromSeconds(20),
+                        DiscardOnBufferOverflow = true
+                    };
+
+                    wfcp = new WaveFormatConversionProvider(targetFormat, bufferedWaveProvider);
+
+                    _ = Task.Run(async () =>
+                    {
+                        using var decompressor = new AcmMp3FrameDecompressor(mp3Format);
+                        byte[] pcmBuffer = new byte[16384 * 4];
+                        int retryCount = 0;
+                        const int maxRetries = 10; // 最大10回リトライ（約5秒間待機）
+
+                        try
+                        {
+                            while (true)
+                            {
+                                // バッファが溢れないように制御 (5秒分溜まっていたら待機)
+                                int bytesInFiveSeconds = bufferedWaveProvider.WaveFormat.AverageBytesPerSecond * 5;
+                                while (bufferedWaveProvider.BufferedBytes > bytesInFiveSeconds)
+                                {
+                                    await Task.Delay(500);
+                                }
+
+                                if (frame == null)
+                                {
+                                    // フレームが取れなかった場合（ネットワーク遅延など）
+                                    if (retryCount < maxRetries)
+                                    {
+                                        retryCount++;
+                                        System.Diagnostics.Debug.WriteLine($"[Retry] フレーム取得失敗、再試行中... ({retryCount}/{maxRetries})");
+                                        await Task.Delay(500);
+                                        frame = Mp3Frame.LoadFromStream(naudioShoutcastWaveStream);
+                                        continue;
+                                    }
+                                    break; // リトライ上限に達した場合はループ終了
+                                }
+
+                                retryCount = 0; // 正常に読み込めたらリトライカウントをリセット
+
+                                try
+                                {
+                                    // 安全策: 展開後の最大サイズを確認し、必要ならバッファを拡張
+                                    int maxPcmSize = frame.SampleCount * (bufferedWaveProvider.WaveFormat.BitsPerSample / 8) * bufferedWaveProvider.WaveFormat.Channels;
+                                    if (pcmBuffer.Length < maxPcmSize) pcmBuffer = new byte[maxPcmSize];
+
+                                    int decompressedCount = decompressor.DecompressFrame(frame, pcmBuffer, 0);
+                                    if (decompressedCount > 0)
+                                        bufferedWaveProvider.AddSamples(pcmBuffer, 0, decompressedCount);
+                                }
+                                catch (MmException mmex)
+                                {
+                                    System.Diagnostics.Debug.WriteLine($"Decompress Error: {mmex.Message} at {frame.BitRate}bps");
+                                }
+
+                                // 次のフレームを読み込む
+                                frame = Mp3Frame.LoadFromStream(naudioShoutcastWaveStream);
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            System.Diagnostics.Debug.WriteLine($"Stream Loop Error: {ex.Message}");
+                        }
+                    });
+
+                    // 以降の初期化
+                    ChipLED = new ChipLEDs();
+                    vgmSpeed = 1; vgmFadeout = false;
+                    vgmFadeoutCounter = 1.0; vgmFadeoutCounterV = 0.00001;
+                    DriverVirtual = null; DriverReal = null;
+                    naudioSampleCounter = 0; naudioDummyCount = 0;
+                    return true;
+                }
+
+                // --- 共通の初期化処理 ---
+                ChipLED = new ChipLEDs();
+                vgmSpeed = 1; vgmFadeout = false;
+                vgmFadeoutCounter = 1.0; vgmFadeoutCounterV = 0.00001;
+                DriverVirtual = null; DriverReal = null;
+                naudioSampleCounter = 0; naudioDummyCount = 0;
+
+                return true;
+            }
+
+            if (PlayingFileFormat == EnmFileFormat.HOOT_GENERIC_Z80)
+            {
+                DriverVirtual = new Driver.HOOT.generic_z80();
+                DriverVirtual.setting = setting;
+
+                DriverReal = null;
                 //if (setting.outputDevice.DeviceType != Common.DEV_Null)
                 //{
                 //    driverReal = new hes();
@@ -2811,6 +3606,7 @@ namespace MDPlayer
                 //}
                 return hoot_generic_z80_Play(setting);
             }
+
             return false;
         }
 
@@ -2923,6 +3719,13 @@ namespace MDPlayer
                         , (uint)(setting.outputDevice.SampleRate * setting.LatencySCCI / 1000)
                         , (uint)(setting.outputDevice.SampleRate * setting.outputDevice.WaitTime / 1000))) return false;
                 }
+                if (DriverPianoRoll != null)
+                {
+                    ((Driver.AY.AY)DriverPianoRoll).song = (byte)SongNo;
+                    if (!DriverPianoRoll.init(vgmBuf, chipRegister, EnmModel.PianoRollModel, new EnmChip[] { EnmChip.AY8910 }
+                        , (uint)(setting.outputDevice.SampleRate * setting.LatencySCCI / 1000)
+                        , (uint)(setting.outputDevice.SampleRate * setting.outputDevice.WaitTime / 1000))) return false;
+                }
 
                 //Play
 
@@ -2983,25 +3786,6 @@ namespace MDPlayer
 
                 if (useAY)
                 {
-                    //ay8910 ay8910 = null;
-                    //chip = new MDSound.MDSound.Chip();
-                    //ay8910 = new ay8910();
-                    //chip.ID = 0;
-                    //chipLED.PriAY10 = 1;
-                    //chip.type = MDSound.MDSound.enmInstrumentType.AY8910;
-                    //chip.Instrument = ay8910;
-                    //chip.Update = ay8910.Update;
-                    //chip.Start = ay8910.Start;
-                    //chip.Stop = ay8910.Stop;
-                    //chip.Reset = ay8910.Reset;
-                    //chip.SamplingRate = (UInt32)setting.outputDevice.SampleRate;
-                    //chip.Volume = setting.balance.AY8910Volume;
-                    //chip.Clock = Driver.MGSDRV.MGSDRV.baseclockAY8910 / 2;
-                    //chip.Option = null;
-                    //lstChips.Add(chip);
-                    //useChip.Add(EnmChip.AY8910);
-                    //clockAY8910 = (int)Driver.MGSDRV.MGSDRV.baseclockAY8910;
-
                     ay8910 ay8910 = null;
                     ay8910_mame ay8910mame = null;
                     chip = new MDSound.MDSound.Chip
@@ -3123,7 +3907,7 @@ namespace MDPlayer
 
                 if (useOPLL)
                 {
-                    chipRegister.setYM2413Register(0, 14, 32, EnmModel.VirtualModel);
+                    chipRegister.setYM2413Register(0, 14, 32, EnmModel.VirtualModel,0);
                     //chipRegister.setYM2610Register(0, 0, 0x11, 0xc0, EnmModel.VirtualModel);
                 }
 
@@ -3133,6 +3917,12 @@ namespace MDPlayer
                 if (DriverReal != null)
                 {
                     if (!DriverReal.init(vgmBuf, chipRegister, EnmModel.RealModel, new EnmChip[] { EnmChip.AY8910 }
+                        , (uint)(setting.outputDevice.SampleRate * setting.LatencySCCI / 1000)
+                        , (uint)(setting.outputDevice.SampleRate * setting.outputDevice.WaitTime / 1000))) return false;
+                }
+                if (DriverPianoRoll != null)
+                {
+                    if (!DriverPianoRoll.init(vgmBuf, chipRegister, EnmModel.PianoRollModel, new EnmChip[] { EnmChip.AY8910 }
                         , (uint)(setting.outputDevice.SampleRate * setting.LatencySCCI / 1000)
                         , (uint)(setting.outputDevice.SampleRate * setting.outputDevice.WaitTime / 1000))) return false;
                 }
@@ -3290,7 +4080,7 @@ namespace MDPlayer
 
                 if (useOPLL)
                 {
-                    chipRegister.setYM2413Register(0, 14, 32, EnmModel.VirtualModel);
+                    chipRegister.setYM2413Register(0, 14, 32, EnmModel.VirtualModel, 0);
                 }
 
                 if (!DriverVirtual.init(vgmBuf, chipRegister, EnmModel.VirtualModel, new EnmChip[] { EnmChip.AY8910, EnmChip.YM2413, EnmChip.K051649 }
@@ -3299,6 +4089,176 @@ namespace MDPlayer
                 if (DriverReal != null)
                 {
                     if (!DriverReal.init(vgmBuf, chipRegister, EnmModel.RealModel, new EnmChip[] { EnmChip.AY8910 }
+                        , (uint)(setting.outputDevice.SampleRate * setting.LatencySCCI / 1000)
+                        , (uint)(setting.outputDevice.SampleRate * setting.outputDevice.WaitTime / 1000))) return false;
+                }
+                if (DriverPianoRoll != null)
+                {
+                    if (!DriverPianoRoll.init(vgmBuf, chipRegister, EnmModel.PianoRollModel, new EnmChip[] { EnmChip.AY8910 }
+                        , (uint)(setting.outputDevice.SampleRate * setting.LatencySCCI / 1000)
+                        , (uint)(setting.outputDevice.SampleRate * setting.outputDevice.WaitTime / 1000))) return false;
+                }
+
+                //Play
+
+                Paused = false;
+                oneTimeReset = false;
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                log.ForcedWrite(ex);
+                return false;
+            }
+
+        }
+
+        public static bool NdpPlay_ndp(Setting setting)
+        {
+
+            try
+            {
+
+                if (vgmBuf == null || setting == null) return false;
+
+                bool useAY = true;
+                bool useSCC = false;
+                bool useOPLL = false;
+
+                chipRegister.resetChips();
+                ResetFadeOutParam();
+                UseChip.Clear();
+
+                StartTrdVgmReal();
+
+                List<MDSound.MDSound.Chip> lstChips = new();
+                MDSound.MDSound.Chip chip;
+
+                hiyorimiNecessary = setting.HiyorimiMode;
+
+                ChipLED = new ChipLEDs();
+                MasterVolume = setting.balance.MasterVolume;
+
+                if (useAY)
+                {
+                    ay8910 ay8910 = null;
+                    ay8910_mame ay8910mame = null;
+                    chip = new MDSound.MDSound.Chip
+                    {
+                        type = MDSound.MDSound.enmInstrumentType.AY8910,
+                        ID = (byte)0
+                    };
+
+                    if ((setting.AY8910Type[0].UseEmu[0] || setting.AY8910Type[0].UseReal[0]))
+                    {
+                        ay8910 ??= new ay8910();
+                        chip.type = MDSound.MDSound.enmInstrumentType.AY8910;
+                        chip.Instrument = ay8910;
+                        chip.Update = ay8910.Update;
+                        chip.Start = ay8910.Start;
+                        chip.Stop = ay8910.Stop;
+                        chip.Reset = ay8910.Reset;
+                        chip.Option = null;
+                    }
+                    else if ((setting.AY8910Type[0].UseEmu[1]))
+                    {
+                        ay8910mame ??= new ay8910_mame();
+                        chip.type = MDSound.MDSound.enmInstrumentType.AY8910mame;
+                        chip.Instrument = ay8910mame;
+                        chip.Update = ay8910mame.Update;
+                        chip.Start = ay8910mame.Start;
+                        chip.Stop = ay8910mame.Stop;
+                        chip.Reset = ay8910mame.Reset;
+                        chip.Option = new object[]{
+                            (byte)(setting.AY8910Type[0].YM2149mode ? 0x10:0x00), //chip_type 0x10:YM2149 0x00:AY
+                            (byte)0x00  //chip_flag
+                        };
+                    }
+
+                    chip.SamplingRate = (UInt32)setting.outputDevice.SampleRate;
+                    chip.Volume = setting.balance.AY8910Volume;
+                    chip.Clock = Driver.MuSICA.MuSICA.baseclockAY8910 / 2;
+                    ClockAY8910 = (int)Driver.MuSICA.MuSICA.baseclockAY8910;
+
+                    ChipLED.PriAY10 = 1;
+
+                    lstChips.Add(chip);
+                    UseChip.Add(EnmChip.AY8910);
+
+                }
+
+                if (useOPLL)
+                {
+                    MDSound.emu2413 ym2413 = null;
+                    chip = new MDSound.MDSound.Chip();
+                    ym2413 = new MDSound.emu2413();
+                    chip.ID = 0;
+                    ChipLED.PriOPLL = 1;
+                    chip.type = MDSound.MDSound.enmInstrumentType.YM2413emu;
+                    chip.Instrument = ym2413;
+                    chip.Update = ym2413.Update;
+                    chip.Start = ym2413.Start;
+                    chip.Stop = ym2413.Stop;
+                    chip.Reset = ym2413.Reset;
+                    chip.SamplingRate = (UInt32)setting.outputDevice.SampleRate;
+                    chip.Volume = setting.balance.YM2413Volume;
+                    chip.Clock = Driver.MuSICA.MuSICA.baseclockYM2413;
+                    chip.Option = null;
+                    lstChips.Add(chip);
+                    UseChip.Add(EnmChip.YM2413);
+                    ClockYM2413 = (int)Driver.MuSICA.MuSICA.baseclockYM2413;
+                }
+
+                if (useSCC)
+                {
+                    MDSound.K051649 K051649 = null;
+                    chip = new MDSound.MDSound.Chip();
+                    K051649 = new MDSound.K051649();
+                    chip.ID = 0;
+                    ChipLED.PriK051649 = 1;
+                    chip.type = MDSound.MDSound.enmInstrumentType.K051649;
+                    chip.Instrument = K051649;
+                    chip.Update = K051649.Update;
+                    chip.Start = K051649.Start;
+                    chip.Stop = K051649.Stop;
+                    chip.Reset = K051649.Reset;
+                    chip.SamplingRate = (UInt32)setting.outputDevice.SampleRate;
+                    chip.Volume = setting.balance.K051649Volume;
+                    chip.Clock = Driver.MuSICA.MuSICA.baseclockK051649;
+                    chip.Option = null;
+                    lstChips.Add(chip);
+                    UseChip.Add(EnmChip.K051649);
+                    ClockK051649 = (int)Driver.MuSICA.MuSICA.baseclockK051649;
+                }
+
+                if (hiyorimiNecessary) hiyorimiNecessary = true;
+                else hiyorimiNecessary = false;
+
+                if (mds == null)
+                    mds = new MDSound.MDSound((UInt32)setting.outputDevice.SampleRate, samplingBuffer, lstChips.ToArray());
+                else
+                    mds.Init((UInt32)setting.outputDevice.SampleRate, samplingBuffer, lstChips.ToArray());
+
+                chipRegister.initChipRegister(lstChips.ToArray());
+
+                if (useOPLL)
+                {
+                    chipRegister.setYM2413Register(0, 14, 32, EnmModel.VirtualModel, 0);
+                }
+
+                if (!DriverVirtual.init(vgmBuf, chipRegister, EnmModel.VirtualModel, new EnmChip[] { EnmChip.AY8910, EnmChip.YM2413, EnmChip.K051649 }
+                    , (uint)(setting.outputDevice.SampleRate * setting.LatencyEmulation / 1000)
+                    , (uint)(setting.outputDevice.SampleRate * setting.outputDevice.WaitTime / 1000))) return false;
+                if (DriverReal != null)
+                {
+                    if (!DriverReal.init(vgmBuf, chipRegister, EnmModel.RealModel, new EnmChip[] { EnmChip.AY8910 }
+                        , (uint)(setting.outputDevice.SampleRate * setting.LatencySCCI / 1000)
+                        , (uint)(setting.outputDevice.SampleRate * setting.outputDevice.WaitTime / 1000))) return false;
+                }
+                if (DriverPianoRoll != null)
+                {
+                    if (!DriverPianoRoll.init(vgmBuf, chipRegister, EnmModel.PianoRollModel, new EnmChip[] { EnmChip.AY8910 }
                         , (uint)(setting.outputDevice.SampleRate * setting.LatencySCCI / 1000)
                         , (uint)(setting.outputDevice.SampleRate * setting.outputDevice.WaitTime / 1000))) return false;
                 }
@@ -3482,20 +4442,20 @@ namespace MDPlayer
                 SetYM2608RhythmVolume(true, setting.balance.YM2608RhythmVolume);
                 SetYM2608AdpcmVolume(true, setting.balance.YM2608AdpcmVolume);
 
-                chipRegister.setYM2608Register(0, 0, 0x2d, 0x00, EnmModel.VirtualModel);
-                chipRegister.setYM2608Register(0, 0, 0x2d, 0x00, EnmModel.RealModel);
-                chipRegister.setYM2608Register(0, 0, 0x29, 0x82, EnmModel.VirtualModel);
-                chipRegister.setYM2608Register(0, 0, 0x29, 0x82, EnmModel.RealModel);
-                chipRegister.setYM2608Register(1, 0, 0x29, 0x82, EnmModel.VirtualModel);
-                chipRegister.setYM2608Register(1, 0, 0x29, 0x82, EnmModel.RealModel);
-                chipRegister.setYM2608Register(0, 0, 0x07, 0x38, EnmModel.VirtualModel); //PSG TONE でリセット
-                chipRegister.setYM2608Register(0, 0, 0x07, 0x38, EnmModel.RealModel);
-                chipRegister.setYM2608Register(0, 0, 0x08, 0x00, EnmModel.VirtualModel);
-                chipRegister.setYM2608Register(0, 0, 0x08, 0x00, EnmModel.RealModel);
-                chipRegister.setYM2608Register(0, 0, 0x09, 0x00, EnmModel.VirtualModel);
-                chipRegister.setYM2608Register(0, 0, 0x09, 0x00, EnmModel.RealModel);
-                chipRegister.setYM2608Register(0, 0, 0x0a, 0x00, EnmModel.VirtualModel);
-                chipRegister.setYM2608Register(0, 0, 0x0a, 0x00, EnmModel.RealModel);
+                chipRegister.setYM2608Register(0, 0, 0x2d, 0x00, EnmModel.VirtualModel, 0);
+                chipRegister.setYM2608Register(0, 0, 0x2d, 0x00, EnmModel.RealModel, 0);
+                chipRegister.setYM2608Register(0, 0, 0x29, 0x82, EnmModel.VirtualModel, 0);
+                chipRegister.setYM2608Register(0, 0, 0x29, 0x82, EnmModel.RealModel, 0);
+                chipRegister.setYM2608Register(1, 0, 0x29, 0x82, EnmModel.VirtualModel, 0);
+                chipRegister.setYM2608Register(1, 0, 0x29, 0x82, EnmModel.RealModel, 0);
+                chipRegister.setYM2608Register(0, 0, 0x07, 0x38, EnmModel.VirtualModel, 0); //PSG TONE でリセット
+                chipRegister.setYM2608Register(0, 0, 0x07, 0x38, EnmModel.RealModel, 0);
+                chipRegister.setYM2608Register(0, 0, 0x08, 0x00, EnmModel.VirtualModel, 0);
+                chipRegister.setYM2608Register(0, 0, 0x08, 0x00, EnmModel.RealModel, 0);
+                chipRegister.setYM2608Register(0, 0, 0x09, 0x00, EnmModel.VirtualModel, 0);
+                chipRegister.setYM2608Register(0, 0, 0x09, 0x00, EnmModel.RealModel, 0);
+                chipRegister.setYM2608Register(0, 0, 0x0a, 0x00, EnmModel.VirtualModel, 0);
+                chipRegister.setYM2608Register(0, 0, 0x0a, 0x00, EnmModel.RealModel, 0);
 
                 chipRegister.writeYM2608Clock(0, Driver.MucomDotNET.OPNAbaseclock, EnmModel.RealModel);
                 chipRegister.writeYM2608Clock(1, Driver.MucomDotNET.OPNAbaseclock, EnmModel.RealModel);
@@ -3512,6 +4472,12 @@ namespace MDPlayer
                         , (uint)(setting.outputDevice.SampleRate * setting.LatencySCCI / 1000)
                         , (uint)(setting.outputDevice.SampleRate * setting.outputDevice.WaitTime / 1000))) return false;
                 }
+                if (DriverPianoRoll != null)
+                {
+                    if (!DriverPianoRoll.init(vgmBuf, chipRegister, EnmModel.PianoRollModel, new EnmChip[] { EnmChip.YM2608 }
+                        , (uint)(setting.outputDevice.SampleRate * setting.LatencySCCI / 1000)
+                        , (uint)(setting.outputDevice.SampleRate * setting.outputDevice.WaitTime / 1000))) return false;
+                }
 
                 if (((Driver.MucomDotNET)DriverVirtual).SSGExtend)
                 {
@@ -3523,6 +4489,240 @@ namespace MDPlayer
 
                 DriverVirtual.SetYM2151Hosei(Driver.MucomDotNET.OPMbaseclock);
                 DriverReal?.SetYM2151Hosei(Driver.MucomDotNET.OPMbaseclock);
+
+                //Play
+
+                Paused = false;
+
+                if (DriverReal != null && setting.YM2608Type[0].UseReal[0])
+                {
+                    realChip.WaitOPNADPCMData(setting.YM2608Type[0].realChipInfo[0].SoundLocation == -1);
+                }
+
+                oneTimeReset = false;
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                log.ForcedWrite(ex);
+                return false;
+            }
+
+        }
+
+        public static bool MuapPlay(Setting setting, EnmFileFormat fileType)
+        {
+
+            try
+            {
+
+                if (vgmBuf == null || setting == null) return false;
+
+                if (fileType == EnmFileFormat.MUAP_src)
+                {
+                    vgmBuf = ((Driver.muapDotNET)DriverVirtual).Compile(vgmBuf);
+                }
+                if (vgmBuf == null) return false;
+
+                //音色テーブルの共有
+                byte[] toneBuff = ((Driver.muapDotNET)DriverVirtual).toneBuff;
+                ((Driver.muapDotNET)DriverReal).toneBuff = toneBuff;
+                ((Driver.muapDotNET)DriverPianoRoll).toneBuff = toneBuff;
+                //ラベルテーブルの共有
+                ushort[] labelAdr = ((Driver.muapDotNET)DriverVirtual).labelAdr;
+                ((Driver.muapDotNET)DriverReal).labelAdr = labelAdr;
+                ((Driver.muapDotNET)DriverPianoRoll).labelAdr = labelAdr;
+
+                chipRegister.resetChips();
+                ResetFadeOutParam();
+                UseChip.Clear();
+
+                StartTrdVgmReal();
+
+                List<MDSound.MDSound.Chip> lstChips = new();
+                MDSound.MDSound.Chip chip;
+
+                hiyorimiNecessary = setting.HiyorimiMode;
+
+                ChipLED = new ChipLEDs();
+                MasterVolume = setting.balance.MasterVolume;
+
+                ym2608 ym2608 = null;
+                ym2608 = new ym2608();
+                //ym3438 ym3438 = null;
+                //ym3438 = new ym3438();
+                CS4231 cs4231 = null;
+                cs4231 = new CS4231();
+                Func<string, Stream> fn = Common.GetOPNARyhthmStream;
+
+                    chip = new MDSound.MDSound.Chip
+                    {
+                        ID = 0,
+                        type = MDSound.MDSound.enmInstrumentType.YM2608,
+                        Instrument = ym2608,
+                        Update = ym2608.Update,
+                        Start = ym2608.Start,
+                        Stop = ym2608.Stop,
+                        Reset = ym2608.Reset,
+                        SamplingRate = (UInt32)setting.outputDevice.SampleRate,
+                        Volume = setting.balance.YM2608Volume,
+                        Clock = Driver.MucomDotNET.OPNAbaseclock,
+                        Option = new object[] { fn }
+                    };
+                    ChipLED.PriOPNA = 1;
+                    lstChips.Add(chip);
+                    UseChip.Add(EnmChip.YM2608);
+                    ClockYM2608 = 7987200;
+
+                MDSound.ym2612 ym2612 = null;
+                MDSound.ym3438 ym3438 = null;
+                MDSound.ym2612mame ym2612mame = null;
+                chip = new MDSound.MDSound.Chip();
+
+                if (setting.YM2612Type[0].UseEmu[0])
+                {
+                    ym2612 ??= new ym2612();
+                    chip.type = MDSound.MDSound.enmInstrumentType.YM2612;
+                    chip.Instrument = ym2612;
+                    chip.Update = ym2612.Update;
+                    chip.Start = ym2612.Start;
+                    chip.Stop = ym2612.Stop;
+                    chip.Reset = ym2612.Reset;
+                    chip.Option = new object[]
+                    {
+                        (int)(
+                            (setting.nukedOPN2.GensDACHPF ? 0x01: 0x00)
+                            |(setting.nukedOPN2.GensSSGEG ? 0x02: 0x00)
+                        )
+                    };
+                    chip.SamplingRate = (UInt32)setting.outputDevice.SampleRate;
+                    chip.Volume = setting.balance.YM2612Volume;
+                    chip.Clock = 7987200;
+                }
+                else if (setting.YM2612Type[0].UseEmu[1])
+                {
+                    ym3438 ??= new ym3438();
+                    chip.type = MDSound.MDSound.enmInstrumentType.YM3438;
+                    chip.Instrument = ym3438;
+                    chip.Update = ym3438.Update;
+                    chip.Start = ym3438.Start;
+                    chip.Stop = ym3438.Stop;
+                    chip.Reset = ym3438.Reset;
+                    switch (setting.nukedOPN2.EmuType)
+                    {
+                        case 0:
+                            ym3438.OPN2_SetChipType(ym3438_const.ym3438_type.discrete);
+                            break;
+                        case 1:
+                            ym3438.OPN2_SetChipType(ym3438_const.ym3438_type.asic);
+                            break;
+                        case 2:
+                            ym3438.OPN2_SetChipType(ym3438_const.ym3438_type.ym2612);
+                            break;
+                        case 3:
+                            ym3438.OPN2_SetChipType(ym3438_const.ym3438_type.ym2612_u);
+                            break;
+                        case 4:
+                            ym3438.OPN2_SetChipType(ym3438_const.ym3438_type.asic_lp);
+                            break;
+                    }
+                    chip.SamplingRate = (UInt32)setting.outputDevice.SampleRate;
+                    chip.Volume = setting.balance.YM2612Volume;
+                    chip.Clock = 7987200;
+                }
+                else if (setting.YM2612Type[0].UseEmu[2])
+                {
+                    ym2612mame ??= new ym2612mame();
+                    chip.type = MDSound.MDSound.enmInstrumentType.YM2612mame;
+                    chip.Instrument = ym2612mame;
+                    chip.Update = ym2612mame.Update;
+                    chip.Start = ym2612mame.Start;
+                    chip.Stop = ym2612mame.Stop;
+                    chip.Reset = ym2612mame.Reset;
+                    chip.SamplingRate = (UInt32)setting.outputDevice.SampleRate;
+                    chip.Volume = setting.balance.YM2612Volume;
+                    chip.Clock = 7987200;
+                }
+
+                if (chip.Clock != 0)
+                {
+                    ClockYM2612 = 7670454;
+                    ChipLED.PriOPN2 = 1;
+                    lstChips.Add(chip);
+                    UseChip.Add(EnmChip.YM2612);
+                }
+
+
+                chip = new MDSound.MDSound.Chip
+                {
+                    ID = 0,
+                    type = MDSound.MDSound.enmInstrumentType.CS4231,
+                    Instrument = cs4231,
+                    Update = cs4231.Update,
+                    Start = cs4231.Start,
+                    Stop = cs4231.Stop,
+                    Reset = cs4231.Reset,
+                    SamplingRate = 55467,// (UInt32)setting.outputDevice.SampleRate;
+                    Volume = setting.balance.CS4231Volume,
+                    Clock = 0,
+                    Option = null
+                };
+                ChipLED.PriCS4231 = 1;
+                lstChips.Add(chip);
+                UseChip.Add(EnmChip.CS4231);
+
+                if (hiyorimiNecessary) hiyorimiNecessary = true;
+                else hiyorimiNecessary = false;
+
+                if (mds == null)
+                    mds = new MDSound.MDSound((UInt32)setting.outputDevice.SampleRate, samplingBuffer, lstChips.ToArray());
+                else
+                    mds.Init((UInt32)setting.outputDevice.SampleRate, samplingBuffer, lstChips.ToArray());
+
+                chipRegister.initChipRegister(lstChips.ToArray());
+
+                SetYM2608Volume(true, setting.balance.YM2608Volume);
+                SetYM2608FMVolume(true, setting.balance.YM2608FMVolume);
+                SetYM2608PSGVolume(true, setting.balance.YM2608PSGVolume);
+                SetYM2608RhythmVolume(true, setting.balance.YM2608RhythmVolume);
+                SetYM2608AdpcmVolume(true, setting.balance.YM2608AdpcmVolume);
+
+                chipRegister.setYM2608Register(0, 0, 0x2d, 0x00, EnmModel.VirtualModel, 0);
+                chipRegister.setYM2608Register(0, 0, 0x2d, 0x00, EnmModel.RealModel, 0);
+                chipRegister.setYM2608Register(0, 0, 0x29, 0x82, EnmModel.VirtualModel, 0);
+                chipRegister.setYM2608Register(0, 0, 0x29, 0x82, EnmModel.RealModel, 0);
+                chipRegister.setYM2608Register(1, 0, 0x29, 0x82, EnmModel.VirtualModel, 0);
+                chipRegister.setYM2608Register(1, 0, 0x29, 0x82, EnmModel.RealModel, 0);
+                chipRegister.setYM2608Register(0, 0, 0x07, 0x38, EnmModel.VirtualModel, 0); //PSG TONE でリセット
+                chipRegister.setYM2608Register(0, 0, 0x07, 0x38, EnmModel.RealModel, 0);
+                chipRegister.setYM2608Register(0, 0, 0x08, 0x00, EnmModel.VirtualModel, 0);
+                chipRegister.setYM2608Register(0, 0, 0x08, 0x00, EnmModel.RealModel, 0);
+                chipRegister.setYM2608Register(0, 0, 0x09, 0x00, EnmModel.VirtualModel, 0);
+                chipRegister.setYM2608Register(0, 0, 0x09, 0x00, EnmModel.RealModel, 0);
+                chipRegister.setYM2608Register(0, 0, 0x0a, 0x00, EnmModel.VirtualModel, 0);
+                chipRegister.setYM2608Register(0, 0, 0x0a, 0x00, EnmModel.RealModel, 0);
+
+                chipRegister.writeYM2608Clock(0, Driver.MucomDotNET.OPNAbaseclock, EnmModel.RealModel);
+                chipRegister.writeYM2608Clock(1, Driver.MucomDotNET.OPNAbaseclock, EnmModel.RealModel);
+                chipRegister.setYM2608SSGVolume(0, setting.balance.GimicOPNAVolume, EnmModel.RealModel);
+                chipRegister.setYM2608SSGVolume(1, setting.balance.GimicOPNAVolume, EnmModel.RealModel);
+
+                if (!DriverVirtual.init(vgmBuf, chipRegister, EnmModel.VirtualModel, new EnmChip[] { EnmChip.YM2608 }
+                    , (uint)(setting.outputDevice.SampleRate * setting.LatencyEmulation / 1000)
+                    , (uint)(setting.outputDevice.SampleRate * setting.outputDevice.WaitTime / 1000))) return false;
+                if (DriverReal != null)
+                {
+                    if (!DriverReal.init(vgmBuf, chipRegister, EnmModel.RealModel, new EnmChip[] { EnmChip.YM2608 }
+                        , (uint)(setting.outputDevice.SampleRate * setting.LatencySCCI / 1000)
+                        , (uint)(setting.outputDevice.SampleRate * setting.outputDevice.WaitTime / 1000))) return false;
+                }
+                if (DriverPianoRoll != null)
+                {
+                    if (!DriverPianoRoll.init(vgmBuf, chipRegister, EnmModel.PianoRollModel, new EnmChip[] { EnmChip.YM2608 }
+                        , (uint)(setting.outputDevice.SampleRate * setting.LatencySCCI / 1000)
+                        , (uint)(setting.outputDevice.SampleRate * setting.outputDevice.WaitTime / 1000))) return false;
+                }
 
                 //Play
 
@@ -3673,14 +4873,14 @@ namespace MDPlayer
                 SetYM2608RhythmVolume(true, setting.balance.YM2608RhythmVolume);
                 SetYM2608AdpcmVolume(true, setting.balance.YM2608AdpcmVolume);
 
-                chipRegister.setYM2608Register(0, 0, 0x2d, 0x00, EnmModel.VirtualModel);
-                chipRegister.setYM2608Register(0, 0, 0x2d, 0x00, EnmModel.RealModel);
-                chipRegister.setYM2608Register(0, 0, 0x29, 0x82, EnmModel.VirtualModel);
-                chipRegister.setYM2608Register(0, 0, 0x29, 0x82, EnmModel.RealModel);
-                chipRegister.setYM2608Register(1, 0, 0x29, 0x82, EnmModel.VirtualModel);
-                chipRegister.setYM2608Register(1, 0, 0x29, 0x82, EnmModel.RealModel);
-                chipRegister.setYM2608Register(0, 0, 0x07, 0x38, EnmModel.VirtualModel); //PSG TONE でリセット
-                chipRegister.setYM2608Register(0, 0, 0x07, 0x38, EnmModel.RealModel);
+                chipRegister.setYM2608Register(0, 0, 0x2d, 0x00, EnmModel.VirtualModel, 0);
+                chipRegister.setYM2608Register(0, 0, 0x2d, 0x00, EnmModel.RealModel, 0);
+                chipRegister.setYM2608Register(0, 0, 0x29, 0x82, EnmModel.VirtualModel, 0);
+                chipRegister.setYM2608Register(0, 0, 0x29, 0x82, EnmModel.RealModel, 0);
+                chipRegister.setYM2608Register(1, 0, 0x29, 0x82, EnmModel.VirtualModel, 0);
+                chipRegister.setYM2608Register(1, 0, 0x29, 0x82, EnmModel.RealModel, 0);
+                chipRegister.setYM2608Register(0, 0, 0x07, 0x38, EnmModel.VirtualModel, 0); //PSG TONE でリセット
+                chipRegister.setYM2608Register(0, 0, 0x07, 0x38, EnmModel.RealModel, 0);
 
                 chipRegister.writeYM2608Clock(0, Driver.PMDDotNET.baseclock, EnmModel.RealModel);
                 chipRegister.writeYM2608Clock(1, Driver.PMDDotNET.baseclock, EnmModel.RealModel);
@@ -3694,6 +4894,12 @@ namespace MDPlayer
                 if (DriverReal != null)
                 {
                     if (!DriverReal.init(vgmBuf, fileType, chipRegister, EnmModel.RealModel, new EnmChip[] { EnmChip.YM2608 }
+                        , (uint)(setting.outputDevice.SampleRate * setting.LatencySCCI / 1000)
+                        , (uint)(setting.outputDevice.SampleRate * setting.outputDevice.WaitTime / 1000))) return false;
+                }
+                if (DriverPianoRoll != null)
+                {
+                    if (!DriverPianoRoll.init(vgmBuf, fileType, chipRegister, EnmModel.PianoRollModel, new EnmChip[] { EnmChip.YM2608 }
                         , (uint)(setting.outputDevice.SampleRate * setting.LatencySCCI / 1000)
                         , (uint)(setting.outputDevice.SampleRate * setting.outputDevice.WaitTime / 1000))) return false;
                 }
@@ -3806,14 +5012,14 @@ namespace MDPlayer
                 SetYM2608RhythmVolume(true, setting.balance.YM2608RhythmVolume);
                 SetYM2608AdpcmVolume(true, setting.balance.YM2608AdpcmVolume);
 
-                chipRegister.setYM2608Register(0, 0, 0x2d, 0x00, EnmModel.VirtualModel);
-                chipRegister.setYM2608Register(0, 0, 0x2d, 0x00, EnmModel.RealModel);
-                chipRegister.setYM2608Register(0, 0, 0x29, 0x82, EnmModel.VirtualModel);
-                chipRegister.setYM2608Register(0, 0, 0x29, 0x82, EnmModel.RealModel);
-                chipRegister.setYM2608Register(1, 0, 0x29, 0x82, EnmModel.VirtualModel);
-                chipRegister.setYM2608Register(1, 0, 0x29, 0x82, EnmModel.RealModel);
-                chipRegister.setYM2608Register(0, 0, 0x07, 0x38, EnmModel.VirtualModel); //PSG TONE でリセット
-                chipRegister.setYM2608Register(0, 0, 0x07, 0x38, EnmModel.RealModel);
+                chipRegister.setYM2608Register(0, 0, 0x2d, 0x00, EnmModel.VirtualModel, 0);
+                chipRegister.setYM2608Register(0, 0, 0x2d, 0x00, EnmModel.RealModel, 0);
+                chipRegister.setYM2608Register(0, 0, 0x29, 0x82, EnmModel.VirtualModel, 0);
+                chipRegister.setYM2608Register(0, 0, 0x29, 0x82, EnmModel.RealModel, 0);
+                chipRegister.setYM2608Register(1, 0, 0x29, 0x82, EnmModel.VirtualModel, 0);
+                chipRegister.setYM2608Register(1, 0, 0x29, 0x82, EnmModel.RealModel, 0);
+                chipRegister.setYM2608Register(0, 0, 0x07, 0x38, EnmModel.VirtualModel, 0); //PSG TONE でリセット
+                chipRegister.setYM2608Register(0, 0, 0x07, 0x38, EnmModel.RealModel, 0);
 
                 chipRegister.writeYM2608Clock(0, Driver.PMDDotNET.baseclock, EnmModel.RealModel);
                 chipRegister.writeYM2608Clock(1, Driver.PMDDotNET.baseclock, EnmModel.RealModel);
@@ -3825,6 +5031,10 @@ namespace MDPlayer
                 {
                     ((Driver.FMP.FMP)DriverReal).SetSearchPath(setting.FileSearchPathList);
                 }
+                if (DriverPianoRoll != null)
+                {
+                    ((Driver.FMP.FMP)DriverPianoRoll).SetSearchPath(setting.FileSearchPathList);
+                }
 
                 if (!DriverVirtual.init(vgmBuf, chipRegister, EnmModel.VirtualModel, new EnmChip[] { EnmChip.YM2608 }
                     , (uint)(setting.outputDevice.SampleRate * setting.LatencyEmulation / 1000)
@@ -3832,6 +5042,12 @@ namespace MDPlayer
                 if (DriverReal != null)
                 {
                     if (!DriverReal.init(vgmBuf, chipRegister, EnmModel.RealModel, new EnmChip[] { EnmChip.YM2608 }
+                        , (uint)(setting.outputDevice.SampleRate * setting.LatencySCCI / 1000)
+                        , (uint)(setting.outputDevice.SampleRate * setting.outputDevice.WaitTime / 1000))) return false;
+                }
+                if (DriverPianoRoll != null)
+                {
+                    if (!DriverPianoRoll.init(vgmBuf, chipRegister, EnmModel.PianoRollModel, new EnmChip[] { EnmChip.YM2608 }
                         , (uint)(setting.outputDevice.SampleRate * setting.LatencySCCI / 1000)
                         , (uint)(setting.outputDevice.SampleRate * setting.outputDevice.WaitTime / 1000))) return false;
                 }
@@ -4088,16 +5304,17 @@ namespace MDPlayer
                                     break;
                             }
                             if (!string.IsNullOrEmpty(ErrMsg)) return false;
-                            supportFileBinaly.Add(new Tuple<byte[], string>(buf, sf));
+                            supportFileBinaly.Add(new Tuple<byte[], string>(buf, Path.GetFileName(sf)));
                             continue;
                         }
                         buf = File.ReadAllBytes(sf);
-                        supportFileBinaly.Add(new Tuple<byte[], string>(buf, sf));
+                        supportFileBinaly.Add(new Tuple<byte[], string>(buf, Path.GetFileName(sf)));
                     }
                 }
-                ((Driver.ZMS.ZMS)DriverReal).SupportFileBinaryAndName =
-                    ((Driver.ZMS.ZMS)DriverVirtual).SupportFileBinaryAndName =
-                    supportFileBinaly;
+
+                ((Driver.ZMS.ZMS)DriverVirtual).SupportFileBinaryAndName = supportFileBinaly;
+                if (DriverReal != null) ((Driver.ZMS.ZMS)DriverReal).SupportFileBinaryAndName = supportFileBinaly;
+                if (DriverPianoRoll != null) ((Driver.ZMS.ZMS)DriverPianoRoll).SupportFileBinaryAndName = supportFileBinaly;
 
                 //ZMSの場合は事前にコンパイルを実施
                 if (fm == EnmFileFormat.ZMS)
@@ -4108,14 +5325,12 @@ namespace MDPlayer
                             //Version3優先
                             if (((Driver.ZMS.ZMS)DriverVirtual).Compile(vgmBuf,PlayingFileName))
                             {
-                                vgmBuf = ((Driver.ZMS.ZMS)DriverReal).CompiledData = ((Driver.ZMS.ZMS)DriverVirtual).CompiledData;
+                                SetVgmBufV3();
                                 ChipLED.PriMPCMX68k = 1;
                             }
                             else if (((Driver.ZMS.ZMS)DriverVirtual).Compilev2(vgmBuf, PlayingFileName))
                             {
-                                vgmBuf = ((Driver.ZMS.ZMS)DriverReal).CompiledData = ((Driver.ZMS.ZMS)DriverVirtual).CompiledData;
-                                ((Driver.ZMS.ZMS)DriverVirtual).version = 2;
-                                ((Driver.ZMS.ZMS)DriverReal).version = 2;
+                                SetVgmBufV2();
                                 ChipLED.PriPCM8 = 1;
                             }
                             else
@@ -4129,14 +5344,12 @@ namespace MDPlayer
                             //Version2優先
                             if (((Driver.ZMS.ZMS)DriverVirtual).Compilev2(vgmBuf, PlayingFileName))
                             {
-                                vgmBuf = ((Driver.ZMS.ZMS)DriverReal).CompiledData = ((Driver.ZMS.ZMS)DriverVirtual).CompiledData;
-                                ((Driver.ZMS.ZMS)DriverVirtual).version = 2;
-                                ((Driver.ZMS.ZMS)DriverReal).version = 2;
+                                SetVgmBufV2();
                                 ChipLED.PriPCM8 = 1;
                             }
                             else if (((Driver.ZMS.ZMS)DriverVirtual).Compile(vgmBuf, PlayingFileName))
                             {
-                                vgmBuf = ((Driver.ZMS.ZMS)DriverReal).CompiledData = ((Driver.ZMS.ZMS)DriverVirtual).CompiledData;
+                                SetVgmBufV3();
                                 ChipLED.PriMPCMX68k = 1;
                             }
                             else
@@ -4150,7 +5363,7 @@ namespace MDPlayer
                             //Version3のみ
                             if (((Driver.ZMS.ZMS)DriverVirtual).Compile(vgmBuf, PlayingFileName))
                             {
-                                vgmBuf = ((Driver.ZMS.ZMS)DriverReal).CompiledData = ((Driver.ZMS.ZMS)DriverVirtual).CompiledData;
+                                SetVgmBufV3();
                                 ChipLED.PriMPCMX68k = 1;
                                 //File.WriteAllBytes("c:\\temp\\ge.zmd", vgmBuf);
                             }
@@ -4165,9 +5378,7 @@ namespace MDPlayer
                             //Version2のみ
                             if (((Driver.ZMS.ZMS)DriverVirtual).Compilev2(vgmBuf, PlayingFileName))
                             {
-                                vgmBuf = ((Driver.ZMS.ZMS)DriverReal).CompiledData = ((Driver.ZMS.ZMS)DriverVirtual).CompiledData;
-                                ((Driver.ZMS.ZMS)DriverVirtual).version = 2;
-                                ((Driver.ZMS.ZMS)DriverReal).version = 2;
+                                SetVgmBufV2();
                                 ChipLED.PriPCM8 = 1;
                             }
                             else
@@ -4215,6 +5426,12 @@ namespace MDPlayer
                         , (uint)(setting.outputDevice.SampleRate * setting.LatencySCCI / 1000)
                         , (uint)(setting.outputDevice.SampleRate * setting.outputDevice.WaitTime / 1000))) return false;
                 }
+                if (DriverPianoRoll != null)
+                {
+                    if (!DriverPianoRoll.init(vgmBuf, chipRegister, EnmModel.PianoRollModel, new EnmChip[] { EnmChip.YM2151, EnmChip.OKIM6258 }
+                        , (uint)(setting.outputDevice.SampleRate * setting.LatencySCCI / 1000)
+                        , (uint)(setting.outputDevice.SampleRate * setting.outputDevice.WaitTime / 1000))) return false;
+                }
 
                 //Play
 
@@ -4227,6 +5444,29 @@ namespace MDPlayer
             {
                 log.ForcedWrite(ex);
                 return false;
+            }
+        }
+
+        private static void SetVgmBufV3()
+        {
+            vgmBuf = ((Driver.ZMS.ZMS)DriverVirtual).CompiledData;
+            if (DriverReal != null) ((Driver.ZMS.ZMS)DriverReal).CompiledData = vgmBuf;
+            if (DriverPianoRoll != null) ((Driver.ZMS.ZMS)DriverPianoRoll).CompiledData = vgmBuf;
+        }
+
+        private static void SetVgmBufV2()
+        {
+            vgmBuf = ((Driver.ZMS.ZMS)DriverVirtual).CompiledData;
+            ((Driver.ZMS.ZMS)DriverVirtual).version = 2;
+            if (DriverReal != null)
+            {
+                ((Driver.ZMS.ZMS)DriverReal).CompiledData = vgmBuf;
+                ((Driver.ZMS.ZMS)DriverReal).version = 2;
+            }
+            if (DriverPianoRoll != null)
+            {
+                ((Driver.ZMS.ZMS)DriverPianoRoll).CompiledData = vgmBuf;
+                ((Driver.ZMS.ZMS)DriverPianoRoll).version = 2;
             }
         }
 
@@ -4678,6 +5918,13 @@ namespace MDPlayer
                     ((NRTDRV)DriverReal).Call(0);//
                 }
 
+                if (DriverPianoRoll != null)
+                {
+                    DriverPianoRoll.init(vgmBuf, chipRegister, EnmModel.PianoRollModel, new EnmChip[] { EnmChip.YM2151, EnmChip.AY8910 }
+                        , (uint)(setting.outputDevice.SampleRate * setting.LatencySCCI / 1000)
+                        , (uint)(setting.outputDevice.SampleRate * setting.outputDevice.WaitTime / 1000));
+                    ((NRTDRV)DriverPianoRoll).Call(0);//
+                }
 
                 Paused = false;
                 oneTimeReset = false;
@@ -4691,6 +5938,10 @@ namespace MDPlayer
                     ((NRTDRV)DriverReal).Call(1);//MPLAY
                 }
 
+                if (DriverPianoRoll != null)
+                {
+                    ((NRTDRV)DriverPianoRoll).Call(1);//MPLAY
+                }
 
 
                 return true;
@@ -4804,6 +6055,7 @@ namespace MDPlayer
 
                 MDSound.ym2151_x68sound mdxPCM_V=null;
                 MDSound.ym2151_x68sound mdxPCM_R = null;
+                MDSound.ym2151_x68sound mdxPCM_P = null;
                 MDSound.PCM8PP pcm8pp = null;
                 mdxPCM_V = new();
                 mdxPCM_V.x68sound[0] = new MDSound.NX68Sound.X68Sound();
@@ -4826,6 +6078,9 @@ namespace MDPlayer
                 mdxPCM_R = new();
                 mdxPCM_R.x68sound[0] = new MDSound.NX68Sound.X68Sound();
                 mdxPCM_R.sound_Iocs[0] = new MDSound.NX68Sound.sound_iocs(mdxPCM_R.x68sound[0]);
+                mdxPCM_P = new();
+                mdxPCM_P.x68sound[0] = new MDSound.NX68Sound.X68Sound();
+                mdxPCM_P.sound_Iocs[0] = new MDSound.NX68Sound.sound_iocs(mdxPCM_P.x68sound[0]);
                 UseChip.Add(EnmChip.PCM8);
                 ((Driver.MXDRV.MXDRV)DriverVirtual).pcm8type = 0;
                 if (setting.mxdrv.pcm8type == 0)
@@ -4898,6 +6153,13 @@ namespace MDPlayer
                         , (uint)(setting.outputDevice.SampleRate * setting.LatencySCCI / 1000)
                         , (uint)(setting.outputDevice.SampleRate * setting.outputDevice.WaitTime / 1000)
                         , mdxPCM_R, null);
+                }
+                if (DriverPianoRoll != null)
+                {
+                    ((MDPlayer.Driver.MXDRV.MXDRV)DriverPianoRoll).Init(vgmBuf, chipRegister, EnmModel.PianoRollModel, new EnmChip[] { EnmChip.Unuse }
+                        , (uint)(setting.outputDevice.SampleRate * setting.LatencySCCI / 1000)
+                        , (uint)(setting.outputDevice.SampleRate * setting.outputDevice.WaitTime / 1000)
+                        , mdxPCM_P, null);
                 }
 
                 if (!retV || !retR)
@@ -5158,24 +6420,24 @@ namespace MDPlayer
 
                 if (UseChip.Contains(EnmChip.YM2608))
                 {
-                    chipRegister.setYM2608Register(0, 0, 0x2d, 0x00, EnmModel.VirtualModel);
-                    chipRegister.setYM2608Register(0, 0, 0x2d, 0x00, EnmModel.RealModel);
-                    chipRegister.setYM2608Register(0, 0, 0x29, 0x82, EnmModel.VirtualModel);
-                    chipRegister.setYM2608Register(0, 0, 0x29, 0x82, EnmModel.RealModel);
-                    chipRegister.setYM2608Register(0, 0, 0x07, 0x38, EnmModel.VirtualModel); //PSG TONE でリセット
-                    chipRegister.setYM2608Register(0, 0, 0x07, 0x38, EnmModel.RealModel);
+                    chipRegister.setYM2608Register(0, 0, 0x2d, 0x00, EnmModel.VirtualModel, 0);
+                    chipRegister.setYM2608Register(0, 0, 0x2d, 0x00, EnmModel.RealModel, 0);
+                    chipRegister.setYM2608Register(0, 0, 0x29, 0x82, EnmModel.VirtualModel, 0);
+                    chipRegister.setYM2608Register(0, 0, 0x29, 0x82, EnmModel.RealModel, 0);
+                    chipRegister.setYM2608Register(0, 0, 0x07, 0x38, EnmModel.VirtualModel, 0); //PSG TONE でリセット
+                    chipRegister.setYM2608Register(0, 0, 0x07, 0x38, EnmModel.RealModel, 0);
                     chipRegister.writeYM2608Clock(0, 8000000, EnmModel.RealModel);
                     chipRegister.setYM2608SSGVolume(0, setting.balance.GimicOPNAVolume, EnmModel.RealModel);
                 }
 
                 if (UseChip.Contains(EnmChip.S_YM2608))
                 {
-                    chipRegister.setYM2608Register(1, 0, 0x2d, 0x00, EnmModel.VirtualModel);
-                    chipRegister.setYM2608Register(1, 0, 0x2d, 0x00, EnmModel.RealModel);
-                    chipRegister.setYM2608Register(1, 0, 0x29, 0x82, EnmModel.VirtualModel);
-                    chipRegister.setYM2608Register(1, 0, 0x29, 0x82, EnmModel.RealModel);
-                    chipRegister.setYM2608Register(1, 0, 0x07, 0x38, EnmModel.VirtualModel); //PSG TONE でリセット
-                    chipRegister.setYM2608Register(1, 0, 0x07, 0x38, EnmModel.RealModel);
+                    chipRegister.setYM2608Register(1, 0, 0x2d, 0x00, EnmModel.VirtualModel, 0);
+                    chipRegister.setYM2608Register(1, 0, 0x2d, 0x00, EnmModel.RealModel, 0);
+                    chipRegister.setYM2608Register(1, 0, 0x29, 0x82, EnmModel.VirtualModel, 0);
+                    chipRegister.setYM2608Register(1, 0, 0x29, 0x82, EnmModel.RealModel, 0);
+                    chipRegister.setYM2608Register(1, 0, 0x07, 0x38, EnmModel.VirtualModel, 0); //PSG TONE でリセット
+                    chipRegister.setYM2608Register(1, 0, 0x07, 0x38, EnmModel.RealModel, 0);
                     chipRegister.writeYM2608Clock(1, 8000000, EnmModel.RealModel);
                     chipRegister.setYM2608SSGVolume(1, setting.balance.GimicOPNAVolume, EnmModel.RealModel);
                 }
@@ -5201,6 +6463,13 @@ namespace MDPlayer
                 if (DriverReal != null)
                 {
                     retR = ((MDPlayer.Driver.MNDRV.mndrv)DriverReal).init(vgmBuf, chipRegister, EnmModel.RealModel, new EnmChip[] { EnmChip.YM2151, EnmChip.YM2608 }
+                        , (uint)(setting.outputDevice.SampleRate * setting.LatencySCCI / 1000)
+                        , (uint)(setting.outputDevice.SampleRate * setting.outputDevice.WaitTime / 1000)
+                        );
+                }
+                if (DriverPianoRoll != null)
+                {
+                    ((MDPlayer.Driver.MNDRV.mndrv)DriverPianoRoll).init(vgmBuf, chipRegister, EnmModel.PianoRollModel, new EnmChip[] { EnmChip.YM2151, EnmChip.YM2608 }
                         , (uint)(setting.outputDevice.SampleRate * setting.LatencySCCI / 1000)
                         , (uint)(setting.outputDevice.SampleRate * setting.outputDevice.WaitTime / 1000)
                         );
@@ -5414,6 +6683,12 @@ namespace MDPlayer
                 if (DriverReal != null)
                 {
                     if (!DriverReal.init(vgmBuf, chipRegister, EnmModel.RealModel, new EnmChip[] { EnmChip.YM2612, EnmChip.SN76489 }
+                        , (uint)(setting.outputDevice.SampleRate * setting.LatencySCCI / 1000)
+                        , (uint)(setting.outputDevice.SampleRate * setting.outputDevice.WaitTime / 1000))) return false;
+                }
+                if (DriverPianoRoll != null)
+                {
+                    if (!DriverPianoRoll.init(vgmBuf, chipRegister, EnmModel.PianoRollModel, new EnmChip[] { EnmChip.YM2612, EnmChip.SN76489 }
                         , (uint)(setting.outputDevice.SampleRate * setting.LatencySCCI / 1000)
                         , (uint)(setting.outputDevice.SampleRate * setting.outputDevice.WaitTime / 1000))) return false;
                 }
@@ -5794,6 +7069,12 @@ namespace MDPlayer
                 if (DriverReal != null)
                 {
                     if (!DriverReal.init(vgmBuf, chipRegister, EnmModel.RealModel, new EnmChip[] { EnmChip.YM2203 }
+                        , (uint)(setting.outputDevice.SampleRate * setting.LatencySCCI / 1000)
+                        , (uint)(setting.outputDevice.SampleRate * setting.outputDevice.WaitTime / 1000))) return false;
+                }
+                if (DriverPianoRoll != null)
+                {
+                    if (!DriverPianoRoll.init(vgmBuf, chipRegister, EnmModel.PianoRollModel, new EnmChip[] { EnmChip.YM2203 }
                         , (uint)(setting.outputDevice.SampleRate * setting.LatencySCCI / 1000)
                         , (uint)(setting.outputDevice.SampleRate * setting.outputDevice.WaitTime / 1000))) return false;
                 }
@@ -6220,13 +7501,13 @@ namespace MDPlayer
 
                 if (UseChip.Contains(EnmChip.YM2608))
                 {
-                    chipRegister.setYM2608Register(0, 0, 0x29, 0x82, EnmModel.VirtualModel);
-                    chipRegister.setYM2608Register(0, 0, 0x29, 0x82, EnmModel.RealModel);
+                    chipRegister.setYM2608Register(0, 0, 0x29, 0x82, EnmModel.VirtualModel, 0);
+                    chipRegister.setYM2608Register(0, 0, 0x29, 0x82, EnmModel.RealModel, 0);
                 }
                 if (UseChip.Contains(EnmChip.S_YM2608))
                 {
-                    chipRegister.setYM2608Register(1, 0, 0x29, 0x82, EnmModel.VirtualModel);
-                    chipRegister.setYM2608Register(1, 0, 0x29, 0x82, EnmModel.RealModel);
+                    chipRegister.setYM2608Register(1, 0, 0x29, 0x82, EnmModel.VirtualModel, 0);
+                    chipRegister.setYM2608Register(1, 0, 0x29, 0x82, EnmModel.RealModel, 0);
                 }
                 if (UseChip.Contains(EnmChip.YM2151) || UseChip.Contains(EnmChip.S_YM2151))
                     SetYM2151Volume(true, setting.balance.YM2151Volume);
@@ -6879,6 +8160,137 @@ namespace MDPlayer
 
         }
 
+        public static bool GbsPlay(Setting setting)
+        {
+
+            try
+            {
+
+                if (vgmBuf == null || setting == null) return false;
+
+                //Stop();
+
+                chipRegister.resetChips();
+
+                vgmFadeout = false;
+                vgmFadeoutCounter = 1.0;
+                vgmFadeoutCounterV = 0.00001;
+                vgmSpeed = 1;
+                vgmRealFadeoutVol = 0;
+                vgmRealFadeoutVolWait = 4;
+
+                ClearFadeoutVolume();
+
+                chipRegister.resetChips();
+
+                UseChip.Clear();
+
+
+                StartTrdVgmReal();
+
+                List<MDSound.MDSound.Chip> lstChips = new();
+
+                hiyorimiNecessary = setting.HiyorimiMode;
+
+                ChipLED = new ChipLEDs
+                {
+                    PriDMG = 1
+                };
+
+                MasterVolume = setting.balance.MasterVolume;
+
+                ((gbs)DriverVirtual).song = (byte)SongNo;
+                if (!DriverVirtual.init(vgmBuf, chipRegister, EnmModel.VirtualModel, new EnmChip[] { EnmChip.Unuse }
+                    , (uint)(setting.outputDevice.SampleRate * setting.LatencyEmulation / 1000)
+                    , (uint)(setting.outputDevice.SampleRate * setting.outputDevice.WaitTime / 1000))) return false;
+                if (DriverReal != null)
+                {
+                    ((gbs)DriverReal).song = (byte)SongNo;
+                    if (!DriverReal.init(vgmBuf, chipRegister, EnmModel.RealModel, new EnmChip[] { EnmChip.Unuse }
+                        , (uint)(setting.outputDevice.SampleRate * setting.LatencySCCI / 1000)
+                        , (uint)(setting.outputDevice.SampleRate * setting.outputDevice.WaitTime / 1000))) return false;
+                }
+                if (DriverPianoRoll != null)
+                {
+                    ((gbs)DriverPianoRoll).song = (byte)SongNo;
+                    if (!DriverPianoRoll.init(vgmBuf, chipRegister, EnmModel.PianoRollModel, new EnmChip[] { EnmChip.Unuse }
+                        , (uint)(setting.outputDevice.SampleRate * setting.LatencySCCI / 1000)
+                        , (uint)(setting.outputDevice.SampleRate * setting.outputDevice.WaitTime / 1000))) return false;
+                }
+
+                MDSound.MDSound.Chip chip;
+                gb gb = new();
+                chip = new MDSound.MDSound.Chip
+                {
+                    ID = 0,
+                    type = MDSound.MDSound.enmInstrumentType.DMG,
+                    Instrument = gb,
+                    Update = gb.Update,
+                    Start = gb.Start,
+                    Stop = gb.Stop,
+                    Reset = gb.Reset,
+                    SamplingRate = (UInt32)setting.outputDevice.SampleRate,
+                    Volume = setting.balance.DMGVolume,
+                    Clock = 4194304,
+                    Option = null
+                };
+                lstChips.Add(chip);
+                ((gbs)DriverVirtual).dmg = chip;
+                UseChip.Add(EnmChip.DMG);
+
+                gb = new();
+                chip = new MDSound.MDSound.Chip
+                {
+                    ID = 0,
+                    type = MDSound.MDSound.enmInstrumentType.DMG,
+                    Instrument = gb,
+                    Update = gb.Update,
+                    Start = gb.Start,
+                    Stop = gb.Stop,
+                    Reset = gb.Reset,
+                    SamplingRate = (UInt32)setting.outputDevice.SampleRate,
+                    Volume = setting.balance.DMGVolume,
+                    Clock = 4194304,
+                    Option = null
+                };
+                ((gbs)DriverPianoRoll).dmg = chip;
+                gb.Start(0, 4194304);
+
+                if (hiyorimiNecessary) hiyorimiNecessary = true;
+                else hiyorimiNecessary = false;
+
+                if (mds == null)
+                    mds = new MDSound.MDSound((UInt32)setting.outputDevice.SampleRate, samplingBuffer, lstChips.ToArray());
+                else
+                    mds.Init((UInt32)setting.outputDevice.SampleRate, samplingBuffer, lstChips.ToArray());
+
+                chipRegister.initChipRegister(lstChips.ToArray());
+                chipRegister.setDMGRegister(0, 0x16, 0x8f, EnmModel.VirtualModel,0);
+                chipRegister.setDMGRegister(0, 0x14, 0x77, EnmModel.VirtualModel, 0);
+                chipRegister.setDMGRegister(0, 0x15, 0xf7, EnmModel.VirtualModel, 0);
+                chipRegister.setDMGRegister(0, 0x16, 0x8f, EnmModel.RealModel, 0);
+                chipRegister.setDMGRegister(0, 0x14, 0x77, EnmModel.RealModel, 0);
+                chipRegister.setDMGRegister(0, 0x15, 0xf7, EnmModel.RealModel, 0);
+                chipRegister.setDMGRegister(0, 0x16, 0x8f, EnmModel.PianoRollModel, 0);
+                chipRegister.setDMGRegister(0, 0x14, 0x77, EnmModel.PianoRollModel, 0);
+                chipRegister.setDMGRegister(0, 0x15, 0xf7, EnmModel.PianoRollModel, 0);
+                //Play
+
+                Paused = false;
+                oneTimeReset = false;
+
+                Thread.Sleep(500);
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                log.ForcedWrite(ex);
+                return false;
+            }
+
+        }
+
         public static bool HesPlay(Setting setting)
         {
 
@@ -6962,6 +8374,13 @@ namespace MDPlayer
                 {
                     ((hes)DriverReal).song = (byte)SongNo;
                     if (!DriverReal.init(vgmBuf, chipRegister, EnmModel.RealModel, new EnmChip[] { EnmChip.Unuse }
+                        , (uint)(setting.outputDevice.SampleRate * setting.LatencySCCI / 1000)
+                        , (uint)(setting.outputDevice.SampleRate * setting.outputDevice.WaitTime / 1000))) return false;
+                }
+                if (DriverPianoRoll != null)
+                {
+                    ((hes)DriverPianoRoll).song = (byte)SongNo;
+                    if (!DriverPianoRoll.init(vgmBuf, chipRegister, EnmModel.PianoRollModel, new EnmChip[] { EnmChip.Unuse }
                         , (uint)(setting.outputDevice.SampleRate * setting.LatencySCCI / 1000)
                         , (uint)(setting.outputDevice.SampleRate * setting.outputDevice.WaitTime / 1000))) return false;
                 }
@@ -7097,6 +8516,14 @@ namespace MDPlayer
                 if (DriverReal != null && !DriverReal.init(vgmBuf
                     , chipRegister
                     , EnmModel.RealModel
+                    , new EnmChip[] { EnmChip.YM2203 }// usechip.ToArray()
+                    , (uint)(setting.outputDevice.SampleRate * setting.LatencySCCI / 1000)
+                    , (uint)(setting.outputDevice.SampleRate * setting.outputDevice.WaitTime / 1000)))
+                    return false;
+
+                if (DriverPianoRoll != null && !DriverPianoRoll.init(vgmBuf
+                    , chipRegister
+                    , EnmModel.PianoRollModel
                     , new EnmChip[] { EnmChip.YM2203 }// usechip.ToArray()
                     , (uint)(setting.outputDevice.SampleRate * setting.LatencySCCI / 1000)
                     , (uint)(setting.outputDevice.SampleRate * setting.outputDevice.WaitTime / 1000)))
@@ -8595,22 +10022,22 @@ namespace MDPlayer
                 }
                 if (SN76489NGPFlag)
                 {
-                    chipRegister.setSN76489Register(0, 0xe5, EnmModel.RealModel);//white noise mode 
-                    chipRegister.setSN76489Register(1, 0xe5, EnmModel.RealModel);//white noise mode 
-                    chipRegister.setSN76489Register(0, 0xe5, EnmModel.VirtualModel);//white noise mode 
-                    chipRegister.setSN76489Register(1, 0xe5, EnmModel.VirtualModel);//white noise mode 
+                    chipRegister.setSN76489Register(0, 0xe5, EnmModel.RealModel, 0);//white noise mode 
+                    chipRegister.setSN76489Register(1, 0xe5, EnmModel.RealModel, 0);//white noise mode 
+                    chipRegister.setSN76489Register(0, 0xe5, EnmModel.VirtualModel, 0);//white noise mode 
+                    chipRegister.setSN76489Register(1, 0xe5, EnmModel.VirtualModel, 0);//white noise mode 
                 }
                 if (UseChip.Contains(EnmChip.YM2610))
                 {
                     //control2 レジスタのパンをセンターに予め設定
-                    chipRegister.setYM2610Register(0, 0, 0x11, 0xc0, EnmModel.RealModel);
-                    chipRegister.setYM2610Register(0, 0, 0x11, 0xc0, EnmModel.VirtualModel);
+                    chipRegister.setYM2610Register(0, 0, 0x11, 0xc0, EnmModel.RealModel, 0);
+                    chipRegister.setYM2610Register(0, 0, 0x11, 0xc0, EnmModel.VirtualModel, 0);
                 }
                 if (UseChip.Contains(EnmChip.S_YM2610))
                 {
                     //control2 レジスタのパンをセンターに予め設定
-                    chipRegister.setYM2610Register(1, 0, 0x11, 0xc0, EnmModel.RealModel);
-                    chipRegister.setYM2610Register(1, 0, 0x11, 0xc0, EnmModel.VirtualModel);
+                    chipRegister.setYM2610Register(1, 0, 0x11, 0xc0, EnmModel.RealModel, 0);
+                    chipRegister.setYM2610Register(1, 0, 0x11, 0xc0, EnmModel.VirtualModel, 0);
                 }
                 if (UseChip.Contains(EnmChip.C140))
                     chipRegister.writeC140Type(0, ((Vgm)DriverVirtual).C140Type, EnmModel.RealModel);
@@ -8678,13 +10105,6 @@ namespace MDPlayer
                 return false;
             }
 
-        }
-
-        public static void Speed(double value)
-        {
-            vgmSpeed = value;
-            if (DriverVirtual != null) DriverVirtual.vgmSpeed = vgmSpeed;
-            if (DriverReal != null) DriverReal.vgmSpeed = vgmSpeed;
         }
 
         public static bool hoot_generic_z80_Play(Setting setting)
@@ -8845,12 +10265,37 @@ namespace MDPlayer
                 log.ForcedWrite(ex);
                 return false;
             }
-
+            
         }
+
+
+        public static void Speed(double value)
+        {
+            vgmSpeed = value;
+            if (DriverVirtual != null) DriverVirtual.vgmSpeed = vgmSpeed;
+            if (DriverReal != null) DriverReal.vgmSpeed = vgmSpeed;
+            if (DriverPianoRoll != null) DriverPianoRoll.vgmSpeed = vgmSpeed;
+        }
+
 
         public static void GO()
         {
+            if (DriverPianoRoll != null)
+            {
+                SkipPlay(44100 * 5, DriverPianoRoll);
+            }
+
             Stopped = false;
+        }
+        
+        private static void SkipPlay(long skipTick, baseDriver driver)
+        {
+            driver.SkipSwitchPianoRoll = true;
+            for (long i = 0; i < skipTick; i++)
+            {
+                driver.oneFrameProc();
+            }
+            driver.SkipSwitchPianoRoll = false;
         }
 
         private static void ClearFadeoutVolume()
@@ -8916,9 +10361,9 @@ namespace MDPlayer
         public static void FF()
         {
             vgmSpeed = (vgmSpeed == 1) ? 4 : 1;
-            if (DriverVirtual == null) return;
-            DriverVirtual.vgmSpeed = vgmSpeed;
+            if (DriverVirtual != null) DriverVirtual.vgmSpeed = vgmSpeed;
             if (DriverReal != null) DriverReal.vgmSpeed = vgmSpeed;
+            if (DriverPianoRoll != null) DriverPianoRoll.vgmSpeed = vgmSpeed;
         }
 
         public static void Slow()
@@ -8926,6 +10371,7 @@ namespace MDPlayer
             vgmSpeed = (vgmSpeed == 1) ? 0.25 : 1;
             if (DriverVirtual != null) DriverVirtual.vgmSpeed = vgmSpeed;
             if (DriverReal != null) DriverReal.vgmSpeed = vgmSpeed;
+            if (DriverPianoRoll != null) DriverPianoRoll.vgmSpeed = vgmSpeed;
         }
 
         public static void ResetSlow()
@@ -8933,6 +10379,7 @@ namespace MDPlayer
             vgmSpeed = 1;
             DriverVirtual.vgmSpeed = vgmSpeed;
             if (DriverReal != null) DriverReal.vgmSpeed = vgmSpeed;
+            if (DriverPianoRoll != null) DriverPianoRoll.vgmSpeed = vgmSpeed;
         }
 
         public static void Pause()
@@ -9012,7 +10459,16 @@ namespace MDPlayer
                 if (Paused) Pause();
 
                 //暫定
-                if ((naudioWaveFileReader != null || naudioMp3FileReader != null || naudioAiffFileReader != null))
+                if ((naudioWaveFileReader != null 
+                    || naudioMp3FileReader != null 
+                    || naudioAiffFileReader != null
+                    || naudioOggFileReader != null
+                    || naudioM4aFileReader != null
+                    || naudioAacFileReader != null
+                    || naudioWmaFileReader != null
+                    || naudioFlacFileReader != null
+                    || naudioShoutcastWaveStream != null
+                    ))
                 {
                     Stopped = true;
                 }
@@ -9024,8 +10480,24 @@ namespace MDPlayer
 
                     if ((PlayingFileFormat != EnmFileFormat.WAV
                         || PlayingFileFormat != EnmFileFormat.MP3
-                        || PlayingFileFormat != EnmFileFormat.AIFF)
-                        && (naudioWaveFileReader != null|| naudioMp3FileReader != null|| naudioAiffFileReader != null))
+                        || PlayingFileFormat != EnmFileFormat.AIFF
+                        || PlayingFileFormat != EnmFileFormat.OGG
+                        || PlayingFileFormat != EnmFileFormat.M4A
+                        || PlayingFileFormat != EnmFileFormat.AAC
+                        || PlayingFileFormat != EnmFileFormat.WMA
+                        || PlayingFileFormat != EnmFileFormat.FLAC
+                        || PlayingFileFormat != EnmFileFormat.shoutcast
+                        )
+                        && (naudioWaveFileReader != null
+                        || naudioMp3FileReader != null
+                        || naudioAiffFileReader != null
+                        || naudioOggFileReader != null
+                        || naudioM4aFileReader != null
+                        || naudioAacFileReader != null
+                        || naudioWmaFileReader != null
+                        || naudioFlacFileReader != null
+                        || naudioShoutcastWaveStream != null
+                        ))
                     {
                         NAudioStop();
                     }
@@ -9051,7 +10523,16 @@ namespace MDPlayer
                 }
                 TrdClosed = true;
 
-                if (naudioWaveFileReader != null || naudioMp3FileReader != null || naudioAiffFileReader != null)
+                if (naudioWaveFileReader != null 
+                    || naudioMp3FileReader != null 
+                    || naudioAiffFileReader != null
+                    || naudioOggFileReader != null
+                    || naudioM4aFileReader != null
+                    || naudioAacFileReader != null
+                    || naudioWmaFileReader != null
+                    || naudioFlacFileReader != null
+                    || naudioShoutcastWaveStream != null
+                    )
                 {
                     NAudioStop();
                     return;
@@ -9102,6 +10583,7 @@ namespace MDPlayer
             try
             {
                 Stopped = true;
+                loopStream = null;
 
                 if (naudioWaveFileReader != null)
                 {
@@ -9123,6 +10605,48 @@ namespace MDPlayer
                 {
                     AiffFileReader dmy = naudioAiffFileReader;
                     naudioAiffFileReader = null;
+                    wfcp = null;
+                    dmy.Dispose();
+                }
+                if (naudioOggFileReader != null)
+                {
+                    NAudio.Vorbis.VorbisWaveReader dmy = naudioOggFileReader;
+                    naudioOggFileReader = null;
+                    wfcp = null;
+                    dmy.Dispose();
+                }
+                if (naudioM4aFileReader != null)
+                {
+                    MediaFoundationReader dmy = naudioM4aFileReader;
+                    naudioM4aFileReader = null;
+                    wfcp = null;
+                    dmy.Dispose();
+                }
+                if (naudioAacFileReader != null)
+                {
+                    MediaFoundationReader dmy = naudioAacFileReader;
+                    naudioAacFileReader = null;
+                    wfcp = null;
+                    dmy.Dispose();
+                }
+                if (naudioWmaFileReader != null)
+                {
+                    MediaFoundationReader dmy = naudioWmaFileReader;
+                    naudioWmaFileReader = null;
+                    wfcp = null;
+                    dmy.Dispose();
+                }
+                if (naudioFlacFileReader != null)
+                {
+                    FlacReader dmy = naudioFlacFileReader;
+                    naudioFlacFileReader = null;
+                    wfcp = null;
+                    dmy.Dispose();
+                }
+                if (naudioShoutcastWaveStream != null)
+                {
+                    ShoutcastWaveStream dmy = naudioShoutcastWaveStream;
+                    naudioShoutcastWaveStream = null;
                     wfcp = null;
                     dmy.Dispose();
                 }
@@ -9192,6 +10716,12 @@ namespace MDPlayer
                 if (naudioWaveFileReader != null) ws = naudioWaveFileReader;
                 if (naudioMp3FileReader != null) ws = naudioMp3FileReader;
                 if (naudioAiffFileReader != null) ws = naudioAiffFileReader;
+                if (naudioOggFileReader != null) ws = naudioOggFileReader;
+                if (naudioM4aFileReader != null) ws = naudioM4aFileReader;
+                if (naudioAacFileReader != null) ws = naudioAacFileReader;
+                if (naudioWmaFileReader != null) ws = naudioWmaFileReader;
+                if (naudioFlacFileReader != null) ws = naudioFlacFileReader;
+                if (naudioShoutcastWaveStream != null) ws = naudioShoutcastWaveStream;
                 if (ws != null)
                 {
                     //long ns = (long)((double)ws.TotalTime.TotalNanoseconds / (double)ws.Length * ws.Position);
@@ -9219,6 +10749,12 @@ namespace MDPlayer
                 if (naudioWaveFileReader != null) ws = naudioWaveFileReader;
                 if (naudioMp3FileReader != null) ws = naudioMp3FileReader;
                 if (naudioAiffFileReader != null) ws = naudioAiffFileReader;
+                if (naudioOggFileReader != null) ws = naudioOggFileReader;
+                if (naudioM4aFileReader != null) ws = naudioM4aFileReader;
+                if (naudioAacFileReader != null) ws = naudioAacFileReader;
+                if (naudioWmaFileReader != null) ws = naudioWmaFileReader;
+                if (naudioFlacFileReader != null) ws = naudioFlacFileReader;
+                if (naudioShoutcastWaveStream != null) ws = naudioShoutcastWaveStream;
                 if (ws != null)
                 {
                     long ns= (long)ws.TotalTime.TotalNanoseconds;
@@ -9235,18 +10771,26 @@ namespace MDPlayer
         {
             if (DriverVirtual == null && DriverReal == null) return -1;
 
+            //if (DriverVirtual == null)
+            //    return DriverReal is NRTDRV nrtdrv
+            //        ? nrtdrv.work.TOTALCOUNT
+            //        : DriverReal is Vgm vgm
+            //        ? vgm.vgmFrameCounter
+            //        : 0;
             if (DriverVirtual == null)
                 return DriverReal is NRTDRV nrtdrv
                     ? nrtdrv.work.TOTALCOUNT
-                    : DriverReal is Vgm vgm
-                    ? vgm.vgmFrameCounter
-                    : 0;
+                    : DriverReal.vgmFrameCounter;
+            //if (DriverReal == null)
+            //return DriverVirtual is NRTDRV nrtdrv
+            //    ? nrtdrv.work.TOTALCOUNT
+            //    : DriverVirtual is Vgm vgm
+            //    ? vgm.vgmFrameCounter
+            //    : 0;
             if (DriverReal == null)
-                return DriverVirtual is NRTDRV nrtdrv
+                    return DriverVirtual is NRTDRV nrtdrv
                     ? nrtdrv.work.TOTALCOUNT
-                    : DriverVirtual is Vgm vgm
-                    ? vgm.vgmFrameCounter
-                    : 0;
+                    : DriverVirtual.vgmFrameCounter;
 
             if (DriverVirtual is NRTDRV nrtV && DriverReal is NRTDRV nrtR)
             {
@@ -9254,14 +10798,30 @@ namespace MDPlayer
                 ushort nRTC = nrtR.work.TOTALCOUNT;
                 return nVTC > nRTC ? nVTC : nRTC;
             }
-            else if (DriverVirtual is Vgm vgmV && DriverReal is Vgm vgmR)
+            else// if (DriverVirtual is Vgm vgmV && DriverReal is Vgm vgmR)
             {
-                long vVFC = vgmV.vgmFrameCounter;
-                long vRFC = vgmR.vgmFrameCounter;
+                //long vVFC = vgmV.vgmFrameCounter;
+                //long vRFC = vgmR.vgmFrameCounter;
+                long vVFC = DriverVirtual.vgmFrameCounter;
+                long vRFC = DriverReal.vgmFrameCounter;
                 return vVFC > vRFC ? vVFC : vRFC;
             }
 
             return 0;
+        }
+
+        public static long GetVgmFrameCounter()
+        {
+            if (DriverVirtual == null && DriverReal == null) return -1;
+
+            if (DriverVirtual == null)
+                return DriverReal.vgmFrameCounter;
+            if (DriverReal == null)
+                return DriverVirtual.vgmFrameCounter;
+
+            long vVFC = DriverVirtual.vgmFrameCounter;
+            long vRFC = DriverReal.vgmFrameCounter;
+            return vVFC > vRFC ? vVFC : vRFC;
         }
 
         public static long GetLoopCounter()
@@ -9389,7 +10949,10 @@ namespace MDPlayer
             {
                 cnt = Math.Min(DriverReal.vgmCurLoop, cnt);
             }
-
+            if (loopStream != null)
+            {
+                cnt = (uint)loopStream.loopCount;
+            }
             return cnt;
         }
 
@@ -9397,7 +10960,16 @@ namespace MDPlayer
         {
             bool v;
             bool r;
-            if (naudioWaveFileReader != null || naudioMp3FileReader != null || naudioAiffFileReader != null)
+            if (naudioWaveFileReader != null 
+                || naudioMp3FileReader != null 
+                || naudioAiffFileReader != null
+                || naudioOggFileReader != null
+                || naudioM4aFileReader != null
+                || naudioAacFileReader != null
+                || naudioWmaFileReader != null
+                || naudioFlacFileReader != null
+                || naudioShoutcastWaveStream != null
+                )
             {
                 return false;
             }
@@ -9704,7 +11276,16 @@ namespace MDPlayer
             //return NaudioRead(buffer, offset, sampleCount);
             naudioWrap.UpdateSamplePosition(sampleCount);
 
-            if (naudioWaveFileReader != null || naudioMp3FileReader != null || naudioAiffFileReader != null)
+            if (naudioWaveFileReader != null 
+                || naudioMp3FileReader != null 
+                || naudioAiffFileReader != null
+                || naudioOggFileReader != null
+                || naudioM4aFileReader != null
+                || naudioAacFileReader != null
+                || naudioWmaFileReader != null
+                || naudioFlacFileReader != null
+                || naudioShoutcastWaveStream != null
+                )
             {
                 if (TrdClosed)
                 {
@@ -9783,6 +11364,7 @@ namespace MDPlayer
                         cnt = (Int32)mXDRV.Render(buffer, offset + i, 2);
 
                         mds.Update(buffer, offset + i, 2, null);
+                        if (DriverPianoRoll != null) DriverPianoRoll.oneFrameProc();
                     }
                     //cnt = (Int32)((Driver.MXDRV.MXDRV)driverVirtual).Render(buffer, offset , sampleCount);
                     //mds.Update(buffer, offset , sampleCount, null);
@@ -9806,7 +11388,7 @@ namespace MDPlayer
 
                     DriverVirtual.vstDelta = 0;
                     stwh.Reset(); stwh.Start();
-                    cnt = mds.Update(buffer, offset, sampleCount, DriverVirtual.oneFrameProc);
+                    cnt = mds.Update(buffer, offset, sampleCount, oneFrameProc);
                     ProcTimePer1Frame = (int)((double)stwh.ElapsedMilliseconds / (sampleCount + 1) * 1000000.0);
                 }
 
@@ -9886,13 +11468,33 @@ namespace MDPlayer
             return -1;
         }
 
+        private static void oneFrameProc()
+        {
+            DriverVirtual.oneFrameProc();
+            if (DriverPianoRoll != null)
+            {
+                //ピアノロール時には不要なチェックなどをスキップすることにより出来るだけ軽くする。
+                DriverPianoRoll.SkipSwitchPianoRoll = true;
+                DriverPianoRoll.oneFrameProc();
+                DriverPianoRoll.SkipSwitchPianoRoll = false;
+            }
+        }
+
         private static string naudioFileName = null;
         //private static AudioFileReader naudioFileReader = null;
         //private static NAudio.Wave.SampleProviders.SampleToWaveProvider16 naudioWs = null;
         private static WaveFileReader naudioWaveFileReader = null;
         private static Mp3FileReader naudioMp3FileReader = null;
         private static AiffFileReader naudioAiffFileReader = null;
-        private static WaveFormatConversionProvider wfcp = null;
+        private static NAudio.Vorbis.VorbisWaveReader naudioOggFileReader = null;
+        private static MediaFoundationReader naudioM4aFileReader = null;
+        private static MediaFoundationReader naudioAacFileReader = null;
+        private static MediaFoundationReader naudioWmaFileReader = null;
+        private static FlacReader naudioFlacFileReader = null;
+        private static ShoutcastWaveStream naudioShoutcastWaveStream = null;
+        private static LoopStream loopStream = null;
+        //private static WaveFormatConversionProvider wfcp = null;
+        private static IWaveProvider wfcp = null;
         private static byte[] naudioSrcbuffer = null;
         private static long naudioSampleCounter = 0;
         private static int naudioDummyCount = 0;
@@ -9905,6 +11507,12 @@ namespace MDPlayer
             if (naudioWaveFileReader != null) ws = naudioWaveFileReader;
             if (naudioMp3FileReader != null) ws = naudioMp3FileReader;
             if (naudioAiffFileReader != null) ws = naudioAiffFileReader;
+            if (naudioOggFileReader != null) ws = naudioOggFileReader;
+            if (naudioM4aFileReader != null) ws = naudioM4aFileReader;
+            if (naudioAacFileReader != null) ws = naudioAacFileReader;
+            if (naudioWmaFileReader != null) ws = naudioWmaFileReader;
+            if (naudioFlacFileReader != null) ws = naudioFlacFileReader;
+            if(naudioShoutcastWaveStream != null) ws = naudioShoutcastWaveStream;
             if (ws != null)
             {
                 if (ws.CanSeek)
@@ -9915,6 +11523,8 @@ namespace MDPlayer
             }
 
         }
+
+        private static short[] naudioBuff = null;
 
         public static int NaudioRead(short[] buffer, int offset, int count)
         {
@@ -9934,7 +11544,7 @@ namespace MDPlayer
                 
 
                 //データを最後まで演奏したら3回空ループ後、演奏停止する
-                if (read == 0)
+                if (read <= 0)
                 {
                     naudioDummyCount++;
                     if (naudioDummyCount >= 3) Stopped = true;
@@ -9942,8 +11552,8 @@ namespace MDPlayer
 
                 naudioSampleCounter += (int)(count * speed);
 
-
-                Convert2byteToShort(buffer, offset, naudioSrcbuffer, count, speed);
+                Convert2byteToShort(buffer, offset, naudioSrcbuffer, count, speed, (int)(read / 2 / speed));
+                naudioBuff = buffer;
             }
             catch
             {
@@ -9962,7 +11572,7 @@ namespace MDPlayer
             return buffer;
         }
 
-        private static unsafe void Convert2byteToShort(short[] destBuffer, int offset, byte[] source, int shortCount, double speed)
+        private static unsafe void Convert2byteToShort(short[] destBuffer, int offset, byte[] source, int shortCount, double speed,int shortRead)
         {
             fixed (short* pDestBuffer = &destBuffer[offset])
             fixed (byte* pSourceBuffer = &source[0])
@@ -9975,8 +11585,16 @@ namespace MDPlayer
 
                 for (int n = 0; n < samplesRead / 2; n += 2)
                 {
-                    psDestBuffer[(int)n * 2] = (short)Limit((pfSourceBuffer[(int)(n * speed) * 2] * mul) >> 14, 0x7fff, -0x8000);
-                    psDestBuffer[(int)n * 2 + 1] = (short)Limit((pfSourceBuffer[(int)(n * speed) * 2 + 1] * mul) >> 14, 0x7fff, -0x8000);
+                    if (n < shortRead)
+                    {
+                        psDestBuffer[(int)n * 2] = (short)Limit((pfSourceBuffer[(int)(n * speed) * 2] * mul) >> 14, 0x7fff, -0x8000);
+                        psDestBuffer[(int)n * 2 + 1] = (short)Limit((pfSourceBuffer[(int)(n * speed) * 2 + 1] * mul) >> 14, 0x7fff, -0x8000);
+                    }
+                    else
+                    {
+                        psDestBuffer[(int)n * 2] = 0;
+                        psDestBuffer[(int)n * 2 + 1] = 0;
+                    }
 
                     //フェードアウト処理
                     if (!vgmFadeout) continue;
@@ -10186,6 +11804,12 @@ namespace MDPlayer
             return DriverReal.vgmFrameCounter;
         }
 
+        public static long GetPianoFrameCounter()
+        {
+            if (DriverPianoRoll == null) return -1;
+            return DriverPianoRoll.vgmFrameCounter;
+        }
+
         public static GD3 GetGD3()
         {
             if (DriverVirtual == null)
@@ -10193,7 +11817,31 @@ namespace MDPlayer
                 if (naudioMp3FileReader != null){
                     return wavestreamGD3;
                 }
-                if (naudioAiffFileReader != null)
+                else if (naudioAiffFileReader != null)
+                {
+                    return wavestreamGD3;
+                }
+                else if (naudioOggFileReader != null)
+                {
+                    return wavestreamGD3;
+                }
+                else if (naudioM4aFileReader != null)
+                {
+                    return wavestreamGD3;
+                }
+                else if (naudioAacFileReader != null)
+                {
+                    return wavestreamGD3;
+                }
+                else if (naudioWmaFileReader != null)
+                {
+                    return wavestreamGD3;
+                }
+                else if (naudioFlacFileReader != null)
+                {
+                    return wavestreamGD3;
+                }
+                else if (naudioShoutcastWaveStream != null)
                 {
                     return wavestreamGD3;
                 }
@@ -10201,6 +11849,23 @@ namespace MDPlayer
                 return null;
             }
             else return DriverVirtual.GD3;
+        }
+
+        public static List<Tuple<string, string>> GetTagsDriver()
+        {
+            if (naudioShoutcastWaveStream != null)
+            {
+                return naudioShoutcastWaveStream.ReadTitle();
+            }
+
+            if (DriverVirtual == null) return null;
+
+            if (DriverVirtual is muapDotNET)
+            {
+                return ((muapDotNET)DriverVirtual).GetTags();
+            }
+
+            return null;
         }
 
 
@@ -11365,7 +13030,7 @@ namespace MDPlayer
                 , (byte)(0x90
                     | ((ch & 3) << 5)
                     | (15 - (Math.Max(chipRegister.sn76489Vol[chipID][ch][0], chipRegister.sn76489Vol[chipID][ch][1]) & 0xf)))
-                , ct.UseEmu[0] ? EnmModel.VirtualModel : EnmModel.RealModel);
+                , ct.UseEmu[0] ? EnmModel.VirtualModel : EnmModel.RealModel, 0);
         }
 
         public static void SetYM2151Mask(int chipID, int ch)
@@ -11549,6 +13214,11 @@ namespace MDPlayer
         public static void SetN163Mask(int chipID, int ch)
         {
             chipRegister.setN163Mask(chipID, ch);
+        }
+
+        public static void SetYMZ280BMask(int chipID, int ch)
+        {
+            chipRegister.setYMZ280BMask(chipID, ch);
         }
 
 
@@ -11817,6 +13487,12 @@ namespace MDPlayer
         {
             chipRegister.resetN163Mask(chipID, ch);
         }
+
+        public static void ResetYMZ280BMask(int chipID, int ch)
+        {
+            chipRegister.resetYMZ280BMask(chipID, ch);
+        }
+
     }
 
 

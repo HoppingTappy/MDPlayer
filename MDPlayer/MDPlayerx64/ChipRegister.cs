@@ -6,6 +6,8 @@ using MDSound.np.memory;
 using System.Diagnostics;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 using System.Net;
+using NAudio.Gui;
+using System.Diagnostics.Eventing.Reader;
 
 namespace MDPlayer
 {
@@ -43,37 +45,33 @@ namespace MDPlayer
         private Setting.ChipType2[] ctSEGAPCM = new Setting.ChipType2[2] { null, null };
         private Setting.ChipType2[] ctC140 = new Setting.ChipType2[2] { null, null };
         private Setting.ChipType2[] ctES5503 = new Setting.ChipType2[2] { null, null };
+        private Setting.ChipType2[] ctCS4231 = new Setting.ChipType2[2] { null, null };
 
         private RealChip realChip = null;
-        private RSoundChip[] scSN76489 = new RSoundChip[2] { null, null };
-        private RSoundChip[] scYM2612 = new RSoundChip[2] { null, null };
-        private RSoundChip[] scYM2608 = new RSoundChip[2] { null, null };
-        private RSoundChip[] scYM2151 = new RSoundChip[2] { null, null };
-        private RSoundChip[] scYM2151_4M = new RSoundChip[2] { null, null };
-        private RSoundChip[] scYM2203 = new RSoundChip[2] { null, null };
-        private RSoundChip[] scAY8910 = new RSoundChip[2] { null, null };
-        private RSoundChip[] scK051649 = new RSoundChip[2] { null, null };
-        private RSoundChip[] scYM2413 = new RSoundChip[2] { null, null };
-        private RSoundChip[] scYM2610 = new RSoundChip[2] { null, null };
-        private RSoundChip[] scYM2610EA = new RSoundChip[2] { null, null };
-        private RSoundChip[] scYM2610EB = new RSoundChip[2] { null, null };
-        private RSoundChip[] scYM3526 = new RSoundChip[2] { null, null };
-        private RSoundChip[] scYM3812 = new RSoundChip[2] { null, null };
-        private RSoundChip[] scYMF262 = new RSoundChip[2] { null, null };
-        private RSoundChip[] scYMF271 = new RSoundChip[2] { null, null };
-        private RSoundChip[] scYMF278B = new RSoundChip[2] { null, null };
-        private RSoundChip[] scYMZ280B = new RSoundChip[2] { null, null };
-        private RSoundChip[] scSEGAPCM = new RSoundChip[2] { null, null };
-        private RSoundChip[] scC140 = new RSoundChip[2] { null, null };
+        private RSoundChip[] scSN76489 = [null, null];
+        private RSoundChip[] scYM2612 = [null, null];
+        private RSoundChip[] scYM2608 = [null, null];
+        private RSoundChip[] scYM2151 = [null, null];
+        private RSoundChip[] scYM2151_4M = [null, null];
+        private RSoundChip[] scYM2203 = [null, null];
+        private RSoundChip[] scAY8910 = [null, null];
+        private RSoundChip[] scK051649 = [null, null];
+        private RSoundChip[] scYM2413 = [null, null];
+        private RSoundChip[] scYM2610 = [null, null];
+        private RSoundChip[] scYM2610EA = [null, null];
+        private RSoundChip[] scYM2610EB = [null, null];
+        private RSoundChip[] scYM3526 = [null, null];
+        private RSoundChip[] scYM3812 = [null, null];
+        private RSoundChip[] scYMF262 = [null, null];
+        private RSoundChip[] scYMF271 = [null, null];
+        private RSoundChip[] scYMF278B = [null, null];
+        private RSoundChip[] scYMZ280B = [null, null];
+        private RSoundChip[] scSEGAPCM = [null, null];
+        private RSoundChip[] scC140 = [null, null];
 
         private byte[] algM = new byte[] { 0x08, 0x08, 0x08, 0x08, 0x0c, 0x0e, 0x0e, 0x0f };
         private int[] opN = new int[] { 0, 2, 1, 3 };
-
-        public uint[] getSIDRegister(int chipID)
-        {
-            if (SID == null) return null;
-            return SID.GetRegisterFromSid()[chipID];
-        }
+        private PianoRollMng pianoRollMng = null;
 
         private int[] noteTbl = new int[] { 2, 4, 5, -1, 6, 8, 9, -1, 10, 12, 13, -1, 14, 0, 1, -1 };
         private int[] noteTbl2 = new int[] { 13, 14, 0, -1, 1, 2, 4, -1, 5, 6, 8, -1, 9, 10, 12, -1 };
@@ -504,6 +502,8 @@ namespace MDPlayer
         public nes_vrc7 nes_vrc7 = null;
 
 
+        private ushort[][] QSoundRegister = new ushort[2][] { new ushort[256], new ushort[256] };
+
         private int[] LatchedRegister = new int[] { 0, 0 };
         private int[] NoiseFreq = new int[] { 0, 0 };
 
@@ -538,6 +538,7 @@ namespace MDPlayer
 
 
         public ChipRegister(Setting setting
+            , PianoRollMng pianoRollMng
             , MDSound.MDSound mds
             , RealChip nScci
             , vstMng vstMng
@@ -561,6 +562,7 @@ namespace MDPlayer
             )
         {
             this.setting = setting;
+            this.pianoRollMng = pianoRollMng;
             this.mds = mds;
             this.vstMng = vstMng;
             this.vstMng.midiParams = midiParams;
@@ -1029,55 +1031,55 @@ namespace MDPlayer
 
                 for (int c = 0; c < 4; c++)
                 {
-                    setSN76489Register(chipID, 0x90 + (c << 5) + 0xf, EnmModel.RealModel);
-                    setSN76489Register(chipID, 0x80 + (c << 5) + 0x0, EnmModel.RealModel);
-                    setSN76489Register(chipID, 0x00 , EnmModel.RealModel);
+                    setSN76489Register(chipID, 0x90 + (c << 5) + 0xf, EnmModel.RealModel, 0);
+                    setSN76489Register(chipID, 0x80 + (c << 5) + 0x0, EnmModel.RealModel, 0);
+                    setSN76489Register(chipID, 0x00 , EnmModel.RealModel, 0);
                 }
 
                 for (int p = 0; p < 2; p++)
                 {
                     for (int c = 0; c < 3; c++)
                     {
-                        setYM2608Register((byte)chipID, p, 0x40 + c, 127, EnmModel.RealModel);
-                        setYM2608Register((byte)chipID, p, 0x44 + c, 127, EnmModel.RealModel);
-                        setYM2608Register((byte)chipID, p, 0x48 + c, 127, EnmModel.RealModel);
-                        setYM2608Register((byte)chipID, p, 0x4c + c, 127, EnmModel.RealModel);
+                        setYM2608Register((byte)chipID, p, 0x40 + c, 127, EnmModel.RealModel, 0);
+                        setYM2608Register((byte)chipID, p, 0x44 + c, 127, EnmModel.RealModel, 0);
+                        setYM2608Register((byte)chipID, p, 0x48 + c, 127, EnmModel.RealModel, 0);
+                        setYM2608Register((byte)chipID, p, 0x4c + c, 127, EnmModel.RealModel, 0);
                     }
                 }
 
                 //ssg
-                setYM2608Register((byte)chipID, 0, 0x08, 0, EnmModel.RealModel);
-                setYM2608Register((byte)chipID, 0, 0x09, 0, EnmModel.RealModel);
-                setYM2608Register((byte)chipID, 0, 0x0a, 0, EnmModel.RealModel);
+                setYM2608Register((byte)chipID, 0, 0x08, 0, EnmModel.RealModel, 0);
+                setYM2608Register((byte)chipID, 0, 0x09, 0, EnmModel.RealModel, 0);
+                setYM2608Register((byte)chipID, 0, 0x0a, 0, EnmModel.RealModel, 0);
 
                 //rhythm
-                setYM2608Register((byte)chipID, 0, 0x11, 0, EnmModel.RealModel);
+                setYM2608Register((byte)chipID, 0, 0x11, 0, EnmModel.RealModel, 0);
 
                 //adpcm
-                setYM2608Register((byte)chipID, 1, 0x0b, 0, EnmModel.RealModel);
+                setYM2608Register((byte)chipID, 1, 0x0b, 0, EnmModel.RealModel, 0);
 
 
                 for (int p = 0; p < 2; p++)
                 {
                     for (int c = 0; c < 3; c++)
                     {
-                        setYM2610Register((byte)chipID, p, 0x40 + c, 127, EnmModel.RealModel);
-                        setYM2610Register((byte)chipID, p, 0x44 + c, 127, EnmModel.RealModel);
-                        setYM2610Register((byte)chipID, p, 0x48 + c, 127, EnmModel.RealModel);
-                        setYM2610Register((byte)chipID, p, 0x4c + c, 127, EnmModel.RealModel);
+                        setYM2610Register((byte)chipID, p, 0x40 + c, 127, EnmModel.RealModel, 0);
+                        setYM2610Register((byte)chipID, p, 0x44 + c, 127, EnmModel.RealModel, 0);
+                        setYM2610Register((byte)chipID, p, 0x48 + c, 127, EnmModel.RealModel, 0);
+                        setYM2610Register((byte)chipID, p, 0x4c + c, 127, EnmModel.RealModel, 0);
                     }
                 }
 
                 //ssg
-                setYM2610Register((byte)chipID, 0, 0x08, 0, EnmModel.RealModel);
-                setYM2610Register((byte)chipID, 0, 0x09, 0, EnmModel.RealModel);
-                setYM2610Register((byte)chipID, 0, 0x0a, 0, EnmModel.RealModel);
+                setYM2610Register((byte)chipID, 0, 0x08, 0, EnmModel.RealModel, 0);
+                setYM2610Register((byte)chipID, 0, 0x09, 0, EnmModel.RealModel, 0);
+                setYM2610Register((byte)chipID, 0, 0x0a, 0, EnmModel.RealModel, 0);
 
                 //rhythm
-                setYM2610Register((byte)chipID, 0, 0x11, 0, EnmModel.RealModel);
+                setYM2610Register((byte)chipID, 0, 0x11, 0, EnmModel.RealModel, 0);
 
                 //adpcm
-                setYM2610Register((byte)chipID, 1, 0x0b, 0, EnmModel.RealModel);
+                setYM2610Register((byte)chipID, 1, 0x0b, 0, EnmModel.RealModel, 0);
 
 
                 for (int c = 0; c < 8; c++)
@@ -1234,8 +1236,25 @@ namespace MDPlayer
                     new byte[8] { 0,0,0,0,0,0,0,0 }
                 };
 
+        public uint[] getSIDRegister(int chipID)
+        {
+            if (SID == null) return null;
+            return SID.GetRegisterFromSid()[chipID];
+        }
+
+        public pokey.pokey_state getPokeyRegister(int chipID)
+        {
+            return mds.ReadPOKEY((byte)chipID);
+        }
+
         public void setYM2151Register(int chipID, int dPort, int dAddr, int dData, EnmModel model, int hosei, long vgmFrameCounter)
         {
+            if (model == EnmModel.PianoRollModel)
+            {
+                pianoRollMng.SetRegister(EnmChip.YM2151, chipID, dPort * 0x100 + dAddr, dData, vgmFrameCounter);
+                return;
+            }
+
             if (setting.debug.debugOPZ)
             {
                 setYM2414Register(chipID, dPort, dAddr, dData, model, hosei, vgmFrameCounter);
@@ -1285,7 +1304,8 @@ namespace MDPlayer
                         }
                         else
                         {
-                            fmKeyOnYM2151[chipID][ch] &= 0xfe;
+                            byte con = (byte)(dData & 0x78);
+                            fmKeyOnYM2151[chipID][ch] = con;
                         }
                     }
                 }
@@ -1401,6 +1421,8 @@ namespace MDPlayer
 
         private void writeYM2151(int chipID, int dPort, int dAddr, int dData, EnmModel model)
         {
+            if (model == EnmModel.PianoRollModel) return;
+
             if (model == EnmModel.VirtualModel)
             {
                 if (!ctYM2151[chipID].UseReal[0])
@@ -1431,6 +1453,7 @@ namespace MDPlayer
 
         public void softResetYM2151(int chipID, EnmModel model)
         {
+            if (model == EnmModel.PianoRollModel) return;
 
             //FM全チャネルキーオフ
             for (int i = 0; i < 8; i++)
@@ -1546,6 +1569,8 @@ namespace MDPlayer
 
         public void setYM2414Register(int chipID, int dPort, int dAddr, int dData, EnmModel model, int hosei, long vgmFrameCounter)
         {
+            if (model == EnmModel.PianoRollModel) return;
+
             if (ctYM2151 == null) return;
 
             RSoundChip sc = null;
@@ -1586,7 +1611,8 @@ namespace MDPlayer
                     }
                     else
                     {
-                        fmKeyOnYM2151[chipID][ch] &= 0xfe;
+                        byte con = (byte)(dData & 0x78);
+                        fmKeyOnYM2151[chipID][ch] = con;
                     }
                 }
             }
@@ -1716,8 +1742,14 @@ namespace MDPlayer
 
 
 
-        public void setAY8910Register(int chipID, int dAddr, int dData, EnmModel model)
+        public void setAY8910Register(int chipID, int dAddr, int dData, EnmModel model,long vgmFrameCounter)
         {
+            if (model == EnmModel.PianoRollModel)
+            {
+                pianoRollMng.SetRegister(EnmChip.AY8910, chipID, dAddr, dData, vgmFrameCounter);
+                return;
+            }
+
             if (ctAY8910 == null) return;
 
             if (chipID == 0) chipLED.PriAY10 = 2;
@@ -1758,12 +1790,18 @@ namespace MDPlayer
 
         public void setZXBeep(int chipID, EnmModel model)
         {
+            if (model == EnmModel.PianoRollModel) return;
             if (model == EnmModel.RealModel) return;
             mds.WriteZXBeep((byte)chipID);
         }
 
-        public void setDMGRegister(int chipID, int dAddr, int dData, EnmModel model)
+        public void setDMGRegister(int chipID, int dAddr, int dData, EnmModel model, long vgmFrameCounter)
         {
+            if (model == EnmModel.PianoRollModel)
+            {
+                pianoRollMng.SetRegister(EnmChip.DMG, chipID, dAddr, dData, vgmFrameCounter);
+                return;
+            }
             if (chipID == 0) chipLED.PriDMG = 2;
             else chipLED.SecDMG = 2;
 
@@ -1784,6 +1822,7 @@ namespace MDPlayer
 
         public void setNESRegister(int chipID, int dAddr, int dData, EnmModel model)
         {
+            if (model == EnmModel.PianoRollModel) return;
             if (chipID == 0) chipLED.PriNES = 2;
             else chipLED.SecNES = 2;
 
@@ -1804,6 +1843,8 @@ namespace MDPlayer
 
         public byte[] getNESRegisterAPU(int chipID, EnmModel model)
         {
+            if (model == EnmModel.PianoRollModel) return null;
+
             if (chipID == 0) chipLED.PriNES = 2;
             else chipLED.SecNES = 2;
 
@@ -1825,6 +1866,8 @@ namespace MDPlayer
 
         public byte[] getNESRegisterDMC(int chipID, EnmModel model)
         {
+            if (model == EnmModel.PianoRollModel) return null;
+
             if (chipID == 0) chipLED.PriNES = 2;
             else chipLED.SecNES = 2;
 
@@ -1863,6 +1906,8 @@ namespace MDPlayer
 
         public MDSound.np.np_nes_fds.NES_FDS getFDSRegister(int chipID, EnmModel model)
         {
+            if (model == EnmModel.PianoRollModel) return null;
+
             if (chipID == 0) chipLED.PriFDS = 2;
             else chipLED.SecFDS = 2;
 
@@ -1885,6 +1930,8 @@ namespace MDPlayer
 
         public MDSound.np.chip.nes_mmc5 getMMC5Register(int chipID, EnmModel model)
         {
+            if (model == EnmModel.PianoRollModel) return null;
+
             if (chipID == 0) chipLED.PriMMC5 = 2;
             else chipLED.SecMMC5 = 2;
 
@@ -1901,6 +1948,8 @@ namespace MDPlayer
 
         public void setMultiPCMRegister(int chipID, int dAddr, int dData, EnmModel model)
         {
+            if (model == EnmModel.PianoRollModel) return;
+
             if (chipID == 0) chipLED.PriMPCM = 2;
             else chipLED.SecMPCM = 2;
 
@@ -1915,6 +1964,8 @@ namespace MDPlayer
 
         public void setuPD7759Register(int chipID, int dAddr, int dData, EnmModel model)
         {
+            if (model == EnmModel.PianoRollModel) return;
+
             if (chipID == 0) chipLED.PriuPD7759 = 2;
             else chipLED.SecuPD7759 = 2;
 
@@ -1941,6 +1992,8 @@ namespace MDPlayer
 
         public void setMultiPCMSetBank(int chipID, int dCh, int dAddr, EnmModel model)
         {
+            if (model == EnmModel.PianoRollModel) return;
+
             if (chipID == 0) chipLED.PriMPCM = 2;
             else chipLED.SecMPCM = 2;
 
@@ -1955,6 +2008,8 @@ namespace MDPlayer
 
         public void setQSoundRegister(int chipID, byte mm, byte ll, byte rr, EnmModel model)
         {
+            if (model == EnmModel.PianoRollModel) return;
+
             if (chipID == 0) chipLED.PriQsnd = 2;
 
             if (model == EnmModel.VirtualModel)
@@ -1970,7 +2025,6 @@ namespace MDPlayer
             }
         }
 
-        private ushort[][] QSoundRegister = new ushort[2][] { new ushort[256], new ushort[256] };
 
         public ushort[] getQSoundRegister(int chipID)
         {
@@ -1979,6 +2033,8 @@ namespace MDPlayer
 
         public void setX1_010Register(int chipID, byte mm, byte ll, byte rr, EnmModel model)
         {
+            if (model == EnmModel.PianoRollModel) return;
+
             if (chipID == 0) chipLED.PriX1010 = 2;
             else chipLED.SecX1010 = 2;
 
@@ -1994,6 +2050,8 @@ namespace MDPlayer
 
         public void setGA20Register(int chipID, Int32 Adr, byte Dat, EnmModel model)
         {
+            if (model == EnmModel.PianoRollModel) return;
+
             if (chipID == 0) chipLED.PriGA20 = 2;
             else chipLED.SecGA20 = 2;
 
@@ -2008,8 +2066,14 @@ namespace MDPlayer
             }
         }
 
-        public void setYM2413Register(int chipID, int dAddr, int dData, EnmModel model)
+        public void setYM2413Register(int chipID, int dAddr, int dData, EnmModel model,long vgmFrameCounter)
         {
+            if (model == EnmModel.PianoRollModel)
+            {
+                pianoRollMng.SetRegister(EnmChip.YM2413, chipID, dAddr, dData, vgmFrameCounter);
+                return;
+            }
+
             if (ctYM2413 == null) return;
 
             //if (model == EnmModel.RealModel) return;
@@ -2182,8 +2246,14 @@ namespace MDPlayer
             fmRegisterYMF278BFM[chipID] = 0;
         }
 
-        public void setHuC6280Register(int chipID, int dAddr, int dData, EnmModel model)
+        public void setHuC6280Register(int chipID, int dAddr, int dData, EnmModel model,long vgmFrameCounter)
         {
+            if (model == EnmModel.PianoRollModel)
+            {
+                pianoRollMng.SetRegister(EnmChip.HuC6280,chipID,dAddr,dData,vgmFrameCounter);
+                return;
+            }
+
             if (ctHuC6280 == null) return;
 
             if (chipID == 0) chipLED.PriHuC = 2;
@@ -2199,7 +2269,7 @@ namespace MDPlayer
                     }
                     if (dAddr == 4)
                     {
-                        dData = (int)(maskChHuC6280[chipID][HuC6280CurrentCh[chipID]] ? 0 : dData);
+                        //dData = (int)(maskChHuC6280[chipID][HuC6280CurrentCh[chipID]] ? 0 : dData);
                     }
                     //System.Console.WriteLine("chipID:{0} Adr:{1} Dat:{2}", chipID, dAddr, dData);
                     mds.WriteHuC6280((byte)chipID, (byte)dAddr, (byte)dData);
@@ -2213,6 +2283,7 @@ namespace MDPlayer
 
         public byte ReadHuC6280Register(byte chipID, byte adr, EnmModel model)
         {
+            if (model == EnmModel.PianoRollModel) return 0;
             if (ctHuC6280 == null) return 0;
 
             if (chipID == 0) chipLED.PriHuC = 2;
@@ -2231,6 +2302,7 @@ namespace MDPlayer
 
         public void setYM2203Register(int chipID, int dAddr, int dData, EnmModel model)
         {
+            if (model == EnmModel.PianoRollModel) return;
             if (ctYM2203 == null) return;
             if (dAddr < 0 || dData < 0) return;
 
@@ -2369,6 +2441,8 @@ namespace MDPlayer
 
         private void writeYM2203(int chipID, int dPort, int dAddr, int dData, EnmModel model)
         {
+            if (model == EnmModel.PianoRollModel) return;
+
             if (model == EnmModel.VirtualModel)
             {
                 if (!ctYM2203[chipID].UseReal[0])
@@ -2386,6 +2460,7 @@ namespace MDPlayer
 
         public void softResetYM2203(int chipID, EnmModel model)
         {
+            if (model == EnmModel.PianoRollModel) return;
             int i;
 
             // FM全チャネルキーオフ
@@ -2451,42 +2526,44 @@ namespace MDPlayer
 
         public void softResetAY8910(int chipID, EnmModel model)
         {
+            if (model == EnmModel.PianoRollModel) return;
 
             // 全チャネルキーオフ
-            setAY8910Register(chipID, 0x07, 0x00, model);
+            setAY8910Register(chipID, 0x07, 0x00, model,0);
 
             // ボリュームオフ
             for (int ch = 0; ch < 3; ch++)
             {
-                setAY8910Register(chipID, 0x8 + ch, 0x00, model);
+                setAY8910Register(chipID, 0x8 + ch, 0x00, model, 0);
             }
 
             //ノイズ初期化
-            setAY8910Register(chipID, 0x06, 0x00, model);
+            setAY8910Register(chipID, 0x06, 0x00, model, 0);
             //エンベロープ初期化
-            setAY8910Register(chipID, 0x0b, 0x00, model);
-            setAY8910Register(chipID, 0x0c, 0x00, model);
-            setAY8910Register(chipID, 0x0d, 0x00, model);
+            setAY8910Register(chipID, 0x0b, 0x00, model, 0);
+            setAY8910Register(chipID, 0x0c, 0x00, model, 0);
+            setAY8910Register(chipID, 0x0d, 0x00, model, 0);
         }
 
         public void softResetYM2413(int chipID, EnmModel model)
         {
+            if (model == EnmModel.PianoRollModel) return;
 
             // FM全チャネルキーオフ
             for (int ch = 0; ch < 9; ch++)
             {
-                setYM2413Register(chipID, 0x20 + ch, 0x00, model);
+                setYM2413Register(chipID, 0x20 + ch, 0x00, model, 0);
             }
-            setYM2413Register(chipID, 0x0e, 0x00, model);
+            setYM2413Register(chipID, 0x0e, 0x00, model, 0);
 
             // FM TL=15
             for (int ch = 0; ch < 9; ch++)
             {
-                setYM2413Register(chipID, 0x30 + ch, 0x0f, model);
+                setYM2413Register(chipID, 0x30 + ch, 0x0f, model, 0);
             }
-            setYM2413Register(chipID, 0x36, 0x0f, model);
-            setYM2413Register(chipID, 0x37, 0xff, model);
-            setYM2413Register(chipID, 0x38, 0xff, model);
+            setYM2413Register(chipID, 0x36, 0x0f, model, 0);
+            setYM2413Register(chipID, 0x37, 0xff, model, 0);
+            setYM2413Register(chipID, 0x38, 0xff, model, 0);
 
         }
 
@@ -2494,6 +2571,7 @@ namespace MDPlayer
 
         public void setYM3526Register(int chipID, int dAddr, int dData, EnmModel model)
         {
+            if (model == EnmModel.PianoRollModel) return;
             //if (ctYM3526 == null) return;
 
             if (chipID == 0) chipLED.PriOPL = 2;
@@ -2591,6 +2669,8 @@ namespace MDPlayer
 
         private void writeYM3526(int chipID, int dAddr, int dData, EnmModel model)
         {
+            if (model == EnmModel.PianoRollModel) return;
+
             if (model == EnmModel.VirtualModel)
             {
                 if (!ctYM3526[chipID].UseReal[0])
@@ -2609,6 +2689,7 @@ namespace MDPlayer
 
         public void softResetYM3526(int chipID, EnmModel model)
         {
+            if (model == EnmModel.PianoRollModel) return;
             int i;
 
             // FM全チャネルキーオフ
@@ -2635,6 +2716,7 @@ namespace MDPlayer
 
         public void setYM3812Register(int chipID, int dAddr, int dData, EnmModel model)
         {
+            if (model == EnmModel.PianoRollModel) return;
             //if (ctYM3812 == null) return;
 
             if (chipID == 0) chipLED.PriOPL2 = 2;
@@ -2732,6 +2814,8 @@ namespace MDPlayer
 
         private void writeYM3812(int chipID, int dAddr, int dData, EnmModel model)
         {
+            if (model == EnmModel.PianoRollModel) return;
+
             if (model == EnmModel.VirtualModel)
             {
                 if (!ctYM3812[chipID].UseReal[0])
@@ -2749,6 +2833,7 @@ namespace MDPlayer
 
         public void softResetYM3812(int chipID, EnmModel model)
         {
+            if (model == EnmModel.PianoRollModel) return;
             int i;
 
             // FM全チャネルキーオフ
@@ -2786,6 +2871,7 @@ namespace MDPlayer
 
         public void setYMF262Register(int chipID, int dPort, int dAddr, int dData, EnmModel model)
         {
+            if (model == EnmModel.PianoRollModel) return;
             if (ctYMF262 == null) return;
 
             if (chipID == 0) chipLED.PriOPL3 = 2;
@@ -2910,6 +2996,8 @@ namespace MDPlayer
 
         private void writeYMF262(int chipID, int dPort, int dAddr, int dData, EnmModel model)
         {
+            if (model == EnmModel.PianoRollModel) return;
+
             if (model == EnmModel.VirtualModel)
             {
                 if (!ctYMF262[chipID].UseReal[0])
@@ -2927,6 +3015,7 @@ namespace MDPlayer
 
         public void softResetYMF262(int chipID, EnmModel model)
         {
+            if (model == EnmModel.PianoRollModel) return;
             int i;
 
             // FM全チャネルキーオフ
@@ -2953,7 +3042,7 @@ namespace MDPlayer
 
 
 
-        public void setYM2608Register(int chipID, int dPort, int dAddr, int dData, EnmModel model)
+        public void setYM2608Register(int chipID, int dPort, int dAddr, int dData, EnmModel model,long vgmFrameCounter)
         {
             //if (chipID == 0 && dPort == 1 && dAddr == 0x01)
             //{
@@ -2965,6 +3054,12 @@ namespace MDPlayer
 
             if (chipID == 0) chipLED.PriOPNA = 2;
             else chipLED.SecOPNA = 2;
+
+            if(model== EnmModel.PianoRollModel)
+            {
+                pianoRollMng.SetRegister(EnmChip.YM2608, chipID, dPort * 0x100 + dAddr, dData, vgmFrameCounter);
+                return;
+            }
 
             if (
                 (model == EnmModel.VirtualModel && (ctYM2608[chipID] == null || !ctYM2608[chipID].UseReal[0]))
@@ -3094,7 +3189,7 @@ namespace MDPlayer
                                 , dPort
                                 , 0x40 + ch + tslot
                                 , fmRegisterYM2608[chipID][dPort][0x40 + ch + tslot]
-                                , model);
+                                , model,vgmFrameCounter);
                         }
                     }
                 }
@@ -3159,10 +3254,14 @@ namespace MDPlayer
                 if (!ctYM2608[chipID].UseReal[0] && ctYM2608[chipID].UseEmu[0])
                 {
                     //if(dAddr==0x29) Console.Write("{0:x2}:{1:x2}:{2:x2}  ", dPort, dAddr, dData);
+                    //if (chipID == 0 && dPort == 0 && dAddr >= 0x08 && dAddr <= 0x0a)
+                    //{
+                    //log.Write(string.Format("FM P{2} Out:Adr[{0:x02}] val[{1:x02}]", (int)dAddr, (int)dData,dPort));
+                    //}
                     mds.WriteYM2608((byte)chipID, (byte)dPort, (byte)dAddr, (byte)dData);
                 }
             }
-            else
+            else if (model == EnmModel.RealModel)
             {
                 if (scYM2608[chipID] == null) return;
 
@@ -3179,13 +3278,14 @@ namespace MDPlayer
             {
                 return 0;
             }
-            else
+            else if (model == EnmModel.RealModel)
             {
                 if (scYM2608[chipID] == null) return 0;
 
                 return (byte)scYM2608[chipID].GetRegister(dPort * 0x100 + dAddr);
             }
 
+            return 0;
         }
 
         private void writeYM2608(int chipID, int dPort, int dAddr, int dData, EnmModel model)
@@ -3197,7 +3297,7 @@ namespace MDPlayer
                     mds.WriteYM2608((byte)chipID, (byte)dPort, (byte)dAddr, (byte)dData);
                 }
             }
-            else
+            else if (model == EnmModel.RealModel)
             {
                 if (scYM2608[chipID] == null) return;
 
@@ -3207,6 +3307,7 @@ namespace MDPlayer
 
         public void softResetYM2608(int chipID, EnmModel model)
         {
+            if (model == EnmModel.PianoRollModel) return;
             int i;
 
             // FM全チャネルキーオフ
@@ -3294,7 +3395,155 @@ namespace MDPlayer
             writeYM2608(chipID, 1, 0x10, 0x9C, model); // FLAGリセット        }
         }
 
-        private void writeYM2612(int chipID, int dPort, int dAddr, int dData, EnmModel model)
+
+        public void setCS4231Register(int chipID, int dPort, int dAddr, int dData, EnmModel model, long vgmFrameCounter)
+        {
+            //if (ctCS4231 == null) return;
+            if (dAddr < 0 || dData < 0) return;
+
+            if (chipID == 0) chipLED.PriCS4231 = 2;
+            else chipLED.SecCS4231 = 2;
+
+            if (model == EnmModel.PianoRollModel)
+            {
+                pianoRollMng.SetRegister(EnmChip.CS4231, chipID, dPort * 0x100 + dAddr, dData, vgmFrameCounter);
+                return;
+            }
+
+            if (model == EnmModel.VirtualModel)
+            {
+                //if (!ctCS4231[chipID].UseReal[0] && ctCS4231[chipID].UseEmu[0])
+                {
+                    //if(dAddr==0x29) Console.Write("{0:x2}:{1:x2}:{2:x2}  ", dPort, dAddr, dData);
+                    mds.WriteCS4231((byte)chipID, (byte)dPort, (byte)dAddr, (byte)dData);
+                }
+            }
+            else if (model == EnmModel.RealModel)
+            {
+                return;
+            }
+
+        }
+
+        public void setCS4231FIFOBuf(int chipID, byte[] buf, EnmModel model)
+        {
+            if (model == EnmModel.VirtualModel)
+            {
+                mds.SetCS4231FIFOBuf((byte)chipID, buf);
+            }
+            else if (model == EnmModel.RealModel)
+            {
+                return;
+            }
+
+        }
+
+        public byte[] getCS4231EMS_GetCrntMapBuf(int chipID, EnmModel model)
+        {
+            if (model == EnmModel.VirtualModel)
+            {
+                return mds.getCS4231EMS_GetCrntMapBuf((byte)chipID);
+            }
+            else if (model == EnmModel.RealModel)
+            {
+                return null;
+            }
+            return null;
+        }
+
+        public void setCS4231EMS_Map(int chipID, byte al, ref byte ah, ushort bx, ushort dx, EnmModel model)
+        {
+            if (model == EnmModel.VirtualModel)
+            {
+                mds.setCS4231EMS_Map((byte)chipID,  al, ref ah, bx, dx);
+            }
+            else if (model == EnmModel.RealModel)
+            {
+                return;
+            }
+        }
+
+        public ushort getCS4231EMS_GetPageMap(int chipID, EnmModel model)
+        {
+            if (model == EnmModel.VirtualModel)
+            {
+                return mds.getCS4231EMS_GetPageMap((byte)chipID);
+            }
+            else if (model == EnmModel.RealModel)
+            {
+                return 0;
+            }
+            return 0;
+        }
+
+        public void getCS4231EMS_GetHandleName(int chipID, ref byte ah, ushort dx, ref string sbuf, EnmModel model)
+        {
+            if (model == EnmModel.VirtualModel)
+            {
+                mds.getCS4231EMS_GetHandleName((byte)chipID, ref ah, dx, ref sbuf);
+            }
+            else if (model == EnmModel.RealModel)
+            {
+                return;
+            }
+        }
+
+        public void setCS4231EMS_SetHandleName(int chipID, ref byte ah, ushort dx, string sbuf, EnmModel model)
+        {
+            if (model == EnmModel.VirtualModel)
+            {
+                mds.setCS4231EMS_SetHandleName((byte)chipID, ref ah, dx, sbuf);
+            }
+            else if (model == EnmModel.RealModel)
+            {
+                return;
+            }
+        }
+
+        public void setCS4231EMS_AllocMemory(int chipID, ref byte ah, ref ushort dx, ushort bx, EnmModel model)
+        {
+            if (model == EnmModel.VirtualModel)
+            {
+                mds.setCS4231EMS_AllocMemory((byte)chipID, ref ah, ref dx, bx);
+            }
+            else if (model == EnmModel.RealModel)
+            {
+                return;
+            }
+        }
+
+        public byte getCS4231Register(int chipID, int dAddr, EnmModel model, long vgmFrameCounter)
+        {
+            //if (ctCS4231 == null) return;
+            if (dAddr < 0) return 0;
+
+            if (chipID == 0) chipLED.PriCS4231 = 2;
+            else chipLED.SecCS4231 = 2;
+
+            if (model == EnmModel.PianoRollModel)
+            {
+                //pianoRollMng.SetRegister(EnmChip.CS4231, chipID, dPort * 0x100 + dAddr, dData, vgmFrameCounter);
+                return 0;
+            }
+
+            if (model == EnmModel.VirtualModel)
+            {
+                //if (!ctCS4231[chipID].UseReal[0] && ctCS4231[chipID].UseEmu[0])
+                {
+                    //if(dAddr==0x29) Console.Write("{0:x2}:{1:x2}:{2:x2}  ", dPort, dAddr, dData);
+                    return mds.ReadCS4231((byte)chipID, (byte)dAddr);
+                }
+            }
+            else if (model == EnmModel.RealModel)
+            {
+                return 0;
+            }
+
+            return 0;
+        }
+
+
+        private void writeYM2612(int chipID, int dPort, int dAddr, int dData, EnmModel model,long vgmFrameCounter)
         {
             if (model == EnmModel.VirtualModel)
             {
@@ -3303,74 +3552,80 @@ namespace MDPlayer
                     mds.WriteYM2612((byte)chipID, (byte)dPort, (byte)dAddr, (byte)dData);
                 }
             }
-            else
+            else if(model== EnmModel.RealModel)
             {
                 if (scYM2612[chipID] == null) return;
 
                 scYM2612[chipID].SetRegister(dPort * 0x100 + dAddr, dData);
             }
+            else
+            {
+                pianoRollMng.SetRegister(EnmChip.YM2612, chipID, dPort * 0x100 + dAddr, dData, vgmFrameCounter);
+            }
         }
 
         public void softResetYM2612(int chipID, EnmModel model)
         {
+            if (model == EnmModel.PianoRollModel) return;
             int i;
 
             // FM全チャネルキーオフ
-            writeYM2612(chipID, 0, 0x28, 0x00, model);
-            writeYM2612(chipID, 0, 0x28, 0x01, model);
-            writeYM2612(chipID, 0, 0x28, 0x02, model);
-            writeYM2612(chipID, 0, 0x28, 0x04, model);
-            writeYM2612(chipID, 0, 0x28, 0x05, model);
-            writeYM2612(chipID, 0, 0x28, 0x06, model);
+            writeYM2612(chipID, 0, 0x28, 0x00, model,0);
+            writeYM2612(chipID, 0, 0x28, 0x01, model, 0);
+            writeYM2612(chipID, 0, 0x28, 0x02, model, 0);
+            writeYM2612(chipID, 0, 0x28, 0x04, model, 0);
+            writeYM2612(chipID, 0, 0x28, 0x05, model, 0);
+            writeYM2612(chipID, 0, 0x28, 0x06, model, 0);
 
             // FM TL=127
             for (i = 0x40; i < 0x4F + 1; i++)
             {
-                writeYM2612(chipID, 0, i, 0x7f, model);
-                writeYM2612(chipID, 1, i, 0x7f, model);
+                writeYM2612(chipID, 0, i, 0x7f, model, 0);
+                writeYM2612(chipID, 1, i, 0x7f, model, 0);
             }
             // FM ML/DT
             for (i = 0x30; i < 0x3F + 1; i++)
             {
-                writeYM2612(chipID, 0, i, 0x0, model);
-                writeYM2612(chipID, 1, i, 0x0, model);
+                writeYM2612(chipID, 0, i, 0x0, model, 0);
+                writeYM2612(chipID, 1, i, 0x0, model, 0);
             }
             // FM AR,DR,SR,KS,AMON
             for (i = 0x50; i < 0x7F + 1; i++)
             {
-                writeYM2612(chipID, 0, i, 0x0, model);
-                writeYM2612(chipID, 1, i, 0x0, model);
+                writeYM2612(chipID, 0, i, 0x0, model, 0);
+                writeYM2612(chipID, 1, i, 0x0, model, 0);
             }
             // FM SL,RR
             for (i = 0x80; i < 0x8F + 1; i++)
             {
-                writeYM2612(chipID, 0, i, 0xff, model);
-                writeYM2612(chipID, 1, i, 0xff, model);
+                writeYM2612(chipID, 0, i, 0xff, model, 0);
+                writeYM2612(chipID, 1, i, 0xff, model, 0);
             }
             // FM F-Num, FB/CONNECT
             for (i = 0x90; i < 0xBF + 1; i++)
             {
-                writeYM2612(chipID, 0, i, 0x0, model);
-                writeYM2612(chipID, 1, i, 0x0, model);
+                writeYM2612(chipID, 0, i, 0x0, model, 0);
+                writeYM2612(chipID, 1, i, 0x0, model, 0);
             }
             // FM PAN/AMS/PMS
             for (i = 0xB4; i < 0xB6 + 1; i++)
             {
-                writeYM2612(chipID, 0, i, 0xc0, model);
-                writeYM2612(chipID, 1, i, 0xc0, model);
+                writeYM2612(chipID, 0, i, 0xc0, model, 0);
+                writeYM2612(chipID, 1, i, 0xc0, model, 0);
             }
-            writeYM2612(chipID, 0, 0x22, 0x00, model); // HW LFO
-            writeYM2612(chipID, 0, 0x24, 0x00, model); // Timer-A(1)
-            writeYM2612(chipID, 0, 0x25, 0x00, model); // Timer-A(2)
-            writeYM2612(chipID, 0, 0x26, 0x00, model); // Timer-B
-            writeYM2612(chipID, 0, 0x27, 0x30, model); // Timer Control
-            writeYM2612(chipID, 0, 0x29, 0x80, model); // FM4-6 Enable
+            writeYM2612(chipID, 0, 0x22, 0x00, model, 0); // HW LFO
+            writeYM2612(chipID, 0, 0x24, 0x00, model, 0); // Timer-A(1)
+            writeYM2612(chipID, 0, 0x25, 0x00, model, 0); // Timer-A(2)
+            writeYM2612(chipID, 0, 0x26, 0x00, model, 0); // Timer-B
+            writeYM2612(chipID, 0, 0x27, 0x30, model, 0); // Timer Control
+            writeYM2612(chipID, 0, 0x29, 0x80, model, 0); // FM4-6 Enable
 
         }
 
 
         public void writeYM2609(int chipID, int dPort, int dAddr, int dData, EnmModel model)
         {
+            if (model == EnmModel.PianoRollModel) return;
             if (chipID == 0) chipLED.PriOPNA2 = 2;
             else chipLED.SecOPNA2 = 2;
 
@@ -3601,6 +3856,7 @@ namespace MDPlayer
 
         public void writeYM2609AdpcmA(int chipID, byte[] buf, EnmModel model)
         {
+            if (model == EnmModel.PianoRollModel) return;
             //if (model == EnmModel.VirtualModel)
             {
                 //if (!ctYM2609[chipID].UseReal[0] && ctYM2609[chipID].UseEmu[0])
@@ -3618,6 +3874,7 @@ namespace MDPlayer
 
         public void writeYM2609SetOperatorWaveDic(int chipID, int n, byte[] wav, EnmModel model)
         {
+            if (model == EnmModel.PianoRollModel) return;
             //if (model == EnmModel.VirtualModel)
             {
                 //if (!ctYM2609[chipID].UseReal[0] && ctYM2609[chipID].UseEmu[0])
@@ -3636,6 +3893,7 @@ namespace MDPlayer
 
         public void writeYM2609SetAdpcm012(int chipID, int n, byte[] pcm012Buf, EnmModel model)
         {
+            if (model == EnmModel.PianoRollModel) return;
             //if (model == EnmModel.VirtualModel)
             {
                 //if (!ctYM2609[chipID].UseReal[0] && ctYM2609[chipID].UseEmu[0])
@@ -3654,17 +3912,30 @@ namespace MDPlayer
 
         public byte[] readYM2609GetUserWave(int chipID, int p, int n, EnmModel model)
         {
+            if (model == EnmModel.PianoRollModel) return null;
+
             return mds.ReadYM2609_GetPSGUserWave((byte)chipID, p, n);
         }
 
 
-        public void setYM2610Register(int chipID, int dPort, int dAddr, int dData, EnmModel model)
+        public void setYM2610Register(int chipID, int dPort, int dAddr, int dData, EnmModel model,long vgmFrameCounter)
         {
+            if (model == EnmModel.PianoRollModel)
+            {
+                pianoRollMng.SetRegister(EnmChip.YM2610, chipID, dPort * 0x100 + dAddr, dData, vgmFrameCounter);
+                return;
+            }
+
             if (ctYM2610 == null) return;
             if (dAddr < 0 || dData < 0) return;
 
             if (chipID == 0) chipLED.PriOPNB = 2;
             else chipLED.SecOPNB = 2;
+
+            if (model == EnmModel.PianoRollModel)
+            {
+                return;
+            }
 
             if (
                 (model == EnmModel.VirtualModel && (ctYM2610[chipID] == null || !ctYM2610[chipID].UseReal[0]))
@@ -3806,7 +4077,7 @@ namespace MDPlayer
                                 , dPort
                                 , 0x40 + ch + tslot
                                 , fmRegisterYM2610[chipID][dPort][0x40 + ch + tslot]
-                                , model);
+                                , model,vgmFrameCounter);
                         }
                     }
                 }
@@ -3890,7 +4161,7 @@ namespace MDPlayer
                     mds.WriteYM2610((byte)chipID, (byte)dPort, (byte)dAddr, (byte)dData);
                 }
             }
-            else
+            else if (model == EnmModel.RealModel)
             {
                 if (scYM2610[chipID] != null) scYM2610[chipID].SetRegister(dPort * 0x100 + dAddr, dData);
                 if (scYM2610EA[chipID] != null)
@@ -3923,11 +4194,13 @@ namespace MDPlayer
 
         public void WriteYM2610_SetAdpcmA(int chipID, byte[] ym2610AdpcmA, EnmModel model)
         {
+            if (model == EnmModel.PianoRollModel) return;
+
             if (model == EnmModel.VirtualModel)
             {
                 mds.WriteYM2610_SetAdpcmA((byte)chipID, ym2610AdpcmA);
             }
-            else
+            else if (model == EnmModel.RealModel)
             {
                 if (scYM2610[chipID] != null)
                 {
@@ -3972,11 +4245,13 @@ namespace MDPlayer
 
         public void WriteYM2610_SetAdpcmA(int chipID, EnmModel model, int startAddr, int length, byte[] buf, int srcStartAddr)
         {
+            if (model == EnmModel.PianoRollModel) return;
+
             if (model == EnmModel.VirtualModel)
             {
                 return;
             }
-            else
+            else if(model == EnmModel.RealModel)
             {
                 if (scYM2610[chipID] != null)
                 {
@@ -4019,11 +4294,13 @@ namespace MDPlayer
 
         public void WriteYM2610_SetAdpcmB(int chipID, byte[] ym2610AdpcmB, EnmModel model)
         {
+            if (model == EnmModel.PianoRollModel) return;
+
             if (model == EnmModel.VirtualModel)
             {
                 mds.WriteYM2610_SetAdpcmB((byte)chipID, ym2610AdpcmB);
             }
-            else
+            else if (model == EnmModel.RealModel)
             {
                 if (scYM2610[chipID] != null)
                 {
@@ -4068,11 +4345,13 @@ namespace MDPlayer
 
         public void WriteYM2610_SetAdpcmB(int chipID, EnmModel model, int startAddr, int length, byte[] buf, int srcStartAddr)
         {
+            if (model == EnmModel.PianoRollModel) return;
+
             if (model == EnmModel.VirtualModel)
             {
                 return;
             }
-            else
+            else if (model == EnmModel.RealModel)
             {
                 if (scYM2610[chipID] != null)
                 {
@@ -4115,6 +4394,7 @@ namespace MDPlayer
 
         public void setYMF271Register(int chipID, int dPort, int dAddr, int dData, EnmModel model)
         {
+            if (model == EnmModel.PianoRollModel) return;
             if (ctYMF271 == null) return;
 
             if (chipID == 0) chipLED.PriOPX = 2;
@@ -4139,6 +4419,7 @@ namespace MDPlayer
 
         public void setYMF278BRegister(int chipID, int dPort, int dAddr, int dData, EnmModel model)
         {
+            if (model == EnmModel.PianoRollModel) return;
             if (ctYMF278B == null) return;
 
             if (chipID == 0) chipLED.PriOPL4 = 2;
@@ -4218,6 +4499,7 @@ namespace MDPlayer
 
         public void setY8950Register(int chipID, int dAddr, int dData, EnmModel model)
         {
+            if (model == EnmModel.PianoRollModel) return;
             if (ctY8950 == null) return;
 
             if (chipID == 0) chipLED.PriY8950 = 2;
@@ -4300,6 +4582,7 @@ namespace MDPlayer
 
         public void setYMZ280BRegister(int chipID, int dAddr, int dData, EnmModel model)
         {
+            if (model == EnmModel.PianoRollModel) return;
             if (ctYMZ280B == null) return;
 
             if (chipID == 0) chipLED.PriYMZ = 2;
@@ -4329,6 +4612,12 @@ namespace MDPlayer
 
             if (chipID == 0) chipLED.PriOPN2 = 2;
             else chipLED.SecOPN2 = 2;
+
+            if (model == EnmModel.PianoRollModel)
+            {
+                pianoRollMng.SetRegister(EnmChip.YM2612, chipID, dPort * 0x100 + dAddr, dData, vgmFrameCounter);
+                return;
+            }
 
             if (model == EnmModel.VirtualModel)
             {
@@ -4506,13 +4795,13 @@ namespace MDPlayer
                         return;//TESTレジスタへのデータ送信をキャンセルする
 
                     //エミュを使用する場合のみMDSoundへデータを送る
-                    //Console.WriteLine("{0}:{1:X02}:{2:X02}:{3:X02}", chipID, dPort, dAddr, dData);
+                    //Debug.WriteLine("{0}:{1:X02}:{2:X02}:{3:X02}", chipID, dPort, dAddr, dData);
                     if (ctYM2612[chipID].UseEmu[0]) mds.WriteYM2612((byte)chipID, (byte)dPort, (byte)dAddr, (byte)dData);
                     if (ctYM2612[chipID].UseEmu[1]) mds.WriteYM3438((byte)chipID, (byte)dPort, (byte)dAddr, (byte)dData);
                     if (ctYM2612[chipID].UseEmu[2]) mds.WriteYM2612mame((byte)chipID, (byte)dPort, (byte)dAddr, (byte)dData);
                 }
             }
-            else
+            else if(model== EnmModel.RealModel)
             {
 
                 //実音源(Scci)
@@ -4543,6 +4832,7 @@ namespace MDPlayer
             }
 
         }
+
 
         public void PPSDRVLoad(int ChipID, byte[] addtionalData, EnmModel model)
         {
@@ -4623,8 +4913,8 @@ namespace MDPlayer
         {
             maskPSGChAY8910[chipID][ch] = mask;
 
-            setAY8910Register(chipID, (byte)(0x8 + ch), (byte)psgRegisterAY8910[chipID][8 + ch], EnmModel.VirtualModel);
-            setAY8910Register(chipID, (byte)(0x8 + ch), (byte)psgRegisterAY8910[chipID][8 + ch], EnmModel.RealModel);
+            setAY8910Register(chipID, (byte)(0x8 + ch), (byte)psgRegisterAY8910[chipID][8 + ch], EnmModel.VirtualModel,0);
+            setAY8910Register(chipID, (byte)(0x8 + ch), (byte)psgRegisterAY8910[chipID][8 + ch], EnmModel.RealModel, 0);
         }
 
         public void setMaskRF5C164(int chipID, int ch, bool mask)
@@ -4700,13 +4990,13 @@ namespace MDPlayer
 
             if (ch < 9)
             {
-                setYM2413Register((byte)chipID, 0x20 + ch, fmRegisterYM2413[chipID][0x20 + ch], EnmModel.VirtualModel);
-                setYM2413Register((byte)chipID, 0x20 + ch, fmRegisterYM2413[chipID][0x20 + ch], EnmModel.RealModel);
+                setYM2413Register((byte)chipID, 0x20 + ch, fmRegisterYM2413[chipID][0x20 + ch], EnmModel.VirtualModel, 0);
+                setYM2413Register((byte)chipID, 0x20 + ch, fmRegisterYM2413[chipID][0x20 + ch], EnmModel.RealModel, 0);
             }
             else if (ch < 14)
             {
-                setYM2413Register((byte)chipID, 0x0e, fmRegisterYM2413[chipID][0x0e], EnmModel.VirtualModel);
-                setYM2413Register((byte)chipID, 0x0e, fmRegisterYM2413[chipID][0x0e], EnmModel.RealModel);
+                setYM2413Register((byte)chipID, 0x0e, fmRegisterYM2413[chipID][0x0e], EnmModel.VirtualModel, 0);
+                setYM2413Register((byte)chipID, 0x0e, fmRegisterYM2413[chipID][0x0e], EnmModel.RealModel, 0);
             }
         }
 
@@ -4764,6 +5054,12 @@ namespace MDPlayer
         public void setMaskHuC6280(int chipID, int ch, bool mask)
         {
             maskChHuC6280[chipID][ch] = mask;
+            if (dicChipsInfo.ContainsKey(MDSound.MDSound.enmInstrumentType.HuC6280))
+            {
+                //HESはレジスタの内容をリードするため、ライトするデータを加工できない。その為CHIP側のmute機能に任せる
+                if (mask) mds.setHuC6280Mask(chipID, ch);
+                else mds.resetHuC6280Mask(chipID, ch);
+            }
         }
 
         public void setMaskSegaPCM(int chipID, int ch, bool mask)
@@ -4805,34 +5101,34 @@ namespace MDPlayer
             if (ch < 6)
             {
                 //FM1-6
-                setYM2608Register((byte)chipID, p, 0x40 + c, fmRegisterYM2608[chipID][p][0x40 + c], EnmModel.VirtualModel);
-                setYM2608Register((byte)chipID, p, 0x44 + c, fmRegisterYM2608[chipID][p][0x44 + c], EnmModel.VirtualModel);
-                setYM2608Register((byte)chipID, p, 0x48 + c, fmRegisterYM2608[chipID][p][0x48 + c], EnmModel.VirtualModel);
-                setYM2608Register((byte)chipID, p, 0x4c + c, fmRegisterYM2608[chipID][p][0x4c + c], EnmModel.VirtualModel);
+                setYM2608Register((byte)chipID, p, 0x40 + c, fmRegisterYM2608[chipID][p][0x40 + c], EnmModel.VirtualModel,0);
+                setYM2608Register((byte)chipID, p, 0x44 + c, fmRegisterYM2608[chipID][p][0x44 + c], EnmModel.VirtualModel, 0);
+                setYM2608Register((byte)chipID, p, 0x48 + c, fmRegisterYM2608[chipID][p][0x48 + c], EnmModel.VirtualModel, 0);
+                setYM2608Register((byte)chipID, p, 0x4c + c, fmRegisterYM2608[chipID][p][0x4c + c], EnmModel.VirtualModel, 0);
 
-                setYM2608Register((byte)chipID, p, 0x40 + c, fmRegisterYM2608[chipID][p][0x40 + c], EnmModel.RealModel);
-                setYM2608Register((byte)chipID, p, 0x44 + c, fmRegisterYM2608[chipID][p][0x44 + c], EnmModel.RealModel);
-                setYM2608Register((byte)chipID, p, 0x48 + c, fmRegisterYM2608[chipID][p][0x48 + c], EnmModel.RealModel);
-                setYM2608Register((byte)chipID, p, 0x4c + c, fmRegisterYM2608[chipID][p][0x4c + c], EnmModel.RealModel);
+                setYM2608Register((byte)chipID, p, 0x40 + c, fmRegisterYM2608[chipID][p][0x40 + c], EnmModel.RealModel, 0);
+                setYM2608Register((byte)chipID, p, 0x44 + c, fmRegisterYM2608[chipID][p][0x44 + c], EnmModel.RealModel, 0);
+                setYM2608Register((byte)chipID, p, 0x48 + c, fmRegisterYM2608[chipID][p][0x48 + c], EnmModel.RealModel, 0);
+                setYM2608Register((byte)chipID, p, 0x4c + c, fmRegisterYM2608[chipID][p][0x4c + c], EnmModel.RealModel, 0);
             }
             else if (ch < 9)
             {
                 //SSG
-                setYM2608Register((byte)chipID, 0, 0x08 + ch - 6, fmRegisterYM2608[chipID][0][0x08 + ch - 6], EnmModel.VirtualModel);
-                setYM2608Register((byte)chipID, 0, 0x08 + ch - 6, fmRegisterYM2608[chipID][0][0x08 + ch - 6], EnmModel.RealModel);
+                setYM2608Register((byte)chipID, 0, 0x08 + ch - 6, fmRegisterYM2608[chipID][0][0x08 + ch - 6], EnmModel.VirtualModel, 0);
+                setYM2608Register((byte)chipID, 0, 0x08 + ch - 6, fmRegisterYM2608[chipID][0][0x08 + ch - 6], EnmModel.RealModel, 0);
             }
             else if (ch < 12)
             {
                 //FM3OP1-4
-                setYM2608Register((byte)chipID, 0, 0x40 + 2, fmRegisterYM2608[chipID][0][0x40 + 2], EnmModel.VirtualModel);
-                setYM2608Register((byte)chipID, 0, 0x44 + 2, fmRegisterYM2608[chipID][0][0x44 + 2], EnmModel.VirtualModel);
-                setYM2608Register((byte)chipID, 0, 0x48 + 2, fmRegisterYM2608[chipID][0][0x48 + 2], EnmModel.VirtualModel);
-                setYM2608Register((byte)chipID, 0, 0x4c + 2, fmRegisterYM2608[chipID][0][0x4c + 2], EnmModel.VirtualModel);
+                setYM2608Register((byte)chipID, 0, 0x40 + 2, fmRegisterYM2608[chipID][0][0x40 + 2], EnmModel.VirtualModel, 0);
+                setYM2608Register((byte)chipID, 0, 0x44 + 2, fmRegisterYM2608[chipID][0][0x44 + 2], EnmModel.VirtualModel, 0);
+                setYM2608Register((byte)chipID, 0, 0x48 + 2, fmRegisterYM2608[chipID][0][0x48 + 2], EnmModel.VirtualModel, 0);
+                setYM2608Register((byte)chipID, 0, 0x4c + 2, fmRegisterYM2608[chipID][0][0x4c + 2], EnmModel.VirtualModel, 0);
 
-                setYM2608Register((byte)chipID, 0, 0x40 + 2, fmRegisterYM2608[chipID][0][0x40 + 2], EnmModel.RealModel);
-                setYM2608Register((byte)chipID, 0, 0x44 + 2, fmRegisterYM2608[chipID][0][0x44 + 2], EnmModel.RealModel);
-                setYM2608Register((byte)chipID, 0, 0x48 + 2, fmRegisterYM2608[chipID][0][0x48 + 2], EnmModel.RealModel);
-                setYM2608Register((byte)chipID, 0, 0x4c + 2, fmRegisterYM2608[chipID][0][0x4c + 2], EnmModel.RealModel);
+                setYM2608Register((byte)chipID, 0, 0x40 + 2, fmRegisterYM2608[chipID][0][0x40 + 2], EnmModel.RealModel, 0);
+                setYM2608Register((byte)chipID, 0, 0x44 + 2, fmRegisterYM2608[chipID][0][0x44 + 2], EnmModel.RealModel, 0);
+                setYM2608Register((byte)chipID, 0, 0x48 + 2, fmRegisterYM2608[chipID][0][0x48 + 2], EnmModel.RealModel, 0);
+                setYM2608Register((byte)chipID, 0, 0x4c + 2, fmRegisterYM2608[chipID][0][0x4c + 2], EnmModel.RealModel, 0);
             }
         }
 
@@ -4852,39 +5148,39 @@ namespace MDPlayer
 
             if (ch < 6)
             {
-                setYM2610Register((byte)chipID, p, 0x40 + c, fmRegisterYM2610[chipID][p][0x40 + c], EnmModel.VirtualModel);
-                setYM2610Register((byte)chipID, p, 0x44 + c, fmRegisterYM2610[chipID][p][0x44 + c], EnmModel.VirtualModel);
-                setYM2610Register((byte)chipID, p, 0x48 + c, fmRegisterYM2610[chipID][p][0x48 + c], EnmModel.VirtualModel);
-                setYM2610Register((byte)chipID, p, 0x4c + c, fmRegisterYM2610[chipID][p][0x4c + c], EnmModel.VirtualModel);
+                setYM2610Register((byte)chipID, p, 0x40 + c, fmRegisterYM2610[chipID][p][0x40 + c], EnmModel.VirtualModel, 0);
+                setYM2610Register((byte)chipID, p, 0x44 + c, fmRegisterYM2610[chipID][p][0x44 + c], EnmModel.VirtualModel, 0);
+                setYM2610Register((byte)chipID, p, 0x48 + c, fmRegisterYM2610[chipID][p][0x48 + c], EnmModel.VirtualModel, 0);
+                setYM2610Register((byte)chipID, p, 0x4c + c, fmRegisterYM2610[chipID][p][0x4c + c], EnmModel.VirtualModel, 0);
 
-                setYM2610Register((byte)chipID, p, 0x40 + c, fmRegisterYM2610[chipID][p][0x40 + c], EnmModel.RealModel);
-                setYM2610Register((byte)chipID, p, 0x44 + c, fmRegisterYM2610[chipID][p][0x44 + c], EnmModel.RealModel);
-                setYM2610Register((byte)chipID, p, 0x48 + c, fmRegisterYM2610[chipID][p][0x48 + c], EnmModel.RealModel);
-                setYM2610Register((byte)chipID, p, 0x4c + c, fmRegisterYM2610[chipID][p][0x4c + c], EnmModel.RealModel);
+                setYM2610Register((byte)chipID, p, 0x40 + c, fmRegisterYM2610[chipID][p][0x40 + c], EnmModel.RealModel, 0);
+                setYM2610Register((byte)chipID, p, 0x44 + c, fmRegisterYM2610[chipID][p][0x44 + c], EnmModel.RealModel, 0);
+                setYM2610Register((byte)chipID, p, 0x48 + c, fmRegisterYM2610[chipID][p][0x48 + c], EnmModel.RealModel, 0);
+                setYM2610Register((byte)chipID, p, 0x4c + c, fmRegisterYM2610[chipID][p][0x4c + c], EnmModel.RealModel, 0);
             }
             else if (ch < 9)
             {
-                setYM2610Register((byte)chipID, 0, 0x08 + ch - 6, fmRegisterYM2610[chipID][0][0x08 + ch - 6], EnmModel.VirtualModel);
-                setYM2610Register((byte)chipID, 0, 0x08 + ch - 6, fmRegisterYM2610[chipID][0][0x08 + ch - 6], EnmModel.RealModel);
+                setYM2610Register((byte)chipID, 0, 0x08 + ch - 6, fmRegisterYM2610[chipID][0][0x08 + ch - 6], EnmModel.VirtualModel, 0);
+                setYM2610Register((byte)chipID, 0, 0x08 + ch - 6, fmRegisterYM2610[chipID][0][0x08 + ch - 6], EnmModel.RealModel, 0);
             }
             else if (ch < 12)
             {
-                setYM2610Register((byte)chipID, 0, 0x40 + 2, fmRegisterYM2610[chipID][0][0x40 + 2], EnmModel.VirtualModel);
-                setYM2610Register((byte)chipID, 0, 0x44 + 2, fmRegisterYM2610[chipID][0][0x44 + 2], EnmModel.VirtualModel);
-                setYM2610Register((byte)chipID, 0, 0x48 + 2, fmRegisterYM2610[chipID][0][0x48 + 2], EnmModel.VirtualModel);
-                setYM2610Register((byte)chipID, 0, 0x4c + 2, fmRegisterYM2610[chipID][0][0x4c + 2], EnmModel.VirtualModel);
+                setYM2610Register((byte)chipID, 0, 0x40 + 2, fmRegisterYM2610[chipID][0][0x40 + 2], EnmModel.VirtualModel, 0);
+                setYM2610Register((byte)chipID, 0, 0x44 + 2, fmRegisterYM2610[chipID][0][0x44 + 2], EnmModel.VirtualModel, 0);
+                setYM2610Register((byte)chipID, 0, 0x48 + 2, fmRegisterYM2610[chipID][0][0x48 + 2], EnmModel.VirtualModel, 0);
+                setYM2610Register((byte)chipID, 0, 0x4c + 2, fmRegisterYM2610[chipID][0][0x4c + 2], EnmModel.VirtualModel, 0);
 
-                setYM2610Register((byte)chipID, 0, 0x40 + 2, fmRegisterYM2610[chipID][0][0x40 + 2], EnmModel.RealModel);
-                setYM2610Register((byte)chipID, 0, 0x44 + 2, fmRegisterYM2610[chipID][0][0x44 + 2], EnmModel.RealModel);
-                setYM2610Register((byte)chipID, 0, 0x48 + 2, fmRegisterYM2610[chipID][0][0x48 + 2], EnmModel.RealModel);
-                setYM2610Register((byte)chipID, 0, 0x4c + 2, fmRegisterYM2610[chipID][0][0x4c + 2], EnmModel.RealModel);
+                setYM2610Register((byte)chipID, 0, 0x40 + 2, fmRegisterYM2610[chipID][0][0x40 + 2], EnmModel.RealModel, 0);
+                setYM2610Register((byte)chipID, 0, 0x44 + 2, fmRegisterYM2610[chipID][0][0x44 + 2], EnmModel.RealModel, 0);
+                setYM2610Register((byte)chipID, 0, 0x48 + 2, fmRegisterYM2610[chipID][0][0x48 + 2], EnmModel.RealModel, 0);
+                setYM2610Register((byte)chipID, 0, 0x4c + 2, fmRegisterYM2610[chipID][0][0x4c + 2], EnmModel.RealModel, 0);
             }
             else if (ch > 13)
             {
                 if (maskFMChYM2610[chipID][ch])
                 {
-                    setYM2610Register((byte)chipID, 1, 0x00,0xb0 + (1 << (ch - 14)),  EnmModel.VirtualModel);
-                    setYM2610Register((byte)chipID, 1, 0x00,0xb0 + (1 << (ch - 14)),  EnmModel.RealModel);
+                    setYM2610Register((byte)chipID, 1, 0x00,0xb0 + (1 << (ch - 14)),  EnmModel.VirtualModel, 0);
+                    setYM2610Register((byte)chipID, 1, 0x00,0xb0 + (1 << (ch - 14)),  EnmModel.RealModel, 0);
                 }
             }
         }
@@ -4895,7 +5191,7 @@ namespace MDPlayer
 
             if (ch > 8)
             {
-                if(Audio.PlayingFileFormat== EnmFileFormat.XGM)
+                if (Audio.PlayingFileFormat == EnmFileFormat.XGM && chipID == 0)
                 {
                     if (Audio.DriverVirtual != null && Audio.DriverVirtual is xgm)
                     {
@@ -5052,16 +5348,15 @@ namespace MDPlayer
         public void setK051649Mask(int chipID, int ch)
         {
             maskChK051649[chipID][ch] = true;
-            writeK051649((byte)chipID, 0, (byte)ch, EnmModel.VirtualModel);
-            writeK051649((byte)chipID, (2 << 1) | 1, K051649_vol[chipID][ch], EnmModel.VirtualModel);
+            writeK051649((byte)chipID, 0, (byte)ch, EnmModel.VirtualModel, 0);
+            writeK051649((byte)chipID, (2 << 1) | 1, K051649_vol[chipID][ch], EnmModel.VirtualModel, 0);
         }
 
         public void resetK051649Mask(int chipID, int ch)
         {
             maskChK051649[chipID][ch] = false;
-            writeK051649((byte)chipID, 0, (byte)ch, EnmModel.VirtualModel);
-            writeK051649((byte)chipID, (2 << 1) | 1, K051649_vol[chipID][ch], EnmModel.VirtualModel);
-            //writeK051649((byte)chipID, (3 << 1) | 1, K051649tKeyOnOff[chipID], EnmModel.VirtualModel);
+            writeK051649((byte)chipID, 0, (byte)ch, EnmModel.VirtualModel, 0);
+            writeK051649((byte)chipID, (2 << 1) | 1, K051649_vol[chipID][ch], EnmModel.VirtualModel, 0);
         }
 
         public void setK053260Mask(int chipID, int ch, bool mask)
@@ -5116,6 +5411,18 @@ namespace MDPlayer
             if (nes_n106 != null) nes_n106.SetMask(nsfN163mask);
         }
 
+        public void setYMZ280BMask(int chipID, int ch)
+        {
+            if (chipID != 0) return;
+            mds.setYMZ280BMask(chipID, ch);
+        }
+
+        public void resetYMZ280BMask(int chipID, int ch)
+        {
+            if (chipID != 0) return;
+            mds.resetYMZ280BMask(chipID, ch);
+        }
+
 
 
 
@@ -5154,7 +5461,7 @@ namespace MDPlayer
             nowAY8910FadeoutVol[chipID] = v;
             for (int c = 0; c < 3; c++)
             {
-                setAY8910Register(chipID, 0x8 + c, psgRegisterAY8910[chipID][0x8 + c], EnmModel.RealModel);
+                setAY8910Register(chipID, 0x8 + c, psgRegisterAY8910[chipID][0x8 + c], EnmModel.RealModel, 0);
             }
         }
 
@@ -5163,7 +5470,7 @@ namespace MDPlayer
             nowYM2413FadeoutVol[chipID] = v / (128 / 16);
             for (int c = 0; c < 9; c++)
             {
-                setYM2413Register(chipID, 0x30 + c, fmRegisterYM2413[chipID][0x30 + c], EnmModel.RealModel);
+                setYM2413Register(chipID, 0x30 + c, fmRegisterYM2413[chipID][0x30 + c], EnmModel.RealModel, 0);
             }
         }
 
@@ -5204,23 +5511,23 @@ namespace MDPlayer
             {
                 for (int c = 0; c < 3; c++)
                 {
-                    setYM2608Register((byte)chipID, p, 0x40 + c, fmRegisterYM2608[chipID][p][0x40 + c], EnmModel.RealModel);
-                    setYM2608Register((byte)chipID, p, 0x44 + c, fmRegisterYM2608[chipID][p][0x44 + c], EnmModel.RealModel);
-                    setYM2608Register((byte)chipID, p, 0x48 + c, fmRegisterYM2608[chipID][p][0x48 + c], EnmModel.RealModel);
-                    setYM2608Register((byte)chipID, p, 0x4c + c, fmRegisterYM2608[chipID][p][0x4c + c], EnmModel.RealModel);
+                    setYM2608Register((byte)chipID, p, 0x40 + c, fmRegisterYM2608[chipID][p][0x40 + c], EnmModel.RealModel, 0);
+                    setYM2608Register((byte)chipID, p, 0x44 + c, fmRegisterYM2608[chipID][p][0x44 + c], EnmModel.RealModel, 0);
+                    setYM2608Register((byte)chipID, p, 0x48 + c, fmRegisterYM2608[chipID][p][0x48 + c], EnmModel.RealModel, 0);
+                    setYM2608Register((byte)chipID, p, 0x4c + c, fmRegisterYM2608[chipID][p][0x4c + c], EnmModel.RealModel, 0);
                 }
             }
 
             //ssg
-            setYM2608Register((byte)chipID, 0, 0x08, fmRegisterYM2608[chipID][0][0x08], EnmModel.RealModel);
-            setYM2608Register((byte)chipID, 0, 0x09, fmRegisterYM2608[chipID][0][0x09], EnmModel.RealModel);
-            setYM2608Register((byte)chipID, 0, 0x0a, fmRegisterYM2608[chipID][0][0x0a], EnmModel.RealModel);
+            setYM2608Register((byte)chipID, 0, 0x08, fmRegisterYM2608[chipID][0][0x08], EnmModel.RealModel, 0);
+            setYM2608Register((byte)chipID, 0, 0x09, fmRegisterYM2608[chipID][0][0x09], EnmModel.RealModel, 0);
+            setYM2608Register((byte)chipID, 0, 0x0a, fmRegisterYM2608[chipID][0][0x0a], EnmModel.RealModel, 0);
 
             //rhythm
-            setYM2608Register((byte)chipID, 0, 0x11, fmRegisterYM2608[chipID][0][0x11], EnmModel.RealModel);
+            setYM2608Register((byte)chipID, 0, 0x11, fmRegisterYM2608[chipID][0][0x11], EnmModel.RealModel, 0);
 
             //adpcm
-            setYM2608Register((byte)chipID, 1, 0x0b, fmRegisterYM2608[chipID][1][0x0b], EnmModel.RealModel);
+            setYM2608Register((byte)chipID, 1, 0x0b, fmRegisterYM2608[chipID][1][0x0b], EnmModel.RealModel, 0);
         }
 
         public void setFadeoutVolYM2610(int chipID, int v)
@@ -5230,23 +5537,23 @@ namespace MDPlayer
             {
                 for (int c = 0; c < 3; c++)
                 {
-                    setYM2610Register((byte)chipID, p, 0x40 + c, fmRegisterYM2610[chipID][p][0x40 + c], EnmModel.RealModel);
-                    setYM2610Register((byte)chipID, p, 0x44 + c, fmRegisterYM2610[chipID][p][0x44 + c], EnmModel.RealModel);
-                    setYM2610Register((byte)chipID, p, 0x48 + c, fmRegisterYM2610[chipID][p][0x48 + c], EnmModel.RealModel);
-                    setYM2610Register((byte)chipID, p, 0x4c + c, fmRegisterYM2610[chipID][p][0x4c + c], EnmModel.RealModel);
+                    setYM2610Register((byte)chipID, p, 0x40 + c, fmRegisterYM2610[chipID][p][0x40 + c], EnmModel.RealModel, 0);
+                    setYM2610Register((byte)chipID, p, 0x44 + c, fmRegisterYM2610[chipID][p][0x44 + c], EnmModel.RealModel, 0);
+                    setYM2610Register((byte)chipID, p, 0x48 + c, fmRegisterYM2610[chipID][p][0x48 + c], EnmModel.RealModel, 0);
+                    setYM2610Register((byte)chipID, p, 0x4c + c, fmRegisterYM2610[chipID][p][0x4c + c], EnmModel.RealModel, 0);
                 }
             }
 
             //ssg
-            setYM2610Register((byte)chipID, 0, 0x08, fmRegisterYM2610[chipID][0][0x08], EnmModel.RealModel);
-            setYM2610Register((byte)chipID, 0, 0x09, fmRegisterYM2610[chipID][0][0x09], EnmModel.RealModel);
-            setYM2610Register((byte)chipID, 0, 0x0a, fmRegisterYM2610[chipID][0][0x0a], EnmModel.RealModel);
+            setYM2610Register((byte)chipID, 0, 0x08, fmRegisterYM2610[chipID][0][0x08], EnmModel.RealModel, 0);
+            setYM2610Register((byte)chipID, 0, 0x09, fmRegisterYM2610[chipID][0][0x09], EnmModel.RealModel, 0);
+            setYM2610Register((byte)chipID, 0, 0x0a, fmRegisterYM2610[chipID][0][0x0a], EnmModel.RealModel, 0);
 
             //rhythm
-            setYM2610Register((byte)chipID, 0, 0x11, fmRegisterYM2610[chipID][0][0x11], EnmModel.RealModel);
+            setYM2610Register((byte)chipID, 0, 0x11, fmRegisterYM2610[chipID][0][0x11], EnmModel.RealModel, 0);
 
             //adpcm
-            setYM2610Register((byte)chipID, 1, 0x0b, fmRegisterYM2610[chipID][1][0x0b], EnmModel.RealModel);
+            setYM2610Register((byte)chipID, 1, 0x0b, fmRegisterYM2610[chipID][1][0x0b], EnmModel.RealModel, 0);
         }
 
         public void setFadeoutVolYM2612(int chipID, int v)
@@ -5304,6 +5611,7 @@ namespace MDPlayer
 
         public void sendDataYM2151(byte chipID, EnmModel model)
         {
+            if (model == EnmModel.PianoRollModel) return;
             if (model == EnmModel.VirtualModel) return;
 
             RSoundChip sc = null;
@@ -5326,6 +5634,7 @@ namespace MDPlayer
 
         public void sendDataYM2608(byte chipID, EnmModel model)
         {
+            if (model == EnmModel.PianoRollModel) return;
             if (model == EnmModel.VirtualModel) return;
 
             if (scYM2608[chipID] != null && ctYM2608[chipID].realChipInfo[0].UseWait)
@@ -5356,12 +5665,18 @@ namespace MDPlayer
         }
 
 
-        public void setSN76489RegisterGGpanning(int chipID, int dData, EnmModel model)
+        public void setSN76489RegisterGGpanning(int chipID, int dData, EnmModel model, long vgmFrameCounter)
         {
             if (ctSN76489 == null) return;
 
             if (chipID == 0) chipLED.PriDCSG = 2;
             else chipLED.SecDCSG = 2;
+
+            if (model == EnmModel.PianoRollModel)
+            {
+                pianoRollMng.SetRegister(EnmChip.SN76489, chipID, 1, dData, vgmFrameCounter);
+                return;
+            }
 
             sn76489RegisterGGPan[chipID] = dData;
             if (model == EnmModel.RealModel)
@@ -5372,7 +5687,7 @@ namespace MDPlayer
                     scSN76489[chipID].SetRegister(1, dData);
                 }
             }
-            else
+            else if(model == EnmModel.VirtualModel)
             {
                 if (!ctSN76489[chipID].UseReal[0])
                 {
@@ -5384,12 +5699,18 @@ namespace MDPlayer
             }
         }
 
-        public void setSN76489Register(int chipID, int dData, EnmModel model)
+        public void setSN76489Register(int chipID, int dData, EnmModel model, long vgmFrameCounter)
         {
             if (ctSN76489 == null) return;
 
             if (chipID == 0) chipLED.PriDCSG = 2;
             else chipLED.SecDCSG = 2;
+
+            if(model== EnmModel.PianoRollModel)
+            {
+                pianoRollMng.SetRegister(EnmChip.SN76489, chipID, 0, dData, vgmFrameCounter);
+                return;
+            }
 
             SN76489_Write(chipID, dData);
 
@@ -5427,7 +5748,7 @@ namespace MDPlayer
                     scSN76489[chipID].SetRegister(0, dData);
                 }
             }
-            else
+            else if (model == EnmModel.VirtualModel)
             {
                 if (!ctSN76489[chipID].UseReal[0])
                 {
@@ -5453,7 +5774,7 @@ namespace MDPlayer
             for (int c = 0; c < 4; c++)
             {
 
-                setSN76489Register(chipID, 0x90 + (c << 5) + sn76489Register[chipID][1 + (c << 1)], EnmModel.RealModel);
+                setSN76489Register(chipID, 0x90 + (c << 5) + sn76489Register[chipID][1 + (c << 1)], EnmModel.RealModel, 0);
             }
         }
 
@@ -5495,27 +5816,29 @@ namespace MDPlayer
 
         public void softResetSN76489(int chipID, EnmModel model)
         {
+            if (model == EnmModel.PianoRollModel) return;
             // volume 0
-            setSN76489Register(chipID, 0b1_001_1111, model);// latch : reg 1(Ch1vol) : val $f
-            setSN76489Register(chipID, 0b1_011_1111, model);// latch : reg 3(Ch2vol) : val $f
-            setSN76489Register(chipID, 0b1_101_1111, model);// latch : reg 5(Ch3vol) : val $f
-            setSN76489Register(chipID, 0b1_111_1111, model);// latch : reg 7(Ch3vol) : val $f
+            setSN76489Register(chipID, 0b1_001_1111, model, 0);// latch : reg 1(Ch1vol) : val $f
+            setSN76489Register(chipID, 0b1_011_1111, model, 0);// latch : reg 3(Ch2vol) : val $f
+            setSN76489Register(chipID, 0b1_101_1111, model, 0);// latch : reg 5(Ch3vol) : val $f
+            setSN76489Register(chipID, 0b1_111_1111, model, 0);// latch : reg 7(Ch3vol) : val $f
             // freq 0
-            setSN76489Register(chipID, 0b1_000_0000, model);// latch : reg 0(Ch1freq(low)) : val 0
-            setSN76489Register(chipID, 0b00_00_0000, model);//       : reg 0(Ch1freq(hi )) : val 0
-            setSN76489Register(chipID, 0b1_010_0000, model);// latch : reg 2(Ch2freq(low)) : val 0
-            setSN76489Register(chipID, 0b00_00_0000, model);//       : reg 2(Ch2freq(hi )) : val 0
-            setSN76489Register(chipID, 0b1_100_0000, model);// latch : reg 4(Ch3freq(low)) : val 0
-            setSN76489Register(chipID, 0b00_00_0000, model);//       : reg 4(Ch3freq(hi )) : val 0
-            setSN76489Register(chipID, 0b1_110_0000, model);// latch : reg 6(Ch4noise    ) : val 0
-            setSN76489Register(chipID, 0b00_00_0000, model);//       : reg 6(Ch4noise    ) : val 0
+            setSN76489Register(chipID, 0b1_000_0000, model, 0);// latch : reg 0(Ch1freq(low)) : val 0
+            setSN76489Register(chipID, 0b00_00_0000, model, 0);//       : reg 0(Ch1freq(hi )) : val 0
+            setSN76489Register(chipID, 0b1_010_0000, model, 0);// latch : reg 2(Ch2freq(low)) : val 0
+            setSN76489Register(chipID, 0b00_00_0000, model, 0);//       : reg 2(Ch2freq(hi )) : val 0
+            setSN76489Register(chipID, 0b1_100_0000, model, 0);// latch : reg 4(Ch3freq(low)) : val 0
+            setSN76489Register(chipID, 0b00_00_0000, model, 0);//       : reg 4(Ch3freq(hi )) : val 0
+            setSN76489Register(chipID, 0b1_110_0000, model, 0);// latch : reg 6(Ch4noise    ) : val 0
+            setSN76489Register(chipID, 0b00_00_0000, model, 0);//       : reg 6(Ch4noise    ) : val 0
             //panning
-            setSN76489RegisterGGpanning(chipID, 0xff, model);
+            setSN76489RegisterGGpanning(chipID, 0xff, model, 0);
         }
 
 
         public void writeRF5C68PCMData(byte chipid, uint stAdr, uint dataSize, byte[] vgmBuf, uint vgmAdr, EnmModel model)
         {
+            if (model == EnmModel.PianoRollModel) return;
             if (chipid == 0) chipLED.PriRF5C68 = 2;
             else chipLED.SecRF5C68 = 2;
 
@@ -5525,6 +5848,7 @@ namespace MDPlayer
 
         public void writeRF5C68(byte chipid, byte adr, byte data, EnmModel model)
         {
+            if (model == EnmModel.PianoRollModel) return;
             if (chipid == 0) chipLED.PriRF5C68 = 2;
             else chipLED.SecRF5C68 = 2;
 
@@ -5536,6 +5860,7 @@ namespace MDPlayer
 
         public void writeRF5C68MemW(byte chipid, uint offset, byte data, EnmModel model)
         {
+            if (model == EnmModel.PianoRollModel) return;
             if (chipid == 0) chipLED.PriRF5C68 = 2;
             else chipLED.SecRF5C68 = 2;
 
@@ -5545,6 +5870,7 @@ namespace MDPlayer
 
         public void writeRF5C164PCMData(byte chipid, uint stAdr, uint dataSize, byte[] vgmBuf, uint vgmAdr, EnmModel model)
         {
+            if (model == EnmModel.PianoRollModel) return;
             if (chipid == 0) chipLED.PriRF5C = 2;
             else chipLED.SecRF5C = 2;
 
@@ -5554,6 +5880,7 @@ namespace MDPlayer
 
         public void writeNESPCMData(byte chipid, uint stAdr, uint dataSize, byte[] vgmBuf, uint vgmAdr, EnmModel model)
         {
+            if (model == EnmModel.PianoRollModel) return;
             if (chipid == 0) chipLED.PriNES = 2;
             else chipLED.SecNES = 2;
 
@@ -5563,6 +5890,7 @@ namespace MDPlayer
 
         public void writeRF5C164(byte chipid, byte adr, byte data, EnmModel model)
         {
+            if (model == EnmModel.PianoRollModel) return;
             if (chipid == 0) chipLED.PriRF5C = 2;
             else chipLED.SecRF5C = 2;
 
@@ -5574,6 +5902,7 @@ namespace MDPlayer
 
         public void writeRF5C164MemW(byte chipid, uint offset, byte data, EnmModel model)
         {
+            if (model == EnmModel.PianoRollModel) return;
             if (chipid == 0) chipLED.PriRF5C = 2;
             else chipLED.SecRF5C = 2;
 
@@ -5583,6 +5912,7 @@ namespace MDPlayer
 
         public void writePWM(byte chipid, byte adr, uint data, EnmModel model)
         {
+            if (model == EnmModel.PianoRollModel) return;
             if (chipid == 0) chipLED.PriPWM = 2;
             else chipLED.SecPWM = 2;
 
@@ -5590,8 +5920,13 @@ namespace MDPlayer
                 mds.WritePWM(chipid, adr, data);
         }
 
-        public void writeK051649(byte chipid, uint adr, byte data, EnmModel model)
+        public void writeK051649(byte chipid, uint adr, byte data, EnmModel model,long vgmFrameCounter)
         {
+            if (model == EnmModel.PianoRollModel)
+            {
+                pianoRollMng.SetRegister(EnmChip.K051649, chipid, (int)adr, data, vgmFrameCounter);
+                return;
+            }
             if (chipid == 0) chipLED.PriK051649 = 2;
             else chipLED.SecK051649 = 2;
 
@@ -5673,21 +6008,24 @@ namespace MDPlayer
 
         public void softResetK051649(int chipID, EnmModel model)
         {
+            if (model == EnmModel.PianoRollModel) return;
             int i;
 
             // 全チャネルボリュームzero
             for (i = 0; i < 5; i++)
             {
-                writeK051649((byte)chipID, (uint)((0x00 << 1) + 0), (byte)i, model);
-                writeK051649((byte)chipID, (uint)((0x02 << 1) + 1), 0x00, model);
-                writeK051649((byte)chipID, (uint)((0x00 << 1) + 0), (byte)i, model);
-                writeK051649((byte)chipID, (uint)((0x03 << 1) + 1), 0x00, model);
+                writeK051649((byte)chipID, (uint)((0x00 << 1) + 0), (byte)i, model,0);
+                writeK051649((byte)chipID, (uint)((0x02 << 1) + 1), 0x00, model, 0);
+                writeK051649((byte)chipID, (uint)((0x00 << 1) + 0), (byte)i, model, 0);
+                writeK051649((byte)chipID, (uint)((0x03 << 1) + 1), 0x00, model, 0);
             }
 
         }
 
         public void writeK053260(byte chipid, uint adr, byte data, EnmModel model)
         {
+            if (model == EnmModel.PianoRollModel) return;
+
             if (adr < pcmRegisterK053260[chipid].Length)
                 pcmRegisterK053260[chipid][adr] = (ushort)data;
 
@@ -5700,6 +6038,8 @@ namespace MDPlayer
 
         public void writeK054539(byte chipid, uint adr, byte data, EnmModel model)
         {
+            if (model == EnmModel.PianoRollModel) return;
+
             if (chipid == 0) chipLED.PriK054539 = 2;
             else chipLED.SecK054539 = 2;
 
@@ -5719,6 +6059,8 @@ namespace MDPlayer
 
         public void writeK053260PCMData(byte chipid, uint ROMSize, uint DataStart, uint DataLength, byte[] romdata, uint SrcStartAdr, EnmModel model)
         {
+            if (model == EnmModel.PianoRollModel) return;
+
             if (chipid == 0) chipLED.PriK053260 = 2;
             else chipLED.SecK053260 = 2;
 
@@ -5728,6 +6070,8 @@ namespace MDPlayer
 
         public void writeK054539PCMData(byte chipid, uint ROMSize, uint DataStart, uint DataLength, byte[] romdata, uint SrcStartAdr, EnmModel model)
         {
+            if (model == EnmModel.PianoRollModel) return;
+
             if (chipid == 0) chipLED.PriK054539 = 2;
             else chipLED.SecK054539 = 2;
 
@@ -5737,6 +6081,8 @@ namespace MDPlayer
 
         public void writeQSoundPCMData(byte chipid, uint ROMSize, uint DataStart, uint DataLength, byte[] romdata, uint SrcStartAdr, EnmModel model)
         {
+            if (model == EnmModel.PianoRollModel) return;
+
             if (chipid == 0) chipLED.PriQsnd = 2;
 
             if (model == EnmModel.VirtualModel)
@@ -5745,6 +6091,8 @@ namespace MDPlayer
 
         public void writeX1_010PCMData(byte chipid, uint ROMSize, uint DataStart, uint DataLength, byte[] romdata, uint SrcStartAdr, EnmModel model)
         {
+            if (model == EnmModel.PianoRollModel) return;
+
             if (chipid == 0) chipLED.PriX1010 = 2;
             else chipLED.SecX1010 = 2;
 
@@ -5754,6 +6102,7 @@ namespace MDPlayer
 
         public void writeC352(byte chipid, uint adr, uint data, EnmModel model)
         {
+            if (model == EnmModel.PianoRollModel) return;
             if (chipid == 0) chipLED.PriC352 = 2;
             else chipLED.SecC352 = 2;
 
@@ -5775,6 +6124,7 @@ namespace MDPlayer
 
         public void writeC352PCMData(byte chipid, uint ROMSize, uint DataStart, uint DataLength, byte[] romdata, uint SrcStartAdr, EnmModel model)
         {
+            if (model == EnmModel.PianoRollModel) return;
             if (chipid == 0) chipLED.PriC352 = 2;
             else chipLED.SecC352 = 2;
 
@@ -5784,6 +6134,7 @@ namespace MDPlayer
 
         public void writeGA20PCMData(byte chipid, uint ROMSize, uint DataStart, uint DataLength, byte[] romdata, uint SrcStartAdr, EnmModel model)
         {
+            if (model == EnmModel.PianoRollModel) return;
             if (chipid == 0) chipLED.PriGA20 = 2;
             else chipLED.SecGA20 = 2;
 
@@ -5793,6 +6144,7 @@ namespace MDPlayer
 
         public void writeOKIM6258(byte ChipID, byte Port, byte Data, EnmModel model)
         {
+            if (model == EnmModel.PianoRollModel) return;
             if (ChipID == 0) chipLED.PriOKI5 = 2;
             else chipLED.SecOKI5 = 2;
 
@@ -5818,6 +6170,7 @@ namespace MDPlayer
 
         public void writeOKIM6295(byte ChipID, byte Port, byte Data, EnmModel model)
         {
+            if (model == EnmModel.PianoRollModel) return;
             if (ChipID == 0) chipLED.PriOKI9 = 2;
             else chipLED.SecOKI9 = 2;
 
@@ -5830,6 +6183,7 @@ namespace MDPlayer
 
         public void writeSAA1099(byte ChipID, byte Port, byte Data, EnmModel model)
         {
+            if (model == EnmModel.PianoRollModel) return;
             if (ChipID == 0) chipLED.PriSAA = 2;
             else chipLED.SecSAA = 2;
 
@@ -5841,6 +6195,7 @@ namespace MDPlayer
 
         public void writeWSwan(byte ChipID, byte Port, byte Data, EnmModel model)
         {
+            if (model == EnmModel.PianoRollModel) return;
             if (ChipID == 0) chipLED.PriWSW = 2;
             else chipLED.SecWSW = 2;
 
@@ -5852,6 +6207,7 @@ namespace MDPlayer
 
         public void writeWSwanMem(byte ChipID, int Port, byte Data, EnmModel model)
         {
+            if (model == EnmModel.PianoRollModel) return;
             if (ChipID == 0) chipLED.PriWSW = 2;
             else chipLED.SecWSW = 2;
 
@@ -5863,6 +6219,7 @@ namespace MDPlayer
 
         public void writePOKEY(byte ChipID, byte Port, byte Data, EnmModel model)
         {
+            if (model == EnmModel.PianoRollModel) return;
             if (ChipID == 0) chipLED.PriPOK = 2;
             else chipLED.SecPOK = 2;
 
@@ -5874,6 +6231,7 @@ namespace MDPlayer
 
         public void writeOKIM6295PCMData(byte chipid, uint ROMSize, uint DataStart, uint DataLength, byte[] romdata, uint SrcStartAdr, EnmModel model)
         {
+            if (model == EnmModel.PianoRollModel) return;
             if (chipid == 0) chipLED.PriOKI9 = 2;
             else chipLED.SecOKI9 = 2;
 
@@ -5883,6 +6241,7 @@ namespace MDPlayer
 
         public void writeMultiPCMPCMData(byte chipid, uint ROMSize, uint DataStart, uint DataLength, byte[] romdata, uint SrcStartAdr, EnmModel model)
         {
+            if (model == EnmModel.PianoRollModel) return;
             if (chipid == 0) chipLED.PriMPCM = 2;
             else chipLED.SecMPCM = 2;
 
@@ -5892,6 +6251,7 @@ namespace MDPlayer
 
         public void writeuPD7759PCMData(byte chipid, uint ROMSize, uint DataStart, uint DataLength, byte[] romdata, uint SrcStartAdr, EnmModel model)
         {
+            if (model == EnmModel.PianoRollModel) return;
             if (chipid == 0) chipLED.PriuPD7759 = 2;
             else chipLED.SecuPD7759 = 2;
 
@@ -5901,6 +6261,7 @@ namespace MDPlayer
 
         public void writeYMF271PCMData(byte chipid, uint ROMSize, uint DataStart, uint DataLength, byte[] romdata, uint SrcStartAdr, EnmModel model)
         {
+            if (model == EnmModel.PianoRollModel) return;
             if (chipid == 0) chipLED.PriOPX = 2;
             else chipLED.SecOPX = 2;
 
@@ -5910,6 +6271,7 @@ namespace MDPlayer
 
         public void writeYMF278BPCMData(byte chipid, uint ROMSize, uint DataStart, uint DataLength, byte[] romdata, uint SrcStartAdr, EnmModel model)
         {
+            if (model == EnmModel.PianoRollModel) return;
             if (chipid == 0) chipLED.PriOPL4 = 2;
             else chipLED.SecOPL4 = 2;
 
@@ -5919,6 +6281,7 @@ namespace MDPlayer
 
         public void writeYMF278BPCMRAMData(byte chipid, uint ROMSize, uint DataStart, uint DataLength, byte[] romdata, uint SrcStartAdr, EnmModel model)
         {
+            if (model == EnmModel.PianoRollModel) return;
             if (chipid == 0) chipLED.PriOPL4 = 2;
             else chipLED.SecOPL4 = 2;
 
@@ -5928,6 +6291,7 @@ namespace MDPlayer
 
         public void writeYMZ280BPCMData(byte chipid, uint ROMSize, uint DataStart, uint DataLength, byte[] romdata, uint SrcStartAdr, EnmModel model)
         {
+            if (model == EnmModel.PianoRollModel) return;
             if (chipid == 0) chipLED.PriYMZ = 2;
             else chipLED.SecYMZ = 2;
 
@@ -5937,6 +6301,7 @@ namespace MDPlayer
 
         public void writeY8950PCMData(byte chipid, uint ROMSize, uint DataStart, uint DataLength, byte[] romdata, uint SrcStartAdr, EnmModel model)
         {
+            if (model == EnmModel.PianoRollModel) return;
             if (chipid == 0) chipLED.PriY8950 = 2;
             else chipLED.SecY8950 = 2;
 
@@ -5946,6 +6311,7 @@ namespace MDPlayer
 
         public void writeSEGAPCM(byte chipID, int offset, byte data, EnmModel model)
         {
+            if (model == EnmModel.PianoRollModel) return;
             if (chipID == 0) chipLED.PriSPCM = 2;
             else chipLED.SecSPCM = 2;
 
@@ -5978,6 +6344,7 @@ namespace MDPlayer
 
         public void writeSEGAPCMPCMData(byte chipID, uint ROMSize, uint DataStart, uint DataLength, byte[] romdata, uint SrcStartAdr, EnmModel model)
         {
+            if (model == EnmModel.PianoRollModel) return;
             if (chipID == 0) chipLED.PriSPCM = 2;
             else chipLED.SecSPCM = 2;
 
@@ -6007,6 +6374,7 @@ namespace MDPlayer
 
         public void softResetSEGAPCM(int chipID, EnmModel model)
         {
+            if (model == EnmModel.PianoRollModel) return;
             // 全チャネルキーオフ
             for (int ch = 0; ch < 16; ch++)
                 writeSEGAPCM((byte)chipID, 0x86 + ch * 8, 0x01, model);
@@ -6021,6 +6389,7 @@ namespace MDPlayer
 
         public void writeYM2151Clock(byte chipID, int clock, EnmModel model)
         {
+            if (model == EnmModel.PianoRollModel) return;
             if (model == EnmModel.VirtualModel)
             {
             }
@@ -6046,6 +6415,7 @@ namespace MDPlayer
 
         public void writeYM2203Clock(byte chipID, int clock, EnmModel model)
         {
+            if (model == EnmModel.PianoRollModel) return;
             if (model == EnmModel.VirtualModel)
             {
             }
@@ -6069,6 +6439,7 @@ namespace MDPlayer
 
         public void writeAY8910Clock(byte chipID, int clock, EnmModel model)
         {
+            if (model == EnmModel.PianoRollModel) return;
             if (model == EnmModel.VirtualModel)
             {
             }
@@ -6092,6 +6463,7 @@ namespace MDPlayer
 
         public void writeYM2608Clock(byte chipID, int clock, EnmModel model)
         {
+            if (model == EnmModel.PianoRollModel) return;
             if (model == EnmModel.VirtualModel)
             {
             }
@@ -6106,6 +6478,7 @@ namespace MDPlayer
 
         public void writeYM3526Clock(byte chipID, int clock, EnmModel model)
         {
+            if (model == EnmModel.PianoRollModel) return;
             if (model == EnmModel.VirtualModel)
             {
             }
@@ -6122,6 +6495,7 @@ namespace MDPlayer
 
         public void writeYM3812Clock(byte chipID, int clock, EnmModel model)
         {
+            if (model == EnmModel.PianoRollModel) return;
             if (model == EnmModel.VirtualModel)
             {
             }
@@ -6136,6 +6510,7 @@ namespace MDPlayer
 
         public void writeYMF262Clock(byte chipID, int clock, EnmModel model)
         {
+            if (model == EnmModel.PianoRollModel) return;
             if (model == EnmModel.VirtualModel)
             {
             }
@@ -6150,6 +6525,7 @@ namespace MDPlayer
 
         public void setYM2203SSGVolume(byte chipID, int vol, EnmModel model)
         {
+            if (model == EnmModel.PianoRollModel) return;
             if (model == EnmModel.VirtualModel)
             {
             }
@@ -6164,6 +6540,7 @@ namespace MDPlayer
 
         public void setYM2608SSGVolume(byte chipID, int vol, EnmModel model)
         {
+            if (model == EnmModel.PianoRollModel) return;
             if (model == EnmModel.VirtualModel)
             {
             }
@@ -6178,6 +6555,7 @@ namespace MDPlayer
 
         public void writeSEGAPCMClock(byte chipID, int clock, EnmModel model)
         {
+            if (model == EnmModel.PianoRollModel) return;
             if (model == EnmModel.VirtualModel)
             {
             }
@@ -6192,6 +6570,7 @@ namespace MDPlayer
 
         public void writeC140(byte chipID, uint adr, byte data, EnmModel model)
         {
+            if (model == EnmModel.PianoRollModel) return;
             if (chipID == 0) chipLED.PriC140 = 2;
             else chipLED.SecC140 = 2;
 
@@ -6227,6 +6606,7 @@ namespace MDPlayer
 
         public void writeC140PCMData(byte chipID, uint ROMSize, uint DataStart, uint DataLength, byte[] romdata, uint SrcStartAdr, EnmModel model)
         {
+            if (model == EnmModel.PianoRollModel) return;
             if (chipID == 0) chipLED.PriC140 = 2;
             else chipLED.SecC140 = 2;
 
@@ -6254,6 +6634,7 @@ namespace MDPlayer
 
         public void writeC140Type(byte chipID, MDSound.c140.C140_TYPE type, EnmModel model)
         {
+            if (model == EnmModel.PianoRollModel) return;
             if (model == EnmModel.VirtualModel)
             {
             }
@@ -6279,6 +6660,7 @@ namespace MDPlayer
 
         public void softResetC140(int chipID, EnmModel model)
         {
+            if (model == EnmModel.PianoRollModel) return;
             // 全チャネルキーオフ
             for (int ch = 0; ch < 24; ch++)
                 writeC140((byte)chipID, (uint)(0x05 + ch * 16), 0x00, model);
@@ -6293,6 +6675,7 @@ namespace MDPlayer
 
         public void writeES5503(byte chipID, uint adr, byte data, EnmModel model)
         {
+            if (model == EnmModel.PianoRollModel) return;
             if (chipID == 0) chipLED.PriES53 = 2;
             else chipLED.SecES53 = 2;
 
@@ -6305,6 +6688,7 @@ namespace MDPlayer
 
         public void writeES5503PCMData(byte chipID, uint DataStart, uint DataLength, byte[] romdata, uint SrcStartAdr, EnmModel model)
         {
+            if (model == EnmModel.PianoRollModel) return;
             if (chipID == 0) chipLED.PriES53 = 2;
             else chipLED.SecES53 = 2;
 

@@ -4,12 +4,17 @@ namespace MDPlayer
 {
     public class m_hes
     {
-        public m_hes()
+        public m_hes(baseDriver driver, EnmModel model)
         {
+            this.driver = driver;
+            this.model = model;
         }
 
         private kmevent kmevent = new kmevent();
         private km6280 km6280 = new km6280();
+        private baseDriver driver = null;
+        private EnmModel model = EnmModel.VirtualModel;
+
         public class NEZ_PLAY
         {
             public HESHES heshes;
@@ -338,7 +343,7 @@ namespace MDPlayer
                     //    (Int32)v
                     //    );
                     if (!disableSendChip)
-                        chipRegister.setHuC6280Register(0, (Int32)(a & 0xf), (Int32)v, EnmModel.VirtualModel);
+                        chipRegister.setHuC6280Register(0, (Int32)(a & 0xf), (Int32)v, model, driver.vgmFrameCounter);
                     ld.Write((UInt32)(a & 0xf), (UInt32)v, 0);
                     //THIS_.hessnd.write(THIS_.hessnd.ctx, a & 0xf, v);
                     break;
@@ -625,7 +630,7 @@ namespace MDPlayer
                 km6280_exec(THIS_.ctx, HES_BASECYCLES >> 8);
 
             disableSendChip = false;
-            chipRegister.setHuC6280Register(0, 1, 0xff, EnmModel.VirtualModel);
+            chipRegister.setHuC6280Register(0, 1, 0xff, model, driver.vgmFrameCounter);
 
             if (THIS_.breaked != 0)
             {

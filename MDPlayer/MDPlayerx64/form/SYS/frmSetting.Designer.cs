@@ -153,6 +153,10 @@ namespace MDPlayer.form
             tbSIDOutputBufferSize = new TextBox();
             label51 = new Label();
             label49 = new Label();
+            tpMuapDotNET = new TabPage();
+            groupBox42 = new GroupBox();
+            rb98CanBe = new RadioButton();
+            rbOTOMI = new RadioButton();
             tpPMDDotNET = new TabPage();
             rbPMDManual = new RadioButton();
             rbPMDAuto = new RadioButton();
@@ -246,6 +250,10 @@ namespace MDPlayer.form
             groupBox38 = new GroupBox();
             rbMnMPCMPP = new RadioButton();
             rbMnMPCM = new RadioButton();
+            tabRCSMP = new TabPage();
+            groupBox41 = new GroupBox();
+            rbRcsPCM8PP = new RadioButton();
+            rbRcsPCM8 = new RadioButton();
             tpMIDIOut = new TabPage();
             btnAddVST = new Button();
             tbcMIDIoutList = new TabControl();
@@ -552,6 +560,11 @@ namespace MDPlayer.form
             label3 = new Label();
             label2 = new Label();
             cbEmptyPlayList = new CheckBox();
+            tpNetwork = new TabPage();
+            cbUseMDServer = new CheckBox();
+            gbMDServer = new GroupBox();
+            tbPort = new TextBox();
+            label81 = new Label();
             tpOther = new TabPage();
             btnImageResourceFile = new Button();
             tbResourceFile = new TextBox();
@@ -586,6 +599,7 @@ namespace MDPlayer.form
             btnResetPosition = new Button();
             btnOpenSettingFolder = new Button();
             cbExALL = new CheckBox();
+            cbToast = new CheckBox();
             cbTappyMode = new CheckBox();
             cbSaveCompiledFile = new CheckBox();
             cbInitAlways = new CheckBox();
@@ -615,10 +629,6 @@ namespace MDPlayer.form
             labelCompanyName = new Label();
             textBoxDescription = new TextBox();
             llOpenGithub = new LinkLabel();
-            tabRCSMP = new TabPage();
-            groupBox41 = new GroupBox();
-            rbRcsPCM8PP = new RadioButton();
-            rbRcsPCM8 = new RadioButton();
             gbWaveOut.SuspendLayout();
             gbAsioOut.SuspendLayout();
             gbWasapiOut.SuspendLayout();
@@ -645,6 +655,8 @@ namespace MDPlayer.form
             groupBox27.SuspendLayout();
             groupBox14.SuspendLayout();
             groupBox13.SuspendLayout();
+            tpMuapDotNET.SuspendLayout();
+            groupBox42.SuspendLayout();
             tpPMDDotNET.SuspendLayout();
             gbPMDManual.SuspendLayout();
             groupBox32.SuspendLayout();
@@ -664,6 +676,8 @@ namespace MDPlayer.form
             groupBox40.SuspendLayout();
             tabMND.SuspendLayout();
             groupBox38.SuspendLayout();
+            tabRCSMP.SuspendLayout();
+            groupBox41.SuspendLayout();
             tpMIDIOut.SuspendLayout();
             tbcMIDIoutList.SuspendLayout();
             tabPage1.SuspendLayout();
@@ -727,6 +741,8 @@ namespace MDPlayer.form
             groupBox20.SuspendLayout();
             tpPlayList.SuspendLayout();
             groupBox17.SuspendLayout();
+            tpNetwork.SuspendLayout();
+            gbMDServer.SuspendLayout();
             tpOther.SuspendLayout();
             groupBox4.SuspendLayout();
             gbWav.SuspendLayout();
@@ -737,8 +753,6 @@ namespace MDPlayer.form
             tpAbout.SuspendLayout();
             tableLayoutPanel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)logoPictureBox).BeginInit();
-            tabRCSMP.SuspendLayout();
-            groupBox41.SuspendLayout();
             SuspendLayout();
             // 
             // btnOK
@@ -873,6 +887,7 @@ namespace MDPlayer.form
             tcSetting.Controls.Add(tpNuked);
             tcSetting.Controls.Add(tpNSF);
             tcSetting.Controls.Add(tpSID);
+            tcSetting.Controls.Add(tpMuapDotNET);
             tcSetting.Controls.Add(tpPMDDotNET);
             tcSetting.Controls.Add(tabX68k);
             tcSetting.Controls.Add(tpMIDIOut);
@@ -882,6 +897,7 @@ namespace MDPlayer.form
             tcSetting.Controls.Add(tpKeyBoard);
             tcSetting.Controls.Add(tpBalance);
             tcSetting.Controls.Add(tpPlayList);
+            tcSetting.Controls.Add(tpNetwork);
             tcSetting.Controls.Add(tpOther);
             tcSetting.Controls.Add(tpOmake);
             tcSetting.Controls.Add(tpAbout);
@@ -1587,6 +1603,35 @@ namespace MDPlayer.form
             resources.ApplyResources(label49, "label49");
             label49.Name = "label49";
             // 
+            // tpMuapDotNET
+            // 
+            tpMuapDotNET.Controls.Add(groupBox42);
+            resources.ApplyResources(tpMuapDotNET, "tpMuapDotNET");
+            tpMuapDotNET.Name = "tpMuapDotNET";
+            tpMuapDotNET.UseVisualStyleBackColor = true;
+            // 
+            // groupBox42
+            // 
+            groupBox42.Controls.Add(rb98CanBe);
+            groupBox42.Controls.Add(rbOTOMI);
+            resources.ApplyResources(groupBox42, "groupBox42");
+            groupBox42.Name = "groupBox42";
+            groupBox42.TabStop = false;
+            // 
+            // rb98CanBe
+            // 
+            resources.ApplyResources(rb98CanBe, "rb98CanBe");
+            rb98CanBe.Checked = true;
+            rb98CanBe.Name = "rb98CanBe";
+            rb98CanBe.TabStop = true;
+            rb98CanBe.UseVisualStyleBackColor = true;
+            // 
+            // rbOTOMI
+            // 
+            resources.ApplyResources(rbOTOMI, "rbOTOMI");
+            rbOTOMI.Name = "rbOTOMI";
+            rbOTOMI.UseVisualStyleBackColor = true;
+            // 
             // tpPMDDotNET
             // 
             tpPMDDotNET.Controls.Add(rbPMDManual);
@@ -2243,6 +2288,35 @@ namespace MDPlayer.form
             rbMnMPCM.Name = "rbMnMPCM";
             rbMnMPCM.TabStop = true;
             rbMnMPCM.UseVisualStyleBackColor = true;
+            // 
+            // tabRCSMP
+            // 
+            tabRCSMP.Controls.Add(groupBox41);
+            resources.ApplyResources(tabRCSMP, "tabRCSMP");
+            tabRCSMP.Name = "tabRCSMP";
+            tabRCSMP.UseVisualStyleBackColor = true;
+            // 
+            // groupBox41
+            // 
+            groupBox41.Controls.Add(rbRcsPCM8PP);
+            groupBox41.Controls.Add(rbRcsPCM8);
+            resources.ApplyResources(groupBox41, "groupBox41");
+            groupBox41.Name = "groupBox41";
+            groupBox41.TabStop = false;
+            // 
+            // rbRcsPCM8PP
+            // 
+            resources.ApplyResources(rbRcsPCM8PP, "rbRcsPCM8PP");
+            rbRcsPCM8PP.Name = "rbRcsPCM8PP";
+            rbRcsPCM8PP.UseVisualStyleBackColor = true;
+            // 
+            // rbRcsPCM8
+            // 
+            resources.ApplyResources(rbRcsPCM8, "rbRcsPCM8");
+            rbRcsPCM8.Checked = true;
+            rbRcsPCM8.Name = "rbRcsPCM8";
+            rbRcsPCM8.TabStop = true;
+            rbRcsPCM8.UseVisualStyleBackColor = true;
             // 
             // tpMIDIOut
             // 
@@ -4501,6 +4575,40 @@ namespace MDPlayer.form
             cbEmptyPlayList.UseVisualStyleBackColor = true;
             cbEmptyPlayList.CheckedChanged += CbUseLoopTimes_CheckedChanged;
             // 
+            // tpNetwork
+            // 
+            tpNetwork.Controls.Add(cbUseMDServer);
+            tpNetwork.Controls.Add(gbMDServer);
+            resources.ApplyResources(tpNetwork, "tpNetwork");
+            tpNetwork.Name = "tpNetwork";
+            tpNetwork.UseVisualStyleBackColor = true;
+            // 
+            // cbUseMDServer
+            // 
+            resources.ApplyResources(cbUseMDServer, "cbUseMDServer");
+            cbUseMDServer.BackColor = Color.Transparent;
+            cbUseMDServer.Name = "cbUseMDServer";
+            cbUseMDServer.UseVisualStyleBackColor = false;
+            cbUseMDServer.CheckedChanged += cbUseMDServer_CheckedChanged;
+            // 
+            // gbMDServer
+            // 
+            resources.ApplyResources(gbMDServer, "gbMDServer");
+            gbMDServer.Controls.Add(tbPort);
+            gbMDServer.Controls.Add(label81);
+            gbMDServer.Name = "gbMDServer";
+            gbMDServer.TabStop = false;
+            // 
+            // tbPort
+            // 
+            resources.ApplyResources(tbPort, "tbPort");
+            tbPort.Name = "tbPort";
+            // 
+            // label81
+            // 
+            resources.ApplyResources(label81, "label81");
+            label81.Name = "label81";
+            // 
             // tpOther
             // 
             tpOther.Controls.Add(btnImageResourceFile);
@@ -4527,6 +4635,7 @@ namespace MDPlayer.form
             tpOther.Controls.Add(btnResetPosition);
             tpOther.Controls.Add(btnOpenSettingFolder);
             tpOther.Controls.Add(cbExALL);
+            tpOther.Controls.Add(cbToast);
             tpOther.Controls.Add(cbTappyMode);
             tpOther.Controls.Add(cbSaveCompiledFile);
             tpOther.Controls.Add(cbInitAlways);
@@ -4609,7 +4718,7 @@ namespace MDPlayer.form
             // 
             cmbInstFormat.DropDownStyle = ComboBoxStyle.DropDownList;
             cmbInstFormat.FormattingEnabled = true;
-            cmbInstFormat.Items.AddRange(new object[] { resources.GetString("cmbInstFormat.Items"), resources.GetString("cmbInstFormat.Items1"), resources.GetString("cmbInstFormat.Items2"), resources.GetString("cmbInstFormat.Items3"), resources.GetString("cmbInstFormat.Items4"), resources.GetString("cmbInstFormat.Items5"), resources.GetString("cmbInstFormat.Items6"), resources.GetString("cmbInstFormat.Items7"), resources.GetString("cmbInstFormat.Items8"), resources.GetString("cmbInstFormat.Items9"), resources.GetString("cmbInstFormat.Items10"), resources.GetString("cmbInstFormat.Items11"), resources.GetString("cmbInstFormat.Items12"), resources.GetString("cmbInstFormat.Items13"), resources.GetString("cmbInstFormat.Items14"), resources.GetString("cmbInstFormat.Items15"), resources.GetString("cmbInstFormat.Items16") });
+            cmbInstFormat.Items.AddRange(new object[] { resources.GetString("cmbInstFormat.Items"), resources.GetString("cmbInstFormat.Items1"), resources.GetString("cmbInstFormat.Items2"), resources.GetString("cmbInstFormat.Items3"), resources.GetString("cmbInstFormat.Items4"), resources.GetString("cmbInstFormat.Items5"), resources.GetString("cmbInstFormat.Items6"), resources.GetString("cmbInstFormat.Items7"), resources.GetString("cmbInstFormat.Items8"), resources.GetString("cmbInstFormat.Items9"), resources.GetString("cmbInstFormat.Items10"), resources.GetString("cmbInstFormat.Items11"), resources.GetString("cmbInstFormat.Items12"), resources.GetString("cmbInstFormat.Items13"), resources.GetString("cmbInstFormat.Items14"), resources.GetString("cmbInstFormat.Items15"), resources.GetString("cmbInstFormat.Items16"), resources.GetString("cmbInstFormat.Items17") });
             resources.ApplyResources(cmbInstFormat, "cmbInstFormat");
             cmbInstFormat.Name = "cmbInstFormat";
             // 
@@ -4739,6 +4848,13 @@ namespace MDPlayer.form
             cbExALL.Name = "cbExALL";
             cbExALL.UseVisualStyleBackColor = true;
             cbExALL.CheckedChanged += CbUseLoopTimes_CheckedChanged;
+            // 
+            // cbToast
+            // 
+            resources.ApplyResources(cbToast, "cbToast");
+            cbToast.Name = "cbToast";
+            cbToast.UseVisualStyleBackColor = true;
+            cbToast.CheckedChanged += CbUseLoopTimes_CheckedChanged;
             // 
             // cbTappyMode
             // 
@@ -4942,35 +5058,6 @@ namespace MDPlayer.form
             llOpenGithub.TabStop = true;
             llOpenGithub.LinkClicked += LlOpenGithub_LinkClicked;
             // 
-            // tabRCSMP
-            // 
-            tabRCSMP.Controls.Add(groupBox41);
-            resources.ApplyResources(tabRCSMP, "tabRCSMP");
-            tabRCSMP.Name = "tabRCSMP";
-            tabRCSMP.UseVisualStyleBackColor = true;
-            // 
-            // groupBox41
-            // 
-            groupBox41.Controls.Add(rbRcsPCM8PP);
-            groupBox41.Controls.Add(rbRcsPCM8);
-            resources.ApplyResources(groupBox41, "groupBox41");
-            groupBox41.Name = "groupBox41";
-            groupBox41.TabStop = false;
-            // 
-            // rbRcsPCM8PP
-            // 
-            resources.ApplyResources(rbRcsPCM8PP, "rbRcsPCM8PP");
-            rbRcsPCM8PP.Name = "rbRcsPCM8PP";
-            rbRcsPCM8PP.UseVisualStyleBackColor = true;
-            // 
-            // rbRcsPCM8
-            // 
-            resources.ApplyResources(rbRcsPCM8, "rbRcsPCM8");
-            rbRcsPCM8.Checked = true;
-            rbRcsPCM8.Name = "rbRcsPCM8";
-            rbRcsPCM8.TabStop = true;
-            rbRcsPCM8.UseVisualStyleBackColor = true;
-            // 
             // frmSetting
             // 
             resources.ApplyResources(this, "$this");
@@ -5027,6 +5114,9 @@ namespace MDPlayer.form
             groupBox14.PerformLayout();
             groupBox13.ResumeLayout(false);
             groupBox13.PerformLayout();
+            tpMuapDotNET.ResumeLayout(false);
+            groupBox42.ResumeLayout(false);
+            groupBox42.PerformLayout();
             tpPMDDotNET.ResumeLayout(false);
             tpPMDDotNET.PerformLayout();
             gbPMDManual.ResumeLayout(false);
@@ -5059,6 +5149,9 @@ namespace MDPlayer.form
             tabMND.ResumeLayout(false);
             groupBox38.ResumeLayout(false);
             groupBox38.PerformLayout();
+            tabRCSMP.ResumeLayout(false);
+            groupBox41.ResumeLayout(false);
+            groupBox41.PerformLayout();
             tpMIDIOut.ResumeLayout(false);
             tpMIDIOut.PerformLayout();
             tbcMIDIoutList.ResumeLayout(false);
@@ -5143,6 +5236,10 @@ namespace MDPlayer.form
             tpPlayList.PerformLayout();
             groupBox17.ResumeLayout(false);
             groupBox17.PerformLayout();
+            tpNetwork.ResumeLayout(false);
+            tpNetwork.PerformLayout();
+            gbMDServer.ResumeLayout(false);
+            gbMDServer.PerformLayout();
             tpOther.ResumeLayout(false);
             tpOther.PerformLayout();
             groupBox4.ResumeLayout(false);
@@ -5161,9 +5258,6 @@ namespace MDPlayer.form
             tableLayoutPanel.ResumeLayout(false);
             tableLayoutPanel.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)logoPictureBox).EndInit();
-            tabRCSMP.ResumeLayout(false);
-            groupBox41.ResumeLayout(false);
-            groupBox41.PerformLayout();
             ResumeLayout(false);
         }
 
@@ -5777,5 +5871,14 @@ namespace MDPlayer.form
         private GroupBox groupBox41;
         private RadioButton rbRcsPCM8PP;
         private RadioButton rbRcsPCM8;
+        private TabPage tpNetwork;
+        private GroupBox gbMDServer;
+        private CheckBox cbUseMDServer;
+        private TextBox tbPort;
+        private TabPage tpMuapDotNET;
+        private GroupBox groupBox42;
+        private RadioButton rb98CanBe;
+        private RadioButton rbOTOMI;
+        private CheckBox cbToast;
     }
 }

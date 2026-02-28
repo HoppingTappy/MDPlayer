@@ -114,7 +114,7 @@ namespace MDPlayer.form
                 if (tp == 0) tp = 1;
 
                 float ftone = 3579545.0f / 32.0f / (float)tp;
-                channel.note = searchSSGNote(ftone);
+                channel.note = Common.searchSSGNote(ftone);
                 if (channel.volumeL == 0 && channel.volumeR == 0) channel.note = -1;
 
                 if (ch < 4) continue;
@@ -223,23 +223,23 @@ namespace MDPlayer.form
 
         }
 
-        private int searchSSGNote(float freq)
-        {
-            float m = float.MaxValue;
-            int n = 0;
-            for (int i = 0; i < 12 * 8; i++)
-            {
-                //if (freq < Tables.freqTbl[i]) break;
-                //n = i;
-                float a = Math.Abs(freq - Tables.freqTbl[i]);
-                if (m > a)
-                {
-                    m = a;
-                    n = i;
-                }
-            }
-            return n;
-        }
+        //private int searchSSGNote(float freq)
+        //{
+        //    float m = float.MaxValue;
+        //    int n = 0;
+        //    for (int i = 0; i < 12 * 8; i++)
+        //    {
+        //        //if (freq < Tables.freqTbl[i]) break;
+        //        //n = i;
+        //        float a = Math.Abs(freq - Tables.freqTbl[i]);
+        //        if (m > a)
+        //        {
+        //            m = a;
+        //            n = i;
+        //        }
+        //    }
+        //    return n;
+        //}
 
         public void screenInit()
         {

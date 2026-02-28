@@ -59,7 +59,7 @@ namespace MDPlayer.form
             // 
             pictureBox1.Dock = DockStyle.Fill;
             pictureBox1.Location = new Point(0, 0);
-            pictureBox1.Margin = new Padding(4, 4, 4, 4);
+            pictureBox1.Margin = new Padding(4);
             pictureBox1.Name = "pictureBox1";
             pictureBox1.Size = new Size(261, 226);
             pictureBox1.TabIndex = 0;
@@ -77,11 +77,11 @@ namespace MDPlayer.form
             // toolStripContainer1.ContentPanel
             // 
             toolStripContainer1.ContentPanel.Controls.Add(pictureBox1);
-            toolStripContainer1.ContentPanel.Margin = new Padding(4, 4, 4, 4);
+            toolStripContainer1.ContentPanel.Margin = new Padding(4);
             toolStripContainer1.ContentPanel.Size = new Size(261, 226);
             toolStripContainer1.Dock = DockStyle.Fill;
             toolStripContainer1.Location = new Point(0, 0);
-            toolStripContainer1.Margin = new Padding(4, 4, 4, 4);
+            toolStripContainer1.Margin = new Padding(4);
             toolStripContainer1.Name = "toolStripContainer1";
             toolStripContainer1.Size = new Size(261, 251);
             toolStripContainer1.TabIndex = 1;
@@ -102,6 +102,8 @@ namespace MDPlayer.form
             // 
             // tsbHeight1
             // 
+            tsbHeight1.BackgroundImage = Resources.vHeight1;
+            tsbHeight1.BackgroundImageLayout = ImageLayout.Center;
             tsbHeight1.DisplayStyle = ToolStripItemDisplayStyle.Image;
             tsbHeight1.ImageTransparentColor = Color.Magenta;
             tsbHeight1.Name = "tsbHeight1";
@@ -111,6 +113,8 @@ namespace MDPlayer.form
             // 
             // tsbHeight2
             // 
+            tsbHeight2.BackgroundImage = Resources.vHeight2;
+            tsbHeight2.BackgroundImageLayout = ImageLayout.Center;
             tsbHeight2.DisplayStyle = ToolStripItemDisplayStyle.Image;
             tsbHeight2.ImageTransparentColor = Color.Magenta;
             tsbHeight2.Name = "tsbHeight2";
@@ -120,6 +124,8 @@ namespace MDPlayer.form
             // 
             // tsbHeight3
             // 
+            tsbHeight3.BackgroundImage = Resources.vHeight3;
+            tsbHeight3.BackgroundImageLayout = ImageLayout.Center;
             tsbHeight3.DisplayStyle = ToolStripItemDisplayStyle.Image;
             tsbHeight3.ImageTransparentColor = Color.Magenta;
             tsbHeight3.Name = "tsbHeight3";
@@ -134,6 +140,8 @@ namespace MDPlayer.form
             // 
             // tsbDispType1
             // 
+            tsbDispType1.BackgroundImage = Resources.vType1;
+            tsbDispType1.BackgroundImageLayout = ImageLayout.Center;
             tsbDispType1.DisplayStyle = ToolStripItemDisplayStyle.Image;
             tsbDispType1.ImageTransparentColor = Color.Magenta;
             tsbDispType1.Name = "tsbDispType1";
@@ -143,6 +151,8 @@ namespace MDPlayer.form
             // 
             // tsbDispType2
             // 
+            tsbDispType2.BackgroundImage = Resources.vType2;
+            tsbDispType2.BackgroundImageLayout = ImageLayout.Center;
             tsbDispType2.DisplayStyle = ToolStripItemDisplayStyle.Image;
             tsbDispType2.ImageTransparentColor = Color.Magenta;
             tsbDispType2.Name = "tsbDispType2";
@@ -152,6 +162,8 @@ namespace MDPlayer.form
             // 
             // tsbFFT
             // 
+            tsbFFT.BackgroundImage = Resources.vType3;
+            tsbFFT.BackgroundImageLayout = ImageLayout.Center;
             tsbFFT.CheckOnClick = true;
             tsbFFT.DisplayStyle = ToolStripItemDisplayStyle.Image;
             tsbFFT.ImageTransparentColor = Color.Magenta;
@@ -166,7 +178,7 @@ namespace MDPlayer.form
             ClientSize = new Size(261, 251);
             Controls.Add(toolStripContainer1);
             Icon = (Icon)resources.GetObject("$this.Icon");
-            Margin = new Padding(5, 5, 5, 5);
+            Margin = new Padding(5);
             Name = "frmVisWave";
             Opacity = 0.9D;
             Text = "Visualizer";

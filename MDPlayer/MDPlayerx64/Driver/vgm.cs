@@ -576,26 +576,26 @@
 
         private void VcGGPSGPort06()
         {
-            chipRegister.setSN76489RegisterGGpanning(vgmBuf[vgmAdr] == 0x4f ? 0 : 1, vgmBuf[vgmAdr + 1], model);
+            chipRegister.setSN76489RegisterGGpanning(vgmBuf[vgmAdr] == 0x4f ? 0 : 1, vgmBuf[vgmAdr + 1], model, vgmFrameCounter);
             vgmAdr += 2;
         }
 
         private void VcPSG()
         {
-            chipRegister.setSN76489Register(vgmBuf[vgmAdr] == 0x50 ? 0 : 1, vgmBuf[vgmAdr + 1], model);
+            chipRegister.setSN76489Register(vgmBuf[vgmAdr] == 0x50 ? 0 : 1, vgmBuf[vgmAdr + 1], model, vgmFrameCounter);
             vgmAdr += 2;
         }
 
         private void VcAY8910()
         {
-            chipRegister.setAY8910Register((vgmBuf[vgmAdr + 1] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1] & 0x7f, vgmBuf[vgmAdr + 2], model);
+            chipRegister.setAY8910Register((vgmBuf[vgmAdr + 1] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1] & 0x7f, vgmBuf[vgmAdr + 2], model, vgmFrameCounter);
             //chipRegister.setAY8910Register(0, vgmBuf[vgmAdr + 1], vgmBuf[vgmAdr + 2], model);
             vgmAdr += 3;
         }
 
         private void VcDMG()
         {
-            chipRegister.setDMGRegister((vgmBuf[vgmAdr + 1] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1] & 0x7f, vgmBuf[vgmAdr + 2], model);
+            chipRegister.setDMGRegister((vgmBuf[vgmAdr + 1] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1] & 0x7f, vgmBuf[vgmAdr + 2], model,vgmFrameCounter);
             //chipRegister.setAY8910Register(0, vgmBuf[vgmAdr + 1], vgmBuf[vgmAdr + 2], model);
             vgmAdr += 3;
         }
@@ -639,7 +639,7 @@
 
         private void VcYM2413()
         {
-            chipRegister.setYM2413Register((vgmBuf[vgmAdr] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1], vgmBuf[vgmAdr + 2], model);
+            chipRegister.setYM2413Register((vgmBuf[vgmAdr] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1], vgmBuf[vgmAdr + 2], model, vgmFrameCounter);
             vgmAdr += 3;
         }
 
@@ -651,7 +651,7 @@
 
         private void VcHuC6280()
         {
-            chipRegister.setHuC6280Register((vgmBuf[vgmAdr + 1] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1] & 0x7f, vgmBuf[vgmAdr + 2], model);
+            chipRegister.setHuC6280Register((vgmBuf[vgmAdr + 1] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1] & 0x7f, vgmBuf[vgmAdr + 2], model, vgmFrameCounter);
             vgmAdr += 3;
         }
 
@@ -681,7 +681,7 @@
 
         private void VcYM2608Port0()
         {
-            chipRegister.setYM2608Register((vgmBuf[vgmAdr] & 0x80) == 0 ? 0 : 1, 0, vgmBuf[vgmAdr + 1], vgmBuf[vgmAdr + 2], model);
+            chipRegister.setYM2608Register((vgmBuf[vgmAdr] & 0x80) == 0 ? 0 : 1, 0, vgmBuf[vgmAdr + 1], vgmBuf[vgmAdr + 2], model, vgmFrameCounter);
             vgmAdr += 3;
         }
 
@@ -702,13 +702,13 @@
             //{
             //    //dat &= 0xdf;
             //}
-            chipRegister.setYM2608Register((vgmBuf[vgmAdr] & 0x80) == 0 ? 0 : 1, 1, adr, dat, model);
+            chipRegister.setYM2608Register((vgmBuf[vgmAdr] & 0x80) == 0 ? 0 : 1, 1, adr, dat, model, vgmFrameCounter);
             vgmAdr += 3;
         }
 
         private void VcYM2610Port0()
         {
-            chipRegister.setYM2610Register((vgmBuf[vgmAdr] & 0x80) == 0 ? 0 : 1, 0, vgmBuf[vgmAdr + 1], vgmBuf[vgmAdr + 2], model);
+            chipRegister.setYM2610Register((vgmBuf[vgmAdr] & 0x80) == 0 ? 0 : 1, 0, vgmBuf[vgmAdr + 1], vgmBuf[vgmAdr + 2], model, vgmFrameCounter);
             vgmAdr += 3;
         }
 
@@ -716,7 +716,7 @@
         {
             int adr = vgmBuf[vgmAdr + 1];
             int dat = vgmBuf[vgmAdr + 2];
-            chipRegister.setYM2610Register((vgmBuf[vgmAdr] & 0x80) == 0 ? 0 : 1, 1, adr, dat, model);
+            chipRegister.setYM2610Register((vgmBuf[vgmAdr] & 0x80) == 0 ? 0 : 1, 1, adr, dat, model, vgmFrameCounter);
             vgmAdr += 3;
         }
 
@@ -900,39 +900,39 @@
 
                             // YM2608
 
-                            chipRegister.setYM2608Register(chipID, 0x1, 0x00, 0x20, model);
-                            chipRegister.setYM2608Register(chipID, 0x1, 0x00, 0x21, model);
-                            chipRegister.setYM2608Register(chipID, 0x1, 0x00, 0x00, model);
+                            chipRegister.setYM2608Register(chipID, 0x1, 0x00, 0x20, model, vgmFrameCounter);
+                            chipRegister.setYM2608Register(chipID, 0x1, 0x00, 0x21, model, vgmFrameCounter);
+                            chipRegister.setYM2608Register(chipID, 0x1, 0x00, 0x00, model, vgmFrameCounter);
 
-                            chipRegister.setYM2608Register(chipID, 0x1, 0x10, 0x00, model);
-                            chipRegister.setYM2608Register(chipID, 0x1, 0x10, 0x80, model);
+                            chipRegister.setYM2608Register(chipID, 0x1, 0x10, 0x00, model, vgmFrameCounter);
+                            chipRegister.setYM2608Register(chipID, 0x1, 0x10, 0x80, model, vgmFrameCounter);
 
-                            chipRegister.setYM2608Register(chipID, 0x1, 0x00, 0x61, model);
-                            chipRegister.setYM2608Register(chipID, 0x1, 0x00, 0x68, model);
-                            chipRegister.setYM2608Register(chipID, 0x1, 0x01, opnaRamType, model);
+                            chipRegister.setYM2608Register(chipID, 0x1, 0x00, 0x61, model, vgmFrameCounter);
+                            chipRegister.setYM2608Register(chipID, 0x1, 0x00, 0x68, model, vgmFrameCounter);
+                            chipRegister.setYM2608Register(chipID, 0x1, 0x01, opnaRamType, model, vgmFrameCounter);
 
                             if (opnaRamType != 2)
                             {
-                                chipRegister.setYM2608Register(chipID, 0x1, 0x02, (int)((startAddress >> 2) & 0xff), model);
-                                chipRegister.setYM2608Register(chipID, 0x1, 0x03, (int)((startAddress >> 10) & 0xff), model);
+                                chipRegister.setYM2608Register(chipID, 0x1, 0x02, (int)((startAddress >> 2) & 0xff), model, vgmFrameCounter);
+                                chipRegister.setYM2608Register(chipID, 0x1, 0x03, (int)((startAddress >> 10) & 0xff), model, vgmFrameCounter);
                             }
                             else
                             {
-                                chipRegister.setYM2608Register(chipID, 0x1, 0x02, (int)((startAddress >> 5) & 0xff), model);
-                                chipRegister.setYM2608Register(chipID, 0x1, 0x03, (int)((startAddress >> 13) & 0xff), model);
+                                chipRegister.setYM2608Register(chipID, 0x1, 0x02, (int)((startAddress >> 5) & 0xff), model, vgmFrameCounter);
+                                chipRegister.setYM2608Register(chipID, 0x1, 0x03, (int)((startAddress >> 13) & 0xff), model, vgmFrameCounter);
                             }
-                            chipRegister.setYM2608Register(chipID, 0x1, 0x04, 0xff, model);
-                            chipRegister.setYM2608Register(chipID, 0x1, 0x05, 0xff, model);
-                            chipRegister.setYM2608Register(chipID, 0x1, 0x0c, 0xff, model);
-                            chipRegister.setYM2608Register(chipID, 0x1, 0x0d, 0xff, model);
+                            chipRegister.setYM2608Register(chipID, 0x1, 0x04, 0xff, model, vgmFrameCounter);
+                            chipRegister.setYM2608Register(chipID, 0x1, 0x05, 0xff, model, vgmFrameCounter);
+                            chipRegister.setYM2608Register(chipID, 0x1, 0x0c, 0xff, model, vgmFrameCounter);
+                            chipRegister.setYM2608Register(chipID, 0x1, 0x0d, 0xff, model, vgmFrameCounter);
 
                             // データ転送
                             for (int cnt = 0; cnt < bLen - 8; cnt++)
                             {
-                                chipRegister.setYM2608Register(chipID, 0x1, 0x08, vgmBuf[vgmAdr + 15 + cnt], model);
+                                chipRegister.setYM2608Register(chipID, 0x1, 0x08, vgmBuf[vgmAdr + 15 + cnt], model, vgmFrameCounter);
                             }
-                            chipRegister.setYM2608Register(chipID, 0x1, 0x00, 0x00, model);
-                            chipRegister.setYM2608Register(chipID, 0x1, 0x10, 0x80, model);
+                            chipRegister.setYM2608Register(chipID, 0x1, 0x00, 0x00, model, vgmFrameCounter);
+                            chipRegister.setYM2608Register(chipID, 0x1, 0x10, 0x80, model, vgmFrameCounter);
 
                             //chipRegister.setYM2608Register(0x1, 0x10, 0x13, model);
                             //chipRegister.setYM2608Register(0x1, 0x10, 0x80, model);
@@ -1509,8 +1509,8 @@
             byte rDat = vgmBuf[vgmAdr + 3];
             byte scc1_chipid = (byte)((vgmBuf[vgmAdr + 1] & 0x80) != 0 ? 1 : 0);
             vgmAdr += 4;
-            chipRegister.writeK051649(scc1_chipid, (uint)((scc1_port << 1) | 0x00), scc1_offset, model);
-            chipRegister.writeK051649(scc1_chipid, (uint)((scc1_port << 1) | 0x01), rDat, model);
+            chipRegister.writeK051649(scc1_chipid, (uint)((scc1_port << 1) | 0x00), scc1_offset, model, vgmFrameCounter);
+            chipRegister.writeK051649(scc1_chipid, (uint)((scc1_port << 1) | 0x01), rDat, model, vgmFrameCounter);
 
         }
 

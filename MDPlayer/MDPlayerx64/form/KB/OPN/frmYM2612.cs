@@ -135,17 +135,17 @@ namespace MDPlayer.form
             //    mul = masterClock / (float)defaultMasterClock;
 
             int defaultMasterClock = 8000000;
-            float ssgMul = 1.0f;
+            //float ssgMul = 1.0f;
             int masterClock = defaultMasterClock;
             if (Audio.ClockYM2612 != 0)
             {
-                ssgMul = Audio.ClockYM2612 / (float)defaultMasterClock;
+                //ssgMul = Audio.ClockYM2612 / (float)defaultMasterClock;
                 masterClock = Audio.ClockYM2612;
             }
 
             float fmDiv = 6;
-            float ssgDiv = 4;
-            ssgMul = ssgMul * ssgDiv / 4;
+            //float ssgDiv = 4;
+            //ssgMul = ssgMul * ssgDiv / 4;
 
             for (int ch = 0; ch < 6; ch++)
             {

@@ -173,7 +173,7 @@ namespace MDPlayer
             return GD3;
         }
 
-        public static string getNRDString(byte[] buf, ref uint index)
+        public static string getNRDString(byte[] buf, ref uint index,byte del=0)
         {
             if (buf == null || buf.Length < 1 || index < 0 || index >= buf.Length) return "";
 
@@ -182,8 +182,16 @@ namespace MDPlayer
                 List<byte> lst = new List<byte>();
                 for (; buf[index] != 0; index++)
                 {
-                    if (buf.Length > index + 1 && buf[index] == 0x1a && buf[index + 1] == 0x00)
-                        break;
+                    if (del == 0)
+                    {
+                        if (buf.Length > index + 1 && buf[index] == 0x1a && buf[index + 1] == 0x00)
+                            break;
+                    }
+                    else
+                    {
+                        if (buf.Length > index + 1 && buf[index] == del)
+                            break;
+                    }
                     lst.Add(buf[index]);
                 }
 
@@ -298,10 +306,13 @@ namespace MDPlayer
 
         public static EnmFileFormat CheckExt(string filename,byte[] buf=null)
         {
+            if (filename.ToLower().IndexOf("http://") != -1) return EnmFileFormat.shoutcast;
+            if (filename.ToLower().IndexOf("https://") != -1) return EnmFileFormat.shoutcast;
             if (filename.ToLower().LastIndexOf(".m3u") != -1) return EnmFileFormat.M3U;
             if (filename.ToLower().LastIndexOf(".mid") != -1) return EnmFileFormat.MID;
             if (filename.ToLower().LastIndexOf(".nrd") != -1) return EnmFileFormat.NRT;
             if (filename.ToLower().LastIndexOf(".nsf") != -1) return EnmFileFormat.NSF;
+            if (filename.ToLower().LastIndexOf(".gbs") != -1) return EnmFileFormat.GBS;
             if (filename.ToLower().LastIndexOf(".hes") != -1) return EnmFileFormat.HES;
             if (filename.ToLower().LastIndexOf(".sid") != -1) return EnmFileFormat.SID;
             if (filename.ToLower().LastIndexOf(".ay") != -1) return EnmFileFormat.AY;
@@ -314,6 +325,7 @@ namespace MDPlayer
             if (filename.ToLower().LastIndexOf(".mgs") != -1) return EnmFileFormat.MGS;
             if (filename.ToLower().LastIndexOf(".msd") != -1) return EnmFileFormat.MuSICA_src;
             if (filename.ToLower().LastIndexOf(".bgm") != -1) return EnmFileFormat.MuSICA;
+            if (filename.ToLower().LastIndexOf(".ndp") != -1) return EnmFileFormat.NDP;
             if (filename.ToLower().LastIndexOf(".m") != -1) return EnmFileFormat.M;
             if (filename.ToLower().LastIndexOf(".m2") != -1) return EnmFileFormat.M;
             if (filename.ToLower().LastIndexOf(".mz") != -1) return EnmFileFormat.M;
@@ -322,6 +334,10 @@ namespace MDPlayer
             if (filename.ToLower().LastIndexOf(".ozi") != -1) return EnmFileFormat.FMP;
             if (filename.ToLower().LastIndexOf(".zms") != -1) return EnmFileFormat.ZMS;
             if (filename.ToLower().LastIndexOf(".zmd") != -1) return EnmFileFormat.ZMD;
+            if (filename.ToLower().LastIndexOf(".mus") != -1) return EnmFileFormat.MUAP_src;
+            if (filename.ToLower().LastIndexOf(".o") != -1) return EnmFileFormat.MUAP;
+            if (filename.ToLower().LastIndexOf(".ox") != -1) return EnmFileFormat.MUAP;
+            if (filename.ToLower().LastIndexOf(".oy") != -1) return EnmFileFormat.MUAP;
             if (filename.ToLower().LastIndexOf(".rcp") != -1) return EnmFileFormat.RCP;
             if (filename.ToLower().LastIndexOf(".rcs") != -1) return EnmFileFormat.RCS;
             if (filename.ToLower().LastIndexOf(".s98") != -1) return EnmFileFormat.S98;
@@ -347,9 +363,15 @@ namespace MDPlayer
             if (filename.ToLower().LastIndexOf(".zgm") != -1) return EnmFileFormat.ZGM;
             if (filename.ToLower().LastIndexOf(".zip") != -1) return EnmFileFormat.ZIP;
             if (filename.ToLower().LastIndexOf(".lzh") != -1) return EnmFileFormat.LZH;
+            if (filename.ToLower().LastIndexOf(".zdf") != -1) return EnmFileFormat.ZDF;
             if (filename.ToLower().LastIndexOf(".wav") != -1) return EnmFileFormat.WAV;
             if (filename.ToLower().LastIndexOf(".mp3") != -1) return EnmFileFormat.MP3;
             if (filename.ToLower().LastIndexOf(".aiff") != -1) return EnmFileFormat.AIFF;
+            if (filename.ToLower().LastIndexOf(".ogg") != -1) return EnmFileFormat.OGG;
+            if (filename.ToLower().LastIndexOf(".m4a") != -1) return EnmFileFormat.M4A;
+            if (filename.ToLower().LastIndexOf(".aac") != -1) return EnmFileFormat.AAC;
+            if (filename.ToLower().LastIndexOf(".wma") != -1) return EnmFileFormat.WMA;
+            if (filename.ToLower().LastIndexOf(".flac") != -1) return EnmFileFormat.FLAC;
             if (filename.ToLower().LastIndexOf(".xml") != -1) return EnmFileFormat.XML;
 
             return EnmFileFormat.unknown;
@@ -903,6 +925,7 @@ namespace MDPlayer
     {
         VirtualModel
         , RealModel
+        , PianoRollModel
     }
 
     public enum EnmChip : int
@@ -961,6 +984,7 @@ namespace MDPlayer
         , ES5503
         , PCM8
         , MPCMX68k
+        , CS4231
 
         , S_SN76489
         , S_YM2612
@@ -1057,6 +1081,7 @@ namespace MDPlayer
         MGSCSCC_PLAIN = 14,
         RYM2612 = 15,
         SendMML2VGM = 16,
+        MUAP98 = 17
     }
 
     public enum EnmFileFormat : int
@@ -1096,16 +1121,28 @@ namespace MDPlayer
         ZMD = 32,
         RCS = 33,
         AY=34,
-        HOOT_GENERIC_Z80 = 35,
-        XML = 36,
-        HOOT = 37
+        GBS = 35,
+        ZDF = 36,
+        NDP = 37,
+        OGG = 38,
+        M4A = 39,
+        AAC = 40,
+        WMA = 41,
+        MUAP_src = 42,
+        MUAP = 43,
+        FLAC = 44,
+        shoutcast = 45,
+        HOOT_GENERIC_Z80 = 46,
+        XML = 47,
+        HOOT = 48
     }
 
     public enum EnmArcType : int
     {
         unknown = 0,
         ZIP = 1,
-        LZH = 2
+        LZH = 2,
+        ZDF = 3
     }
 
     public enum EnmRealModel

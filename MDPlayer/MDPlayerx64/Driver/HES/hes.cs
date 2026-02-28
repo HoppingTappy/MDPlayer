@@ -56,7 +56,7 @@
 
             GD3 = getGD3Info(vgmBuf, 0);
 
-            m_hes = new m_hes();
+            m_hes = new m_hes(this,model);
             m_hes.chipRegister = chipRegister;
             m_hes.ld = ld;
             nez_play = new m_hes.NEZ_PLAY();
@@ -80,10 +80,7 @@
                         m_hes.ExecuteHES(nez_play);
                         Counter++;
                     }
-                    else
-                    {
-                        vgmFrameCounter++;
-                    }
+                    vgmFrameCounter++;
                 }
                 //Stopped = !IsPlaying();
             }

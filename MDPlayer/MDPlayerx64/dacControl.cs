@@ -469,10 +469,10 @@
             switch (ChipType2)
             {
                 case 0x00:  // SN76489
-                    chipRegister.setSN76489Register(ChipID, Data, model);
+                    chipRegister.setSN76489Register(ChipID, Data, model, 0);
                     break;
                 case 0x01:  // YM2413+
-                    chipRegister.setYM2413Register(ChipID, Offset, Data, model);
+                    chipRegister.setYM2413Register(ChipID, Offset, Data, model, 0);
                     break;
                 case 0x02:  // YM2612
                     chipRegister.setYM2612Register(ChipID, Port, Offset, Data, model, -1);
@@ -484,10 +484,10 @@
                     chipRegister.setYM2203Register(ChipID, Offset, Data, model);
                     break;
                 case 0x07:  // YM2608+
-                    chipRegister.setYM2608Register(ChipID, Port, Offset, Data, model);
+                    chipRegister.setYM2608Register(ChipID, Port, Offset, Data, model, 0);
                     break;
                 case 0x08:  // YM2610+
-                    chipRegister.setYM2610Register(ChipID, Port, Offset, Data, model);
+                    chipRegister.setYM2610Register(ChipID, Port, Offset, Data, model, 0);
                     break;
                 case 0x09:  // YM3812+
                     chipRegister.setYM3812Register(ChipID, Offset, Data, model);
@@ -517,10 +517,10 @@
                     chipRegister.writePWM(ChipID, Port, (uint)((Offset << 8) | (Data << 0)), model);
                     break;
                 case 0x12:  // AY8910+
-                    chipRegister.setAY8910Register(ChipID, Offset, Data, model);
+                    chipRegister.setAY8910Register(ChipID, Offset, Data, model, 0);
                     break;
                 case 0x13:  // DMG+
-                    chipRegister.setDMGRegister(ChipID, Offset, Data, model);
+                    chipRegister.setDMGRegister(ChipID, Offset, Data, model, 0);
                     break;
                 case 0x14:  // NES+
                     chipRegister.setNESRegister(ChipID, Offset, Data, model);
@@ -530,7 +530,7 @@
                         chipRegister.writeOKIM6258(ChipID, Offset, Data, model);
                     break;
                 case 0x1b:  // HuC6280
-                    chipRegister.setHuC6280Register(ChipID, Offset, Data, model);
+                    chipRegister.setHuC6280Register(ChipID, Offset, Data, model, 0);
                     break;
             }
         }

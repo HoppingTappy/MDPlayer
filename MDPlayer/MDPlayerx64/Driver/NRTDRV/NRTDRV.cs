@@ -880,14 +880,14 @@
 
         private void wopm(byte d, byte a)
         {
-            if (model == EnmModel.VirtualModel)
+            if (model == EnmModel.VirtualModel || model == EnmModel.PianoRollModel)
             {
                 if (work.OPMIO == 0x701)
                 {
                     //仮想レジスタに書き込み
                     work.OPM1vreg[d] = a;
                     //実レジスタに書き込み
-                    chipRegister.setYM2151Register(0, 0, d, a, EnmModel.VirtualModel, 0, 0);
+                    chipRegister.setYM2151Register(0, 0, d, a, model, 0, vgmFrameCounter);
                     //Console.WriteLine($"OPM1 Reg{d:X2} Dat{a:X2}");
                 }
                 else
@@ -895,7 +895,7 @@
                     //仮想レジスタに書き込み
                     work.OPM2vreg[d] = a;
                     //実レジスタに書き込み
-                    chipRegister.setYM2151Register(1, 0, d, a, EnmModel.VirtualModel, 0, 0);
+                    chipRegister.setYM2151Register(1, 0, d, a, model, 0, vgmFrameCounter);
                     //Console.WriteLine($"OPM2 Reg{d:X2} Dat{a:X2}");
                 }
             }
@@ -906,7 +906,7 @@
                     //仮想レジスタに書き込み
                     work.OPM1vreg[d] = a;
                     //実レジスタに書き込み
-                    chipRegister.setYM2151Register(0, 0, d, a, EnmModel.RealModel, YM2151Hosei[0], 0);
+                    chipRegister.setYM2151Register(0, 0, d, a, model, YM2151Hosei[0], vgmFrameCounter);
                     //Console.WriteLine($"OPM1 Reg{d:X2} Dat{a:X2}");
                 }
                 else
@@ -914,7 +914,7 @@
                     //仮想レジスタに書き込み
                     work.OPM2vreg[d] = a;
                     //実レジスタに書き込み
-                    chipRegister.setYM2151Register(1, 0, d, a, EnmModel.RealModel, YM2151Hosei[1], 0);
+                    chipRegister.setYM2151Register(1, 0, d, a, model, YM2151Hosei[1], vgmFrameCounter);
                     //Console.WriteLine($"OPM2 Reg{d:X2} Dat{a:X2}");
                 }
             }
@@ -922,12 +922,9 @@
 
         private void wpsg(byte d, byte a)
         {
-            if (model == EnmModel.VirtualModel)
-            {
-                //Out(0x1c00, d);//PSG register
-                //Out(0x1b00, a);//PSG data
-                chipRegister.setAY8910Register(0, d, a, EnmModel.VirtualModel);
-            }
+            //Out(0x1c00, d);//PSG register
+            //Out(0x1b00, a);//PSG data
+            chipRegister.setAY8910Register(0, d, a, model, vgmFrameCounter);
             //else
             //{
             //}

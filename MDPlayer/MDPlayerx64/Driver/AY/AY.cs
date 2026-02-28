@@ -107,10 +107,7 @@ namespace MDPlayer.Driver.AY
                         oneFrame();
                         Counter++;
                     }
-                    else
-                    {
-                        vgmFrameCounter++;
-                    }
+                    vgmFrameCounter++;
                 }
             }
             catch (Exception ex)
@@ -236,7 +233,7 @@ namespace MDPlayer.Driver.AY
 
         public void Setup(int songNum)
         {
-            port port = new port();
+            port port = new port(this);
             z80 = new Z80Processor
             {
                 PortsSpace = port,

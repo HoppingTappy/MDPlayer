@@ -1,6 +1,8 @@
-﻿using System.IO.Compression;
+﻿using System;
+using System.IO.Compression;
 using System.Runtime.CompilerServices;
 using System.Text;
+using static MDPlayer.PlayList;
 using System.Xml;
 
 namespace MDPlayer
@@ -199,12 +201,24 @@ namespace MDPlayer
                 row.Cells[dgvList.Columns["clmZipFileName"].Index].Value = music.arcFileName;
                 row.Cells[dgvList.Columns["clmSupportFile"].Index].Value = music.supportFileName;
                 row.Cells[dgvList.Columns["clmUseCompiler"].Index].Value = music.useCompiler;
-                row.Cells[dgvList.Columns["clmDispFileName"].Index].Value = Path.GetFileName(music.fileName);
+                row.Cells[dgvList.Columns["clmDispFileName"].Index].Value = 
+                    (music.fileName.ToLower().IndexOf("http://") >= 0 || music.fileName.ToLower().IndexOf("https://") >= 0)
+                    ? music.fileName
+                    : Path.GetFileName(music.fileName);
                 row.Cells[dgvList.Columns["clmDispFileName"].Index].ToolTipText = music.fileName;
-                row.Cells[dgvList.Columns["clmDispSupportFileName"].Index].Value = string.IsNullOrEmpty(music.supportFileName) ? "-" : Path.GetFileName(music.supportFileName);
+                row.Cells[dgvList.Columns["clmDispSupportFileName"].Index].Value = 
+                    string.IsNullOrEmpty(music.supportFileName) 
+                    ? "-" 
+                    : Path.GetFileName(music.supportFileName);
                 row.Cells[dgvList.Columns["clmDispSupportFileName"].Index].ToolTipText = music.supportFileName;
-                row.Cells[dgvList.Columns["clmDispUseCompiler"].Index].Value = string.IsNullOrEmpty(music.useCompiler) ? "-" : music.useCompiler;
-                row.Cells[dgvList.Columns["clmEXT"].Index].Value = Path.GetExtension(music.fileName).ToUpper();
+                row.Cells[dgvList.Columns["clmDispUseCompiler"].Index].Value = 
+                    string.IsNullOrEmpty(music.useCompiler) 
+                    ? "-" 
+                    : music.useCompiler;
+                row.Cells[dgvList.Columns["clmEXT"].Index].Value = 
+                    (music.fileName.ToLower().IndexOf("http://")>=0|| music.fileName.ToLower().IndexOf("https://") >= 0) 
+                    ? "ShoutCAST" 
+                    : Path.GetExtension(music.fileName).ToUpper();
                 row.Cells[dgvList.Columns["clmType"].Index].Value = music.type;
                 row.Cells[dgvList.Columns["clmTitle"].Index].Value = music.title;
                 row.Cells[dgvList.Columns["clmTitleJ"].Index].Value = music.titleJ;
@@ -304,6 +318,9 @@ namespace MDPlayer
                 case EnmFileFormat.NSF:
                     AddFileNSF(mc, entry);
                     break;
+                case EnmFileFormat.GBS:
+                    AddFileGBS(mc, entry);
+                    break;
                 case EnmFileFormat.HES:
                     AddFileHES(mc, entry);
                     break;
@@ -340,6 +357,9 @@ namespace MDPlayer
                 case EnmFileFormat.MuSICA_src:
                     AddFileMML(mc, entry);
                     break;
+                case EnmFileFormat.NDP:
+                    AddFileNDP(mc, entry);
+                    break;
                 case EnmFileFormat.M:
                     AddFileM(mc, entry);
                     break;
@@ -351,6 +371,12 @@ namespace MDPlayer
                     break;
                 case EnmFileFormat.ZMD:
                     AddFileZMD(mc, entry);
+                    break;
+                case EnmFileFormat.MUAP_src:
+                    AddFileMUAP(mc, entry);
+                    break;
+                case EnmFileFormat.MUAP:
+                    AddFileMUAP(mc, entry);
                     break;
                 case EnmFileFormat.RCP:
                     AddFileRCP(mc, entry);
@@ -379,6 +405,9 @@ namespace MDPlayer
                 case EnmFileFormat.LZH:
                     AddFileLZH(mc, entry);
                     break;
+                case EnmFileFormat.ZDF:
+                    AddFileZDF(mc, entry);
+                    break;
                 case EnmFileFormat.WAV:
                     AddFileWAV(mc, entry);
                     break;
@@ -387,6 +416,24 @@ namespace MDPlayer
                     break;
                 case EnmFileFormat.AIFF:
                     AddFileAIFF(mc, entry);
+                    break;
+                case EnmFileFormat.OGG:
+                    AddFileOGG(mc, entry);
+                    break;
+                case EnmFileFormat.M4A:
+                    AddFileM4A(mc, entry);
+                    break;
+                case EnmFileFormat.AAC:
+                    AddFileAAC(mc, entry);
+                    break;
+                case EnmFileFormat.WMA:
+                    AddFileWMA(mc, entry);
+                    break;
+                case EnmFileFormat.FLAC:
+                    AddFileFLAC(mc, entry);
+                    break;
+                case EnmFileFormat.shoutcast:
+                    AddFileShoutcast(mc, entry);
                     break;
                 case EnmFileFormat.XML:
                     AddFileXML(mc, entry);
@@ -430,6 +477,12 @@ namespace MDPlayer
                 case EnmFileFormat.MuSICA:
                     AddFileMuSICA(ref index, mc, entry);
                     break;
+                case EnmFileFormat.MuSICA_src:
+                    AddFileMuSICA(ref index, mc, entry);
+                    break;
+                case EnmFileFormat.NDP:
+                    AddFileNDP(ref index, mc, entry);
+                    break;
                 case EnmFileFormat.M:
                     AddFileM(ref index, mc, entry);
                     break;
@@ -441,6 +494,12 @@ namespace MDPlayer
                     break;
                 case EnmFileFormat.ZMD:
                     AddFileZMD(ref index, mc, entry);
+                    break;
+                case EnmFileFormat.MUAP_src:
+                    AddFileMUAP(ref index, mc, entry);
+                    break;
+                case EnmFileFormat.MUAP:
+                    AddFileMUAP(ref index, mc, entry);
                     break;
                 case EnmFileFormat.RCP:
                     AddFileRCP(ref index, mc, entry);
@@ -472,11 +531,29 @@ namespace MDPlayer
                 case EnmFileFormat.AIFF:
                     AddFileAIFF(ref index, mc, entry);
                     break;
+                case EnmFileFormat.OGG:
+                    AddFileOGG(ref index, mc, entry);
+                    break;
+                case EnmFileFormat.M4A:
+                    AddFileM4A(ref index, mc, entry);
+                    break;
+                case EnmFileFormat.AAC:
+                    AddFileAAC(ref index, mc, entry);
+                    break;
+                case EnmFileFormat.WMA:
+                    AddFileWMA(ref index, mc, entry);
+                    break;
+                case EnmFileFormat.FLAC:
+                    AddFileFLAC(ref index, mc, entry);
+                    break;
                 case EnmFileFormat.ZIP:
                     AddFileZIP(ref index, mc, entry);
                     break;
                 case EnmFileFormat.LZH:
                     AddFileLZH(ref index, mc, entry);
+                    break;
+                case EnmFileFormat.ZDF:
+                    AddFileZDF(ref index, mc, entry);
                     break;
                 case EnmFileFormat.M3U:
                     AddFileM3U(ref index, mc, entry);
@@ -484,11 +561,17 @@ namespace MDPlayer
                 case EnmFileFormat.NSF:
                     AddFileNSF(ref index, mc, entry);
                     break;
+                case EnmFileFormat.GBS:
+                    AddFileGBS(ref index, mc, entry);
+                    break;
                 case EnmFileFormat.HES:
                     AddFileHES(ref index, mc, entry);
                     break;
                 case EnmFileFormat.SID:
                     AddFileSID(ref index, mc, entry);
+                    break;
+                case EnmFileFormat.shoutcast:
+                    AddFileShoutcast(ref index, mc, entry);
                     break;
                 case EnmFileFormat.XML:
                     AddFileXML(ref index, mc, entry);
@@ -553,8 +636,17 @@ namespace MDPlayer
                     }
                     else
                     {
-                        UnlhaWrap.UnlhaCmd cmd = new();
-                        buf = cmd.GetFileByte(((Tuple<string, string>)entry).Item1, ((Tuple<string, string>)entry).Item2);
+                        EnmFileFormat ff= Common.CheckExt(((Tuple<string, string>)entry).Item1);
+                        if (ff == EnmFileFormat.ZDF)
+                        {
+                            UnZDF uz = new UnZDF();
+                            buf = uz.GetFileByte(((Tuple<string, string>)entry).Item1, ((Tuple<string, string>)entry).Item2);
+                        }
+                        else
+                        {
+                            UnlhaWrap.UnlhaCmd cmd = new();
+                            buf = cmd.GetFileByte(((Tuple<string, string>)entry).Item1, ((Tuple<string, string>)entry).Item2);
+                        }
                     }
                 }
 
@@ -796,6 +888,16 @@ namespace MDPlayer
             AddFilexxx(ref index, mc, entry);
         }
 
+        private void AddFileNDP(Music mc, object entry = null)
+        {
+            AddFilexxx(mc, entry);
+        }
+
+        private void AddFileNDP(ref int index, Music mc, object entry = null)
+        {
+            AddFilexxx(ref index, mc, entry);
+        }
+
         private void AddFileM(Music mc, object entry = null)
         {
             AddFilexxx(mc, entry);
@@ -851,6 +953,16 @@ namespace MDPlayer
             AddFilexxx(ref index, mc, entry);
         }
 
+        private void AddFileMUAP(Music mc, object entry = null)
+        {
+            AddFilexxx(mc, entry);
+        }
+
+        private void AddFileMUAP(ref int index, Music mc, object entry = null)
+        {
+            AddFilexxx(ref index, mc, entry);
+        }
+
         private void AddFileWAV(Music mc, object entry = null)
         {
             AddFilexxx(mc, entry);
@@ -877,6 +989,56 @@ namespace MDPlayer
         }
 
         private void AddFileAIFF(ref int index, Music mc, object entry = null)
+        {
+            AddFilexxx(ref index, mc, entry);
+        }
+
+        private void AddFileOGG(Music mc, object entry = null)
+        {
+            AddFilexxx(mc, entry);
+        }
+
+        private void AddFileOGG(ref int index, Music mc, object entry = null)
+        {
+            AddFilexxx(ref index, mc, entry);
+        }
+
+        private void AddFileM4A(Music mc, object entry = null)
+        {
+            AddFilexxx(mc, entry);
+        }
+
+        private void AddFileM4A(ref int index, Music mc, object entry = null)
+        {
+            AddFilexxx(ref index, mc, entry);
+        }
+
+        private void AddFileAAC(Music mc, object entry = null)
+        {
+            AddFilexxx(mc, entry);
+        }
+
+        private void AddFileAAC(ref int index, Music mc, object entry = null)
+        {
+            AddFilexxx(ref index, mc, entry);
+        }
+
+        private void AddFileWMA(Music mc, object entry = null)
+        {
+            AddFilexxx(mc, entry);
+        }
+
+        private void AddFileWMA(ref int index, Music mc, object entry = null)
+        {
+            AddFilexxx(ref index, mc, entry);
+        }
+
+        private void AddFileFLAC(Music mc, object entry = null)
+        {
+            AddFilexxx(mc, entry);
+        }
+
+        private void AddFileFLAC(ref int index, Music mc, object entry = null)
         {
             AddFilexxx(ref index, mc, entry);
         }
@@ -1060,7 +1222,7 @@ namespace MDPlayer
             if (entry != null) return;
 
             UnlhaWrap.UnlhaCmd cmd = new();
-            List<Tuple<string, UInt64>> res = cmd.GetFileList(mc.fileName, "*.*");
+            List<Tuple<string, UInt64>> res = cmd.GetFileList(mc.fileName, "*.*");//(string , uint64) = (filename , original file size)
             mc.arcFileName = mc.fileName;
             mc.arcType = EnmArcType.LZH;
             List<string> zipMember = new();
@@ -1225,6 +1387,98 @@ namespace MDPlayer
 
         }
 
+        private void AddFileZDF(Music mc, object entry = null)
+        {
+            if (entry != null) return;
+
+            UnZDF cmd = new();
+            List<Tuple<string, UInt64>> res = cmd.GetFileList(mc.fileName, "*.*");
+            if (res == null || res.Count < 1) return;
+
+            mc.arcFileName = mc.fileName;
+            mc.arcType = EnmArcType.ZDF;
+            List<string> zipMember = new();
+            List<Music> mMember = new();
+
+            foreach (Tuple<string, UInt64> ent in res)
+            {
+                if (Common.CheckExt(ent.Item1) != EnmFileFormat.M3U)
+                {
+                    zipMember.Add(ent.Item1);
+                }
+                else
+                {
+                    PlayList pl = M3U.LoadM3U(ent, mc.arcFileName);
+                    foreach (Music m in pl.LstMusic) mMember.Add(m);
+                }
+            }
+
+            foreach (string zm in zipMember)
+            {
+                bool found = false;
+                foreach (Music m in mMember)
+                {
+                    if (m.fileName == zm)
+                    {
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found && Common.CheckExt(zm) == EnmFileFormat.VGM)
+                {
+                    string vzm = "";
+                    if (Path.GetExtension(zm).ToLower() == ".vgm") vzm = Path.ChangeExtension(zm, ".vgz");
+                    else vzm = Path.ChangeExtension(zm, ".vgm");
+                    foreach (Music m in mMember)
+                    {
+                        if (m.fileName == vzm)
+                        {
+                            found = true;
+                            break;
+                        }
+                    }
+                }
+                if (!found)
+                {
+                    Music zmc = new()
+                    {
+                        fileName = zm,
+                        arcFileName = mc.arcFileName,
+                        arcType = mc.arcType
+                    };
+                    mMember.Add(zmc);
+                }
+            }
+
+            foreach (Tuple<string, UInt64> ent in res)
+            {
+                foreach (Music m in mMember)
+                {
+                    string vzm = "";
+                    if (Path.GetExtension(m.fileName).ToLower() == ".vgm") vzm = Path.ChangeExtension(m.fileName, ".vgz");
+                    else if (Path.GetExtension(m.fileName).ToLower() == ".vgz") vzm = Path.ChangeExtension(m.fileName, ".vgm");
+
+                    if (ent.Item1 == m.fileName || ent.Item1 == vzm)
+                    {
+                        m.format = Common.CheckExt(m.fileName);
+                        m.arcFileName = mc.arcFileName;
+                        m.arcType = mc.arcType;
+                        AddFileLoop(m, new Tuple<string, string>(m.arcFileName, ent.Item1));
+
+                        //m3uが複数同梱されている時、同名のファイルが多数追加されることになるケースがある。
+                        //それを防ぐためここでbreakする
+                        break;
+                    }
+                }
+            }
+
+        }
+
+        private void AddFileZDF(ref int _, Music mc, object entry = null)
+        {
+            AddFileZDF(mc, entry);
+        }
+
         private void AddFileM3U(Music mc, object entry = null)
         {
 
@@ -1308,6 +1562,123 @@ namespace MDPlayer
         }
 
         private void AddFileNSF(ref int index, Music mc, object entry = null)
+        {
+            try
+            {
+                byte[] buf = null;
+                if (entry == null)
+                {
+                    buf = File.ReadAllBytes(mc.fileName);
+                }
+                else
+                {
+                    if (entry is ZipArchiveEntry entry1)
+                    {
+
+                        using BinaryReader reader = new(entry1.Open());
+                        buf = reader.ReadBytes((int)entry1.Length);
+                    }
+                    else
+                    {
+                        UnlhaWrap.UnlhaCmd cmd = new();
+                        buf = cmd.GetFileByte(((Tuple<string, string>)entry).Item1, ((Tuple<string, string>)entry).Item2);
+                    }
+
+                }
+
+                List<PlayList.Music> musics;
+                if (entry == null) musics = Audio.GetMusic(mc.fileName, buf);
+                else musics = Audio.GetMusic(mc.fileName, buf, mc.arcFileName, entry);
+
+                if (mc.songNo != -1)
+                {
+                    PlayList.Music music = null;
+                    if (musics.Count > 0)
+                    {
+                        music = musics[0];
+                        music.songNo = mc.songNo;
+                        music.title = mc.title;
+                        music.titleJ = mc.titleJ;
+
+                        musics.Clear();
+                        musics.Add(music);
+                    }
+                    else
+                    {
+                        musics.Clear();
+                    }
+                }
+
+                List<DataGridViewRow> rows = MakeRow(musics);
+                dgvList.Rows.InsertRange(index, rows.ToArray());
+                LstMusic.InsertRange(index, musics);
+                index += rows.Count;
+            }
+            catch (Exception ex)
+            {
+                log.ForcedWrite(ex);
+            }
+        }
+
+        private void AddFileGBS(Music mc, object entry = null)
+        {
+            try
+            {
+                byte[] buf = null;
+                if (entry == null)
+                {
+                    buf = File.ReadAllBytes(mc.fileName);
+                }
+                else
+                {
+                    if (entry is ZipArchiveEntry entry1)
+                    {
+
+                        using BinaryReader reader = new(entry1.Open());
+                        buf = reader.ReadBytes((int)entry1.Length);
+                    }
+                    else
+                    {
+                        UnlhaWrap.UnlhaCmd cmd = new();
+                        buf = cmd.GetFileByte(((Tuple<string, string>)entry).Item1, ((Tuple<string, string>)entry).Item2);
+                    }
+
+                }
+
+                List<PlayList.Music> musics;
+                if (entry == null) musics = Audio.GetMusic(mc.fileName, buf);
+                else musics = Audio.GetMusic(mc.fileName, buf, mc.arcFileName, entry);
+
+                if (mc.songNo != -1)
+                {
+                    PlayList.Music music = null;
+                    if (musics.Count > 0)
+                    {
+                        music = musics[0];
+                        music.songNo = mc.songNo;
+                        music.title = mc.title;
+                        music.titleJ = mc.titleJ;
+
+                        musics.Clear();
+                        musics.Add(music);
+                    }
+                    else
+                    {
+                        musics.Clear();
+                    }
+                }
+
+                List<DataGridViewRow> rows = MakeRow(musics);
+                foreach (DataGridViewRow row in rows) dgvList.Rows.Add(row);
+                foreach (PlayList.Music music in musics) LstMusic.Add(music);
+            }
+            catch (Exception ex)
+            {
+                log.ForcedWrite(ex);
+            }
+        }
+
+        private void AddFileGBS(ref int index, Music mc, object entry = null)
         {
             try
             {
@@ -1653,6 +2024,59 @@ namespace MDPlayer
             }
         }
 
+        private void AddFileShoutcast(ref int index, Music mc, object entry = null)
+        {
+            try
+            {
+                List<PlayList.Music> musics = new List<Music>();
+
+                PlayList.Music music = new Music();
+                music.songNo = 0;
+                music.fileName = mc.fileName;
+                music.title = mc.title;
+                music.titleJ = mc.titleJ;
+                music.composer = mc.composer;
+                music.composerJ = mc.composerJ;
+                musics.Clear();
+                musics.Add(music);
+
+                List<DataGridViewRow> rows = MakeRow(musics);
+                dgvList.Rows.InsertRange(index, rows.ToArray());
+                LstMusic.InsertRange(index, musics);
+                index += rows.Count;
+            }
+            catch (Exception ex)
+            {
+                log.ForcedWrite(ex);
+            }
+        }
+
+        private void AddFileShoutcast(Music mc, object entry = null)
+        {
+            try
+            {
+                List<PlayList.Music> musics = new List<Music>();
+
+                PlayList.Music music_ = new Music();
+                music_.songNo = 0;
+                music_.fileName = mc.fileName;
+                music_.title = mc.title;
+                music_.titleJ = mc.titleJ;
+                music_.composer = mc.composer;
+                music_.composerJ = mc.composerJ;
+                musics.Clear();
+                musics.Add(music_);
+
+                List<DataGridViewRow> rows = MakeRow(musics);
+                foreach (DataGridViewRow row in rows) dgvList.Rows.Add(row);
+                foreach (PlayList.Music music in musics) LstMusic.Add(music);
+            }
+            catch (Exception ex)
+            {
+                log.ForcedWrite(ex);
+            }
+        }
+
         private void AddFileXML(Music mc, object entry = null)
         {
             try
@@ -1694,6 +2118,7 @@ namespace MDPlayer
             }
         }
 
+
         private void AddFileXML(ref int index, Music mc, object entry = null)
         {
             try
@@ -1726,14 +2151,14 @@ namespace MDPlayer
                 }
 
                 List<DataGridViewRow> rows = MakeRow(musics);
-                dgvList.Rows.InsertRange(index, rows.ToArray());
-                LstMusic.InsertRange(index, musics);
-                index += rows.Count;
+                foreach (DataGridViewRow row in rows) dgvList.Rows.Add(row);
+                foreach (PlayList.Music music in musics) LstMusic.Add(music);
             }
             catch (Exception ex)
             {
                 log.ForcedWrite(ex);
             }
         }
+
     }
 }

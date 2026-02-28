@@ -286,7 +286,7 @@ namespace MDPlayer.Driver
             if (cd.data == -1) return;
             if (cd.port == -1) return;
 
-            chipRegister.setYM2608Register(0, cd.port, cd.address, cd.data, model);
+            chipRegister.setYM2608Register(0, cd.port, cd.address, cd.data, model, vgmFrameCounter);
             if (cd.port == 1 && (byte)cd.address == 0x8 && model == EnmModel.RealModel)
             {
                 this.isDataBlock = true;
@@ -442,7 +442,7 @@ namespace MDPlayer.Driver
             if (dat.data == -1) return;
             if (dat.port == -1) return;
 
-            chipRegister.setYM2608Register(0, dat.port, dat.address, dat.data, model);
+            chipRegister.setYM2608Register(0, dat.port, dat.address, dat.data, model, vgmFrameCounter);
             //Console.WriteLine("{0} {1}", dat.address, dat.data);
         }
 

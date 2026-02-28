@@ -2852,7 +2852,7 @@ namespace MDPlayer.Driver.MNDRV
             switch (reg.a0)
             {
                 case 0xecc0c1:
-                    chipRegister.setYM2608Register(0, 0, (int)reg.D1_B, (int)reg.D0_B, model);
+                    chipRegister.setYM2608Register(0, 0, (int)reg.D1_B, (int)reg.D0_B, model,vgmFrameCounter);
                     timerOPN.WriteReg((byte)reg.D1_B, (byte)reg.D0_B);
                     //log.Write(string.Format("DEV:0 PRT:0 radr:{0:x} rdat:{1:x}", reg.D1_B, reg.D0_B));
                     //if (reg.D1_B < 0x10)
@@ -2861,15 +2861,15 @@ namespace MDPlayer.Driver.MNDRV
                     //}
                     break;
                 case 0xecc0c5:
-                    chipRegister.setYM2608Register(0, 1, (int)reg.D1_B, (int)reg.D0_B, model);
+                    chipRegister.setYM2608Register(0, 1, (int)reg.D1_B, (int)reg.D0_B, model, vgmFrameCounter);
                     //log.Write(string.Format("DEV:0 PRT:1 radr:{0:x} rdat:{1:x}", reg.D1_B, reg.D0_B));
                     break;
                 case 0xecc0c9:
-                    chipRegister.setYM2608Register(1, 0, (int)reg.D1_B, (int)reg.D0_B, model);
+                    chipRegister.setYM2608Register(1, 0, (int)reg.D1_B, (int)reg.D0_B, model, vgmFrameCounter);
                     //log.Write(string.Format("DEV:1 PRT:0 radr:{0:x} rdat:{1:x}", reg.D1_B, reg.D0_B));
                     break;
                 case 0xecc0cd:
-                    chipRegister.setYM2608Register(1, 1, (int)reg.D1_B, (int)reg.D0_B, model);
+                    chipRegister.setYM2608Register(1, 1, (int)reg.D1_B, (int)reg.D0_B, model, vgmFrameCounter);
                     //log.Write(string.Format("DEV:1 PRT:1 radr:{0:x} rdat:{1:x}", reg.D1_B, reg.D0_B));
                     break;
             }
@@ -2973,7 +2973,7 @@ namespace MDPlayer.Driver.MNDRV
             //while ((sbyte)mm.ReadByte(reg.a0) < 0) ; //wait?
             //mm.Write(reg.a0, (byte)reg.D0_B);
             //log.Write(string.Format("adr:{0:x} dat:{1:x}", reg.a0, reg.D0_B));
-            chipRegister.setYM2151Register(0, 0, (int)reg.D1_B, (int)reg.D0_B, model, YM2151Hosei[0], 0);
+            chipRegister.setYM2151Register(0, 0, (int)reg.D1_B, (int)reg.D0_B, model, YM2151Hosei[0], vgmFrameCounter);
             timerOPM.WriteReg((byte)reg.D1_B, (byte)reg.D0_B);
         }
 

@@ -7,12 +7,14 @@ namespace MDPlayer.Driver.MGSDRV
         private ChipRegister chipRegister;
         private EnmModel model;
         public MSXSlot slot;
+        private baseDriver driver;
 
-        public MsxMemory(ChipRegister chipRegister, EnmModel model)
+        public MsxMemory(ChipRegister chipRegister, EnmModel model,baseDriver driver)
         {
             this.chipRegister = chipRegister;
             this.model = model;
-            this.slot = new MSXSlot(chipRegister, model);
+            this.slot = new MSXSlot(chipRegister, model, driver);
+            this.driver = driver;
         }
 
         public byte this[int address]

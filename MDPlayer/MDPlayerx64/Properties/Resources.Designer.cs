@@ -726,18 +726,15 @@ namespace MDPlayerx64.Properties {
         ///  
         ///[概要]  
         ///  このツールは、鍵盤表示を行いながらVGMファイルの再生を行います。  
-        ///  (NRD,XGM,S98,MID,RCP,NSF,HES,SID,MDR,MDX,MND,MUC(TBD),MUB(TBD)ファイルにも対応。)  
+        ///  (NRD,NDP,XGM,S98,MID,RCP,RCS,NSF,GBS,HES,SID,AY,MGS,MDR,MDX,MND,ZMD,ZMS,MUC,MUB,M,M2,MZ,MPI,MVI,MZI,OPI,OVI,OZI,WAV,MP3,AIFF,OGG,M4A,AAC,WMAファイルにも対応。)  
         ///  
         ///[注意]  
+        ///  ・作者様よりSCCI2の同梱の許可をいただきました。但しForkなどしてバイナリを配布する際にSCCI2を同梱したい場合は別途、許可を頂くようお願いします。  
+        ///  
+        ///  ・FileAssociationTool(ファイル関連付け設定ツール)についてはREADME_AST.md/README_AST_EN.mdを参照お願いします。  
+        ///  
         ///  ・再生時の音量に注意してください。バグによる雑音が大音量で再生される場合もあります。  
-        ///  (特に再生したことのないファイルを試す場合や、プログラムを更新した場合。)  
-        ///  
-        ///  ・使用中に不具合を見つけた場合はお手数ですがTwitter(@kumakumakumaT_T)までご連絡ください。  
-        ///  (VGMPlayやNRTDRV、その他素晴らしいソフトウェアの作者様方に、  
-        ///  直接MDPlayerについての連絡がいくことの無い様にお願いします。)  
-        ///  できるかぎり対応させていただくつもりですが、ご希望に添えないことも多々あります。ご了承ください。  
-        ///  
-        ///[対応フォーマ [残りの文字列は切り詰められました]&quot;; に類似しているローカライズされた文字列を検索します。
+        ///  ( [残りの文字列は切り詰められました]&quot;; に類似しているローカライズされた文字列を検索します。
         /// </summary>
         internal static string cntDescription {
             get {
@@ -793,11 +790,12 @@ namespace MDPlayerx64.Properties {
         ///MNDファイル(*.mnd)|*.mnd|
         ///MUCOM88ファイル(*.mub;*.muc)|*.mub;*.muc|
         ///NRDファイル(*.nrd)|*.nrd|
+        ///NDPファイル(*.ndp)|*.ndp|
         ///NSFファイル(*.nsf)|*.nsf|
+        ///GBSファイル(*.gbs)|*.gbs|
         ///PMDファイル(*.m;*.m2;*.mz;*.mml)|*.m;*.m2;*.mz;*.mml|
         ///FMPファイル(*.mpi;*.mvi;*.mzi;*.opi;*.ovi;*.ozi)|*.mpi;*.mvi;*.mzi;*.opi;*.ovi;*.ozi|
-        ///ZMUSIC3ファイル(*.zms;*.zmd)|*.zms;*.zmd|
-        ///RCPファイル(*.rcp)|*.rcp [残りの文字列は切り詰められました]&quot;; に類似しているローカライズされた文字列を検索します。
+        ///ZMUSIC3ファイル(* [残りの文字列は切り詰められました]&quot;; に類似しているローカライズされた文字列を検索します。
         /// </summary>
         internal static string cntSupportFile {
             get {
@@ -851,6 +849,26 @@ namespace MDPlayerx64.Properties {
         internal static string DefaultVolumeBalance_FMP {
             get {
                 return ResourceManager.GetString("DefaultVolumeBalance_FMP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   &lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;
+        ///&lt;Balance xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot; xmlns:xsd=&quot;http://www.w3.org/2001/XMLSchema&quot;&gt;
+        ///  &lt;MasterVolume&gt;0&lt;/MasterVolume&gt;
+        ///  &lt;YM2612Volume&gt;-192&lt;/YM2612Volume&gt;
+        ///  &lt;SN76489Volume&gt;-192&lt;/SN76489Volume&gt;
+        ///  &lt;RF5C68Volume&gt;-192&lt;/RF5C68Volume&gt;
+        ///  &lt;RF5C164Volume&gt;-192&lt;/RF5C164Volume&gt;
+        ///  &lt;PWMVolume&gt;-192&lt;/PWMVolume&gt;
+        ///  &lt;C140Volume&gt;-192&lt;/C140Volume&gt;
+        ///  &lt;OKIM6258Volume&gt;-192&lt;/OKIM6258Volume&gt;
+        ///  &lt;OKIM6295Volume&gt;-192&lt;/OKIM6295Volume&gt;
+        ///  &lt;SEGAPCMVolume&gt;-192&lt;/SEGAPCM [残りの文字列は切り詰められました]&quot;; に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        internal static string DefaultVolumeBalance_GBS {
+            get {
+                return ResourceManager.GetString("DefaultVolumeBalance_GBS", resourceCulture);
             }
         }
         
@@ -959,15 +977,15 @@ namespace MDPlayerx64.Properties {
         ///   &lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;
         ///&lt;Balance xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot; xmlns:xsd=&quot;http://www.w3.org/2001/XMLSchema&quot;&gt;
         ///  &lt;MasterVolume&gt;0&lt;/MasterVolume&gt;
-        ///  &lt;YM2612Volume&gt;0&lt;/YM2612Volume&gt;
-        ///  &lt;SN76489Volume&gt;-15&lt;/SN76489Volume&gt;
+        ///  &lt;YM2612Volume&gt;-192&lt;/YM2612Volume&gt;
+        ///  &lt;SN76489Volume&gt;-192&lt;/SN76489Volume&gt;
         ///  &lt;RF5C68Volume&gt;-192&lt;/RF5C68Volume&gt;
         ///  &lt;RF5C164Volume&gt;-192&lt;/RF5C164Volume&gt;
         ///  &lt;PWMVolume&gt;-192&lt;/PWMVolume&gt;
         ///  &lt;C140Volume&gt;-192&lt;/C140Volume&gt;
         ///  &lt;OKIM6258Volume&gt;-192&lt;/OKIM6258Volume&gt;
         ///  &lt;OKIM6295Volume&gt;-192&lt;/OKIM6295Volume&gt;
-        ///  &lt;SEGAPCMVolume&gt;-192&lt;/SEGAPCMVolu [残りの文字列は切り詰められました]&quot;; に類似しているローカライズされた文字列を検索します。
+        ///  &lt;SEGAPCMVolume&gt;-192&lt;/SEGAPCM [残りの文字列は切り詰められました]&quot;; に類似しているローカライズされた文字列を検索します。
         /// </summary>
         internal static string DefaultVolumeBalance_MGS {
             get {
@@ -992,6 +1010,26 @@ namespace MDPlayerx64.Properties {
         internal static string DefaultVolumeBalance_MND {
             get {
                 return ResourceManager.GetString("DefaultVolumeBalance_MND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   &lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;
+        ///&lt;Balance xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot; xmlns:xsd=&quot;http://www.w3.org/2001/XMLSchema&quot;&gt;
+        ///  &lt;MasterVolume&gt;0&lt;/MasterVolume&gt;
+        ///  &lt;YM2612Volume&gt;0&lt;/YM2612Volume&gt;
+        ///  &lt;SN76489Volume&gt;-192&lt;/SN76489Volume&gt;
+        ///  &lt;RF5C68Volume&gt;-192&lt;/RF5C68Volume&gt;
+        ///  &lt;RF5C164Volume&gt;-192&lt;/RF5C164Volume&gt;
+        ///  &lt;PWMVolume&gt;-192&lt;/PWMVolume&gt;
+        ///  &lt;C140Volume&gt;-192&lt;/C140Volume&gt;
+        ///  &lt;OKIM6258Volume&gt;-192&lt;/OKIM6258Volume&gt;
+        ///  &lt;OKIM6295Volume&gt;-192&lt;/OKIM6295Volume&gt;
+        ///  &lt;SEGAPCMVolume&gt;-192&lt;/SEGAPCMVol [残りの文字列は切り詰められました]&quot;; に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        internal static string DefaultVolumeBalance_MUAP {
+            get {
+                return ResourceManager.GetString("DefaultVolumeBalance_MUAP", resourceCulture);
             }
         }
         
@@ -1039,19 +1077,39 @@ namespace MDPlayerx64.Properties {
         ///   &lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;
         ///&lt;Balance xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot; xmlns:xsd=&quot;http://www.w3.org/2001/XMLSchema&quot;&gt;
         ///  &lt;MasterVolume&gt;0&lt;/MasterVolume&gt;
-        ///  &lt;YM2612Volume&gt;0&lt;/YM2612Volume&gt;
-        ///  &lt;SN76489Volume&gt;-15&lt;/SN76489Volume&gt;
+        ///  &lt;YM2612Volume&gt;-192&lt;/YM2612Volume&gt;
+        ///  &lt;SN76489Volume&gt;-192&lt;/SN76489Volume&gt;
         ///  &lt;RF5C68Volume&gt;-192&lt;/RF5C68Volume&gt;
         ///  &lt;RF5C164Volume&gt;-192&lt;/RF5C164Volume&gt;
         ///  &lt;PWMVolume&gt;-192&lt;/PWMVolume&gt;
         ///  &lt;C140Volume&gt;-192&lt;/C140Volume&gt;
         ///  &lt;OKIM6258Volume&gt;-192&lt;/OKIM6258Volume&gt;
         ///  &lt;OKIM6295Volume&gt;-192&lt;/OKIM6295Volume&gt;
-        ///  &lt;SEGAPCMVolume&gt;-192&lt;/SEGAPCMVolu [残りの文字列は切り詰められました]&quot;; に類似しているローカライズされた文字列を検索します。
+        ///  &lt;SEGAPCMVolume&gt;-192&lt;/SEGAPCM [残りの文字列は切り詰められました]&quot;; に類似しているローカライズされた文字列を検索します。
         /// </summary>
         internal static string DefaultVolumeBalance_MuSICA {
             get {
                 return ResourceManager.GetString("DefaultVolumeBalance_MuSICA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   &lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;
+        ///&lt;Balance xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot; xmlns:xsd=&quot;http://www.w3.org/2001/XMLSchema&quot;&gt;
+        ///  &lt;MasterVolume&gt;0&lt;/MasterVolume&gt;
+        ///  &lt;YM2612Volume&gt;-192&lt;/YM2612Volume&gt;
+        ///  &lt;SN76489Volume&gt;-192&lt;/SN76489Volume&gt;
+        ///  &lt;RF5C68Volume&gt;-192&lt;/RF5C68Volume&gt;
+        ///  &lt;RF5C164Volume&gt;-192&lt;/RF5C164Volume&gt;
+        ///  &lt;PWMVolume&gt;-192&lt;/PWMVolume&gt;
+        ///  &lt;C140Volume&gt;-192&lt;/C140Volume&gt;
+        ///  &lt;OKIM6258Volume&gt;-192&lt;/OKIM6258Volume&gt;
+        ///  &lt;OKIM6295Volume&gt;-192&lt;/OKIM6295Volume&gt;
+        ///  &lt;SEGAPCMVolume&gt;-192&lt;/SEGAPCM [残りの文字列は切り詰められました]&quot;; に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        internal static string DefaultVolumeBalance_NDP {
+            get {
+                return ResourceManager.GetString("DefaultVolumeBalance_NDP", resourceCulture);
             }
         }
         

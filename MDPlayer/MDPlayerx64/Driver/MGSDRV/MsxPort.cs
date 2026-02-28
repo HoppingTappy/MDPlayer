@@ -10,13 +10,15 @@ namespace MDPlayer.Driver.MGSDRV
         private EnmModel model;
         private byte opllAdr;
         private byte ay8910Adr;
+        private baseDriver driver;
 
-        public MsxPort(MSXSlot slot, ChipRegister chipRegister, MSXVDP vdp, EnmModel model)
+        public MsxPort(MSXSlot slot, ChipRegister chipRegister, MSXVDP vdp, EnmModel model, baseDriver driver)
         {
             this.slot = slot;
             this.chipRegister = chipRegister;
             this.vdp = vdp;
             this.model = model;
+            this.driver = driver;
         }
 
         public byte this[int address]
@@ -59,7 +61,7 @@ namespace MDPlayer.Driver.MGSDRV
                     ay8910Adr = value;
                     break;
                 case 0xa1:
-                    chipRegister?.setAY8910Register(0, ay8910Adr, value, model);
+                    chipRegister?.setAY8910Register(0, ay8910Adr, value, model, driver.vgmFrameCounter);
                     break;
                 case 0xa2:
                     //log.Write("PSG Port Adr:{0:x04} Dat:{1:x02}", address, value);
@@ -68,7 +70,7 @@ namespace MDPlayer.Driver.MGSDRV
                     opllAdr = value;
                     break;
                 case 0x7d:
-                    chipRegister?.setYM2413Register(0, opllAdr, value, model);
+                    chipRegister?.setYM2413Register(0, opllAdr, value, model, driver.vgmFrameCounter);
                     //log.Write("OPLL Port Adr:{0:x04} Dat:{1:x02}", address, value);
                     break;
                 case 0xa8:

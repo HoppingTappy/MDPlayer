@@ -312,7 +312,7 @@ namespace MDPlayer
             for (int i = 0; i < X + 1; i++)
             {
                 byte data = vgmBuf[musicPtr++];
-                chipRegister.setSN76489Register(0, data, model);
+                chipRegister.setSN76489Register(0, data, model,vgmFrameCounter);
             }
         }
 

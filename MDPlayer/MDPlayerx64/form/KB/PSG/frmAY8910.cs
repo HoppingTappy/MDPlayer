@@ -110,7 +110,7 @@ namespace MDPlayer.form
                 else
                 {
                     float ftone = Audio.ClockAY8910 / (8.0f * (float)tp);
-                    channel.note = searchSSGNote(ftone);
+                    channel.note = Common.searchSSGNote(ftone);
                 }
 
                 channel.ex = (AY8910Register[0x08 + ch] & 0xf0) != 0;
@@ -242,23 +242,23 @@ namespace MDPlayer.form
 
         }
 
-        private int searchSSGNote(float freq)
-        {
-            float m = float.MaxValue;
-            int n = 0;
-            for (int i = 0; i < 12 * 8; i++)
-            {
-                //if (freq < Tables.freqTbl[i]) break;
-                //n = i;
-                float a = Math.Abs(freq - Tables.freqTbl[i]);
-                if (m > a)
-                {
-                    m = a;
-                    n = i;
-                }
-            }
-            return n;
-        }
+        //private int searchSSGNote(float freq)
+        //{
+        //    float m = float.MaxValue;
+        //    int n = 0;
+        //    for (int i = 0; i < 12 * 8; i++)
+        //    {
+        //        //if (freq < Tables.freqTbl[i]) break;
+        //        //n = i;
+        //        float a = Math.Abs(freq - Tables.freqTbl[i]);
+        //        if (m > a)
+        //        {
+        //            m = a;
+        //            n = i;
+        //        }
+        //    }
+        //    return n;
+        //}
 
     }
 }

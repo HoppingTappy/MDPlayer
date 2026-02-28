@@ -2,7 +2,7 @@
 {
     public class MSXSlot : Slot
     {
-        public MSXSlot(ChipRegister chipRegister, EnmModel model)
+        public MSXSlot(ChipRegister chipRegister, EnmModel model,baseDriver driver)
         {
             slots = new Cartridge[4][]
             {
@@ -14,7 +14,7 @@
                 //extSlot2-1 MapperROM 64k
                 //extSlot2-2 MapperROM 64k
                 //extSlot2-3 MapperROM 64k
-                new Cartridge[4]{ new SCCCartridge(chipRegister,model) ,new MapperRAMCartridge(4),new MapperRAMCartridge(4),new MapperRAMCartridge(4) },
+                new Cartridge[4]{ new SCCCartridge(chipRegister,model,driver) ,new MapperRAMCartridge(4),new MapperRAMCartridge(4),new MapperRAMCartridge(4) },
                 //extSlot3-0 MSX Music(OPLL)
                 //extSlot3-1 MapperROM 512k
                 //extSlot3-2 MapperROM 64k

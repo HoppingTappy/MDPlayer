@@ -8,6 +8,7 @@ using NAudio.Wave;
 using NAudio.CoreAudioApi;
 using System.Reflection;
 using System.Diagnostics;
+using System.Net;
 
 namespace MDPlayer.form
 {
@@ -19,10 +20,13 @@ namespace MDPlayer.form
         private bool IsInitialOpenFolder;
         DataGridView[] dgv = null;
 
+        private List<Tuple<string, string>> wasapicache;
 
-        public frmSetting(Setting setting)
+        public frmSetting(Setting setting, List<Tuple<string, string>> wasapicache=null)
         {
             this.setting = setting.Copy();
+            this.wasapicache=wasapicache;
+            if(this.wasapicache==null) this.wasapicache = new List<Tuple<string, string>>();
 
             InitializeComponent();
 
@@ -38,7 +42,9 @@ namespace MDPlayer.form
         {
 
             this.labelProductName.Text = AssemblyProduct;
-            this.labelVersion.Text = String.Format("バージョン {0}", AssemblyVersion);
+            string version="Fail read VERSION.txt.";
+            if (File.Exists("VERSION.txt")) version = File.ReadAllText("VERSION.txt");
+            this.labelVersion.Text = String.Format("バージョン {0}", version);
             this.labelCopyright.Text = AssemblyCopyright;
             this.labelCompanyName.Text = AssemblyCompany;
             this.textBoxDescription.Text = Resources.cntDescription;
@@ -79,11 +85,26 @@ namespace MDPlayer.form
 
             if (wasapiSupported)
             {
-                var enumerator = new MMDeviceEnumerator();
-                var endPoints = enumerator.EnumerateAudioEndPoints(DataFlow.Render, DeviceState.Active);
-                foreach (var endPoint in endPoints)
+                if (wasapicache.Count<1)
                 {
-                    cmbWasapiDevice.Items.Add(string.Format("{0} ({1})", endPoint.FriendlyName, endPoint.DeviceFriendlyName));
+                    var enumerator = new MMDeviceEnumerator();
+                    var endPoints = enumerator.EnumerateAudioEndPoints(DataFlow.Render, DeviceState.Active);
+                    wasapicache.Clear();
+                    foreach (var endPoint in endPoints)
+                    {
+                        string fri = endPoint.FriendlyName;
+                        string dev = endPoint.DeviceFriendlyName;
+                        cmbWasapiDevice.Items.Add(string.Format("{0} ({1})", fri, dev));
+                        wasapicache.Add(new Tuple<string, string>(fri, dev));
+                    }
+                }
+                else
+                {
+                    foreach (Tuple<string,string> item in wasapicache)
+                    {
+                        cmbWasapiDevice.Items.Add(string.Format("{0} ({1})", item.Item1, item.Item2));
+                    }
+
                 }
             }
 
@@ -904,6 +925,7 @@ namespace MDPlayer.form
             cbExALL.Checked = setting.other.ExAll;
             cbNonRenderingForPause.Checked = setting.other.NonRenderingForPause;
             cbTappyMode.Checked = setting.other.TappyMode;
+            cbToast.Checked = setting.other.ToastMode;
 
 
 
@@ -931,6 +953,11 @@ namespace MDPlayer.form
             CbPMDSetManualVolume_CheckedChanged(null, null);
             CbPMDUsePPSDRV_CheckedChanged(null, null);
             RbPMDUsePPSDRVManualFreq_CheckedChanged(null, null);
+
+
+            rb98CanBe.Checked = setting.muapDotNET.soundDeviceMode == 0;
+            rbOTOMI.Checked = setting.muapDotNET.soundDeviceMode != 0;
+
 
             rbZmV3V2.Checked = setting.zmusic.compilePriority == 0;
             rbZmV2V3.Checked = setting.zmusic.compilePriority == 1;
@@ -976,6 +1003,9 @@ namespace MDPlayer.form
 
             rbRcsPCM8.Checked = setting.rcs.pcm8type == 0;
             rbRcsPCM8PP.Checked = setting.rcs.pcm8type == 1;
+
+            cbUseMDServer.Checked = setting.network.useMDServer;
+            tbPort.Text = setting.network.port.ToString();
         }
 
         private void SetRealCombo(EnmRealChipType realType, ComboBox cmbP, RadioButton rbP, ComboBox cmbS, RadioButton rbS)
@@ -1684,6 +1714,7 @@ namespace MDPlayer.form
             setting.other.EmptyPlayList = cbEmptyPlayList.Checked;
             setting.other.ExAll = cbExALL.Checked;
             setting.other.TappyMode = cbTappyMode.Checked;
+            setting.other.ToastMode = cbToast.Checked;
             setting.other.NonRenderingForPause = cbNonRenderingForPause.Checked;
             setting.other.AdjustTLParam = cbAdjustTLParam.Checked;
             setting.other.SaveCompiledFile = cbSaveCompiledFile.Checked;
@@ -1872,6 +1903,12 @@ namespace MDPlayer.form
             nn = Math.Min(Math.Max(nn, 0), 127);
             setting.pmdDotNET.volumeGIMICSSG = nn;
 
+
+
+            setting.muapDotNET.soundDeviceMode = rb98CanBe.Checked ? 0 : 1;
+
+
+
             setting.zmusic.compilePriority = rbZmV3V2.Checked ? 0 : (rbZmV2V3.Checked ? 1 : (rbZmV3.Checked ? 2 : 3));
             setting.zmusic.pcm8type = rbZmPCM8.Checked ? 0 : (rbZmPCM8PP.Checked ? 1 : 0);
             setting.zmusic.mpcmtype = rbZmMPCM.Checked ? 0 : (rbZmMPCMPP.Checked ? 1 : 0);
@@ -2014,6 +2051,10 @@ namespace MDPlayer.form
             setting.keyBoardHook.Sr.Win = false;
             setting.keyBoardHook.Sr.Alt = false;
             setting.keyBoardHook.Sr.Key = string.IsNullOrEmpty(lblSrKey.Text) ? "(None)" : lblSrKey.Text;
+
+            setting.network.useMDServer=cbUseMDServer.Checked;
+            if (!int.TryParse(tbPort.Text, out nn)) nn = 11000;
+            setting.network.port = Math.Min(Math.Max(nn, 0), 65535);
 
             this.DialogResult = DialogResult.OK;
             this.Close();
@@ -3267,6 +3308,10 @@ namespace MDPlayer.form
 
         }
 
+        private void cbUseMDServer_CheckedChanged(object sender, EventArgs e)
+        {
+            gbMDServer.Enabled = cbUseMDServer.Checked;
+        }
     }
 
 

@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Balance xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <MasterVolume>0</MasterVolume>
-  <YM2612Volume>0</YM2612Volume>
-  <SN76489Volume>-15</SN76489Volume>
+  <YM2612Volume>-192</YM2612Volume>
+  <SN76489Volume>-192</SN76489Volume>
   <RF5C68Volume>-192</RF5C68Volume>
   <RF5C164Volume>-192</RF5C164Volume>
   <PWMVolume>-192</PWMVolume>
@@ -10,8 +10,8 @@
   <OKIM6258Volume>-192</OKIM6258Volume>
   <OKIM6295Volume>-192</OKIM6295Volume>
   <SEGAPCMVolume>-192</SEGAPCMVolume>
-  <AY8910Volume>-192</AY8910Volume>
-  <YM2413Volume>-192</YM2413Volume>
+  <AY8910Volume>0</AY8910Volume>
+  <YM2413Volume>0</YM2413Volume>
   <HuC6280Volume>-192</HuC6280Volume>
   <YM2151Volume>-192</YM2151Volume>
   <YM2608Volume>-192</YM2608Volume>
@@ -45,7 +45,7 @@
   <YMF278BVolume>-192</YMF278BVolume>
   <MultiPCMVolume>-192</MultiPCMVolume>
   <QSoundVolume>-192</QSoundVolume>
-  <K051649Volume>-192</K051649Volume>
+  <K051649Volume>0</K051649Volume>
 
 	<PPZ8Volume>-192</PPZ8Volume>
 	<PCM8Volume>-192</PCM8Volume>

@@ -1,5 +1,7 @@
 ﻿using Driver.libsidplayfp.sidplayfp;
 using MDPlayer.Driver.SID;
+using MDSound;
+using musicDriverInterface;
 
 namespace MDPlayer.form
 {
@@ -89,7 +91,7 @@ namespace MDPlayer.form
                     return Audio.GetPSGRegister(0);
                 });
 
-                AddChip("AY", 1, 16, (Select) =>
+                AddChip("AY8910", 1, 16, (Select) =>
                 { // 14
                     return Audio.GetAY8910Register(0);
                 });
@@ -122,6 +124,11 @@ namespace MDPlayer.form
                 AddChip("SID", 3, 0x19, (Select) =>
                 { // 20, 21, 22
                     return Audio.GetSIDRegister(Select);
+                });
+
+                AddChip("POKEY", 1, 0x100, (Select) =>
+                { // 23
+                    return Audio.GetPokeyRegister(Select);
                 });
             }
 
@@ -229,11 +236,19 @@ namespace MDPlayer.form
             { EnmChip.YM3812, 18 },
             { EnmChip.NES, 19 },
             { EnmChip.SID, 20 },
+            { EnmChip.POKEY, 23 },
         };
 
         public frmRegTest(frmMain frm, int chipID, EnmChip enmPage, int zoom)
         {
             parent = frm;
+            if (enmPage == EnmChip.Unuse)
+            {
+                if (chipID == 0) enmPage = parent.setting.regTest.latestChipPri;
+                else enmPage = parent.setting.regTest.latestChipSec;
+            }
+            if (chipID == 0) parent.setting.regTest.latestChipPri = enmPage;
+            else parent.setting.regTest.latestChipSec = enmPage;
             this.chipID = chipID;
             this.zoom = zoom;
             int pageSel = 0;
@@ -253,6 +268,26 @@ namespace MDPlayer.form
             RegMan.setSelect(pageSel);
             RegMan.needRefresh = true;
             update();
+            if (chipID == 0)
+            {
+                int n = RegMan.getSelect();
+                foreach (var k in pageDict)
+                {
+                    if (k.Value != n) continue;
+                    parent.setting.regTest.latestChipPri = k.Key;
+                    break;
+                }
+            }
+            else
+            {
+                int n = RegMan.getSelect();
+                foreach (var k in pageDict)
+                {
+                    if (k.Value != n) continue;
+                    parent.setting.regTest.latestChipSec = k.Key;
+                    break;
+                }
+            }
         }
 
         public new void update()
@@ -281,13 +316,35 @@ namespace MDPlayer.form
             }
             parent.setting.location.ChipSelect = RegMan.getSelect();
             update();
+
+            if (chipID == 0)
+            {
+                int n = RegMan.getSelect();
+                foreach (var k in pageDict)
+                {
+                    if (k.Value != n) continue;
+                    parent.setting.regTest.latestChipPri = k.Key;
+                    break;
+                }
+            }
+            else
+            {
+                int n = RegMan.getSelect();
+                foreach (var k in pageDict)
+                {
+                    if (k.Value != n) continue;
+                    parent.setting.regTest.latestChipSec = k.Key;
+                    break;
+                }
+            }
+
             isClosed = true;
         }
 
         private void frmRegTest_Load(object sender, EventArgs e)
         {
             this.Location = new Point(x, y);
-            RegMan.setSelect(parent.setting.location.ChipSelect);
+            //RegMan.setSelect(parent.setting.regTest.latestChipPri);
 
             frameSizeW = this.Width - this.ClientSize.Width;
             frameSizeH = this.Height - this.ClientSize.Height;
@@ -336,7 +393,7 @@ namespace MDPlayer.form
             //var actualRegSize = RegMan.getRegisterSize();//Reg.Length >= regSize ? regSize : Reg.Length; //TODO: Change this
             DrawBuff.drawFont8(frameBuffer, 2, 1, 0, Name);
             DrawBuff.drawFont8(frameBuffer, 2, 9, 0, Name2);
-            DrawBuff.drawFont8(frameBuffer, 210, 1, 0, $"<>");
+            //DrawBuff.drawFont8(frameBuffer, 210, 1, 0, $"<>");
 
             var y = 17;
 
@@ -478,6 +535,25 @@ namespace MDPlayer.form
 
                 y += 32;
                 //return;
+            }
+            else if (Name == "POKEY       ")
+            {
+                pokey.pokey_state pState = (pokey.pokey_state)RegMan.GetData();
+                if (pState == null) return;
+
+                //DrawBuff.drawFont8(frameBuffer, 2 + 0, 1 + 16, 0, $"AUDF   {pState.AUDF[0]:X02} {pState.AUDF[1]:X02} {pState.AUDF[2]:X02} {pState.AUDF[3]:X02}");
+                //DrawBuff.drawFont8(frameBuffer, 2 + 0, 1 + 24, 0, $"AUDC   {pState.AUDC[0]:X02} {pState.AUDC[1]:X02} {pState.AUDC[2]:X02} {pState.AUDC[3]:X02}");
+                //DrawBuff.drawFont8(frameBuffer, 2 + 0, 1 + 32, 0, $"AUDCTL {pState.AUDCTL:X02}");
+
+                for (int i = 0; i < 4; i++)
+                {
+                    DrawBuff.drawFont8(frameBuffer, 2 + 0, 1 + 24 + i * 16, 0, $"AUDF{i + 1}  ${pState.AUDF[i]:X02}({pState.AUDF[i]:D03})");
+                    DrawBuff.drawFont8(frameBuffer, 2 + 0, 1 + 32 + i * 16, 0, $"AUDC{i + 1}  ${pState.AUDC[i]:X02}(N:{((pState.AUDC[i] & 0xe0) >> 5):D01} FV:{((pState.AUDC[i] & 0x10) >> 4):D01} V:{((pState.AUDC[i] & 0x0f) >> 0):D02})");
+                }
+
+                DrawBuff.drawFont8(frameBuffer, 2 + 0, 1 + 96, 0, $"AUDCTL ${pState.AUDCTL:X02}({pState.AUDCTL:B08}B)");
+
+                return;
             }
 
 

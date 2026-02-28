@@ -46,6 +46,8 @@ namespace MDPlayerx64.Driver
                     v1Year = enc.GetString(v1, 93, 4).TrimEnd(trimChars);
                 }
 
+                if (r.Id3v2Tag == null) return null;
+
                 byte[] v2 = r.Id3v2Tag.RawData;
 
                 if (v2[0] != 0x49 || v2[1] != 0x44 || v2[2] != 0x33)
@@ -147,6 +149,7 @@ namespace MDPlayerx64.Driver
                 {
                     for (int index = 10; index < v2.Length;)
                     {
+                        if (index < 10) break;
                         if (v2[index] == '\0') break;
 
                         string frameID = Encoding.ASCII.GetString(v2, index, 4);
@@ -170,12 +173,13 @@ namespace MDPlayerx64.Driver
                             {
                                 index += 11;
                                 frameSize -= 11;
-                                while ((v2[index] != 0xff || v2[index + 1] != 0xd8 || v2[index + 2] != 0xff || v2[index + 3] != 0xe0) && frameSize > 4)
+                                while (index + 3 < v2.Length
+                                    && (v2[index] != 0xff || v2[index + 1] != 0xd8 || v2[index + 2] != 0xff || v2[index + 3] != 0xe0)
+                                    && frameSize > 4)
                                 {
                                     index++;
                                     frameSize--;
                                 }
-
                                 byte[] pic = new byte[frameSize];
                                 Array.Copy(v2, index, pic, 0, frameSize);
                                 index += frameSize;
@@ -187,6 +191,31 @@ namespace MDPlayerx64.Driver
                                 catch
                                 {
                                     img=null;
+                                }
+                            }
+                            if(mime.IndexOf("image/png")==0)
+                            {
+                                index += 10;
+                                frameSize -= 10;
+                                while (index + 7 < v2.Length 
+                                    && (v2[index] != 0x89 || v2[index + 1] != 0x50 || v2[index + 2] != 0x4e || v2[index + 3] != 0x47 
+                                        || v2[index + 4] != 0x0d || v2[index + 5] != 0x0a || v2[index + 6] != 0x1a || v2[index + 7] != 0x0a) 
+                                    && frameSize > 8)
+                                {
+                                    index++;
+                                    frameSize--;
+                                }
+                                byte[] pic = new byte[frameSize];
+                                Array.Copy(v2, index, pic, 0, frameSize);
+                                index += frameSize;
+                                try
+                                {
+                                    MemoryStream mb = new MemoryStream(pic);
+                                    img = System.Drawing.Image.FromStream(mb);
+                                }
+                                catch
+                                {
+                                    img = null;
                                 }
                             }
                             else

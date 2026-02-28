@@ -282,8 +282,11 @@ namespace MDPlayer.form
             sN76489ToolStripMenuItem = new ToolStripMenuItem();
             aY8910ToolStripMenuItem = new ToolStripMenuItem();
             sIDToolStripMenuItem = new ToolStripMenuItem();
+            pOKEYToolStripMenuItem = new ToolStripMenuItem();
+            nESToolStripMenuItem = new ToolStripMenuItem();
             tsmiVisualizer = new ToolStripMenuItem();
             tsmiOutputwavFile = new ToolStripMenuItem();
+            tsmiPianoRoll = new ToolStripMenuItem();
             opeButtonSetting = new Button();
             toolTip1 = new ToolTip(components);
             opeButtonStop = new Button();
@@ -933,7 +936,7 @@ namespace MDPlayer.form
             // cmsMenu
             // 
             cmsMenu.ImageScalingSize = new Size(20, 20);
-            cmsMenu.Items.AddRange(new ToolStripItem[] { ファイルToolStripMenuItem, 操作ToolStripMenuItem, tsmiOption, tsmiPlayList, tsmiOpenInfo, tsmiOpenMixer, その他ウィンドウ表示ToolStripMenuItem, tsmiChangeZoom, レジスタダンプ表示ToolStripMenuItem, tsmiVisualizer, tsmiOutputwavFile });
+            cmsMenu.Items.AddRange(new ToolStripItem[] { ファイルToolStripMenuItem, 操作ToolStripMenuItem, tsmiOption, tsmiPlayList, tsmiOpenInfo, tsmiOpenMixer, その他ウィンドウ表示ToolStripMenuItem, tsmiChangeZoom, レジスタダンプ表示ToolStripMenuItem, tsmiVisualizer, tsmiOutputwavFile, tsmiPianoRoll });
             cmsMenu.Name = "contextMenuStrip1";
             resources.ApplyResources(cmsMenu, "cmsMenu");
             // 
@@ -1689,7 +1692,7 @@ namespace MDPlayer.form
             // 
             // レジスタダンプ表示ToolStripMenuItem
             // 
-            レジスタダンプ表示ToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { yM2612ToolStripMenuItem, ym2151ToolStripMenuItem, ym2203ToolStripMenuItem, ym2413ToolStripMenuItem, ym2608ToolStripMenuItem, yM2610ToolStripMenuItem, yM3812ToolStripMenuItem, yMF262ToolStripMenuItem, yMF278BToolStripMenuItem, yMZ280BToolStripMenuItem, c140ToolStripMenuItem, c352ToolStripMenuItem, qSoundToolStripMenuItem, segaPCMToolStripMenuItem, sN76489ToolStripMenuItem, aY8910ToolStripMenuItem, sIDToolStripMenuItem });
+            レジスタダンプ表示ToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { yM2612ToolStripMenuItem, ym2151ToolStripMenuItem, ym2203ToolStripMenuItem, ym2413ToolStripMenuItem, ym2608ToolStripMenuItem, yM2610ToolStripMenuItem, yM3812ToolStripMenuItem, yMF262ToolStripMenuItem, yMF278BToolStripMenuItem, yMZ280BToolStripMenuItem, c140ToolStripMenuItem, c352ToolStripMenuItem, qSoundToolStripMenuItem, segaPCMToolStripMenuItem, sN76489ToolStripMenuItem, aY8910ToolStripMenuItem, sIDToolStripMenuItem, pOKEYToolStripMenuItem, nESToolStripMenuItem });
             レジスタダンプ表示ToolStripMenuItem.Name = "レジスタダンプ表示ToolStripMenuItem";
             resources.ApplyResources(レジスタダンプ表示ToolStripMenuItem, "レジスタダンプ表示ToolStripMenuItem");
             // 
@@ -1795,6 +1798,18 @@ namespace MDPlayer.form
             resources.ApplyResources(sIDToolStripMenuItem, "sIDToolStripMenuItem");
             sIDToolStripMenuItem.Click += RegisterDumpMenuItem_Click;
             // 
+            // pOKEYToolStripMenuItem
+            // 
+            pOKEYToolStripMenuItem.Name = "pOKEYToolStripMenuItem";
+            resources.ApplyResources(pOKEYToolStripMenuItem, "pOKEYToolStripMenuItem");
+            pOKEYToolStripMenuItem.Click += RegisterDumpMenuItem_Click;
+            // 
+            // nESToolStripMenuItem
+            // 
+            nESToolStripMenuItem.Name = "nESToolStripMenuItem";
+            resources.ApplyResources(nESToolStripMenuItem, "nESToolStripMenuItem");
+            nESToolStripMenuItem.Click += RegisterDumpMenuItem_Click;
+            // 
             // tsmiVisualizer
             // 
             tsmiVisualizer.Name = "tsmiVisualizer";
@@ -1807,6 +1822,12 @@ namespace MDPlayer.form
             tsmiOutputwavFile.Name = "tsmiOutputwavFile";
             resources.ApplyResources(tsmiOutputwavFile, "tsmiOutputwavFile");
             tsmiOutputwavFile.Click += tsmiOutputwavFile_Click;
+            // 
+            // tsmiPianoRoll
+            // 
+            tsmiPianoRoll.Name = "tsmiPianoRoll";
+            resources.ApplyResources(tsmiPianoRoll, "tsmiPianoRoll");
+            tsmiPianoRoll.Click += tsmiPianoRoll_Click;
             // 
             // opeButtonSetting
             // 
@@ -2500,6 +2521,9 @@ namespace MDPlayer.form
         private ToolStripMenuItem tsmiSMPCMX68k;
         private ToolStripMenuItem mPCMX68kToolStripMenuItem;
         private ToolStripMenuItem mPCMX68kToolStripMenuItem1;
+        private ToolStripMenuItem pOKEYToolStripMenuItem;
+        private ToolStripMenuItem tsmiPianoRoll;
+        private ToolStripMenuItem nESToolStripMenuItem;
     }
 }
 

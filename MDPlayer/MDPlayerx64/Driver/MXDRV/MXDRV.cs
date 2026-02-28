@@ -1034,7 +1034,7 @@ namespace MDPlayer.Driver.MXDRV
             //Debug.WriteLine("{0:x02} {1:x02}", D1 & 0xff, D2 & 0xff);
 
             mdxPCM?.sound_Iocs[0]._iocs_opmset((byte)D1, (byte)D2);
-            chipRegister.setYM2151Register(0, 0, (int)D1, (int)D2, model, YM2151Hosei[0], 0);
+            chipRegister.setYM2151Register(0, 0, (int)D1, (int)D2, model, YM2151Hosei[0], vgmFrameCounter);
 
             if (D1 == 0x10)
             {

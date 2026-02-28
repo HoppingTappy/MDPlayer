@@ -16,6 +16,8 @@ using System;
 using MDPlayerx64.Driver;
 using Driver.libsidplayfp.sidtune;
 using System.Runtime.CompilerServices;
+using MDPlayerx64.MDServer;
+using static MDPlayer.Setting;
 using System.Xml;
 using System.Runtime.CompilerServices;
 
@@ -34,53 +36,54 @@ namespace MDPlayer.form
         private frmPlayList frmPlayList = null;
         private frmVSTeffectList frmVSTeffectList = null;
 
-        private frmMegaCD[] frmMCD = new frmMegaCD[2] { null, null };
-        private frmRf5c68[] frmRf5c68 = new frmRf5c68[2] { null, null };
-        private frmC140[] frmC140 = new frmC140[2] { null, null };
-        private frmPPZ8[] frmPPZ8 = new frmPPZ8[2] { null, null };
-        private frmS5B[] frmS5B = new frmS5B[2] { null, null };
-        private frmDMG[] frmDMG = new frmDMG[2] { null, null };
-        private frmYMZ280B[] frmYMZ280B = new frmYMZ280B[2] { null, null };
-        private frmC352[] frmC352 = new frmC352[2] { null, null };
-        private frmGA20[] frmGA20 = new frmGA20[2] { null, null };
-        private frmK054539[] frmK054539 = new frmK054539[2] { null, null };
-        private frmMultiPCM[] frmMultiPCM = new frmMultiPCM[2] { null, null };
-        private frmQSound[] frmQSound = new frmQSound[2] { null, null };
-        private frmYM2608[] frmYM2608 = new frmYM2608[2] { null, null };
-        private frmYM2151[] frmYM2151 = new frmYM2151[2] { null, null };
-        private frmYM2203[] frmYM2203 = new frmYM2203[2] { null, null };
-        private frmYM2609[] frmYM2609 = new frmYM2609[2] { null, null };
-        private frmYM2610[] frmYM2610 = new frmYM2610[2] { null, null };
-        private frmYM2612[] frmYM2612 = new frmYM2612[2] { null, null };
-        private frmYM3526[] frmYM3526 = new frmYM3526[2] { null, null };
-        private frmY8950[] frmY8950 = new frmY8950[2] { null, null };
-        private frmYM3812[] frmYM3812 = new frmYM3812[2] { null, null };
-        private frmOKIM6258[] frmOKIM6258 = new frmOKIM6258[2] { null, null };
-        private frmOKIM6295[] frmOKIM6295 = new frmOKIM6295[2] { null, null };
-        private frmPCM8[] frmPCM8 = new frmPCM8[2] { null, null };
-        private frmMpcmX68k[] frmMPCMX68k = new frmMpcmX68k[2] { null, null };
-        private frmSN76489[] frmSN76489 = new frmSN76489[2] { null, null };
-        private frmSegaPCM[] frmSegaPCM = new frmSegaPCM[2] { null, null };
-        private frmAY8910[] frmAY8910 = new frmAY8910[2] { null, null };
-        private frmHuC6280[] frmHuC6280 = new frmHuC6280[2] { null, null };
-        private frmK051649[] frmK051649 = new frmK051649[2] { null, null };
-        private frmK053260[] frmK053260 = new frmK053260[2] { null, null };
-        private frmYM2413[] frmYM2413 = new frmYM2413[2] { null, null };
-        private frmYMF262[] frmYMF262 = new frmYMF262[2] { null, null };
-        private frmYMF271[] frmYMF271 = new frmYMF271[2] { null, null };
-        private frmYMF278B[] frmYMF278B = new frmYMF278B[2] { null, null };
-        private frmMIDI[] frmMIDI = new frmMIDI[4] { null, null, null, null };
+        private frmMegaCD[] frmMCD = [null, null];
+        private frmRf5c68[] frmRf5c68 = [null, null];
+        private frmC140[] frmC140 = [null, null];
+        private frmPPZ8[] frmPPZ8 = [null, null];
+        private frmS5B[] frmS5B = [null, null];
+        private frmDMG[] frmDMG = [null, null];
+        private frmYMZ280B[] frmYMZ280B = [null, null];
+        private frmC352[] frmC352 = [null, null];
+        private frmGA20[] frmGA20 = [null, null];
+        private frmK054539[] frmK054539 = [null, null];
+        private frmMultiPCM[] frmMultiPCM = [null, null];
+        private frmQSound[] frmQSound = [null, null];
+        private frmYM2608[] frmYM2608 = [null, null];
+        private frmYM2151[] frmYM2151 = [null, null];
+        private frmYM2203[] frmYM2203 = [null, null];
+        private frmYM2609[] frmYM2609 = [null, null];
+        private frmYM2610[] frmYM2610 = [null, null];
+        private frmYM2612[] frmYM2612 = [null, null];
+        private frmYM3526[] frmYM3526 = [null, null];
+        private frmY8950[] frmY8950 = [null, null];
+        private frmYM3812[] frmYM3812 = [null, null];
+        private frmOKIM6258[] frmOKIM6258 = [null, null];
+        private frmOKIM6295[] frmOKIM6295 = [null, null];
+        private frmPCM8[] frmPCM8 = [null, null];
+        private frmMpcmX68k[] frmMPCMX68k = [null, null];
+        private frmSN76489[] frmSN76489 = [null, null];
+        private frmSegaPCM[] frmSegaPCM = [null, null];
+        private frmAY8910[] frmAY8910 = [null, null];
+        private frmHuC6280[] frmHuC6280 = [null, null];
+        private frmK051649[] frmK051649 = [null, null];
+        private frmK053260[] frmK053260 = [null, null];
+        private frmYM2413[] frmYM2413 = [null, null];
+        private frmYMF262[] frmYMF262 = [null, null];
+        private frmYMF271[] frmYMF271 = [null, null];
+        private frmYMF278B[] frmYMF278B = [null, null];
+        private frmMIDI[] frmMIDI = [null, null, null, null];
         private frmYM2612MIDI frmYM2612MIDI = null;
         private frmMixer2 frmMixer2 = null;
-        private frmNESDMC[] frmNESDMC = new frmNESDMC[2] { null, null };
-        private frmFDS[] frmFDS = new frmFDS[2] { null, null };
-        private frmMMC5[] frmMMC5 = new frmMMC5[2] { null, null };
-        private frmVRC6[] frmVRC6 = new frmVRC6[2] { null, null };
-        private frmVRC7[] frmVRC7 = new frmVRC7[2] { null, null };
-        private frmN106[] frmN106 = new frmN106[2] { null, null };
+        private frmNESDMC[] frmNESDMC = [null, null];
+        private frmFDS[] frmFDS = [null, null];
+        private frmMMC5[] frmMMC5 = [null, null];
+        private frmVRC6[] frmVRC6 = [null, null];
+        private frmVRC7[] frmVRC7 = [null, null];
+        private frmN106[] frmN106 = [null, null];
         private frmRegTest frmRegTest;
         private frmVisWave frmVisWave;
         private frmConsole frmConsole;
+        private frmPianoRoll frmPianoRoll;
 
         private List<Form[]> lstForm = new();
 
@@ -112,19 +115,19 @@ namespace MDPlayer.form
         private bool flgReinit = false;
         public bool reqAllScreenInit = true;
 
-        private string[] modeTip = new string[]{
+        private string[] modeTip = [
             "Mode\r\nNow:Step\r\nNext:Random",
             "Mode\r\nNow:Random\r\nNext:Loop",
             "Mode\r\nNow:Loop\r\nNext:LoopOne",
             "Mode\r\nNow:LoopOne\r\nNext:Step",
-        };
+        ];
 
-        private string[] zoomTip = new string[]{
+        private string[] zoomTip = [
             "Zoom\r\nNow:x1\r\nNext:x2",
             "Zoom\r\nNow:x2\r\nNext:x3",
             "Zoom\r\nNow:x3\r\nNext:x4",
             "Zoom\r\nNow:x4\r\nNext:x1",
-        };
+        ];
 
         //private FileSystemWatcher watcher = null;
         private KumaCom mmf = null;
@@ -133,20 +136,27 @@ namespace MDPlayer.form
         private object remoteLockObj = new();
         private bool remoteBusy = false;
         private List<string[]> remoteReq = new();
+        private MDServer mdsrv = null;
 
         private double speedRatio = 1.0;
 
         private bool faderMasterHover = false;
         private bool faderMasterDrag = false;
-        private int  faderMasterVal = 0;
+        private int faderMasterVal = 0;
         private bool faderTimeLineHover = false;
         private bool faderTimeLineDrag = false;
-        private int  faderTimeLineVal = 0;
+        private int faderTimeLineVal = 0;
 
         public frmMain()
         {
             log.debug = this.setting.debug.logDebug;
             log.logLevel = this.setting.debug.logLevel;
+
+            if (this.setting.network.useMDServer)
+            {
+                mdsrv = new MDServer(this.setting.network.port, Remote);
+                mdsrv.init();
+            }
 
             frmConsole = new frmConsole(setting);
             if (setting.debug.ShowConsole) frmConsole.Show();
@@ -256,6 +266,7 @@ namespace MDPlayer.form
 
             log.ForcedWrite("起動時のAudio初期化処理完了");
 
+            log.ForcedWrite("MIDI IN の調査開始");
             StartMIDIInMonitoring();
 
             log.ForcedWrite("frmMain(コンストラクタ):STEP 04");
@@ -321,10 +332,11 @@ namespace MDPlayer.form
             frmVSTeffectList.Refresh();
 
             if (setting.location.OPlayList) DispPlayList();
-            if (setting.location.OInfo) openInfo();
+            openInfoLoad(setting.location.OInfo);
             if (setting.location.OMixer) openMixer();
             if (setting.location.OpenYm2612MIDI) openMIDIKeyboard();
             if (setting.location.OpenVisWave) OpenFormVisWave();
+            if (setting.location.OpenPianoRoll) openPianoRoll();
 
             for (int chipID = 0; chipID < 2; chipID++)
             {
@@ -584,6 +596,11 @@ namespace MDPlayer.form
                         TsmiPause_Click(null, null);
                         break;
                     case "CLOSE":
+                        if (this.InvokeRequired)
+                        {
+                            this.Invoke(Close);
+                            break;
+                        }
                         Close();
                         break;
                     case "LOOP":
@@ -1116,6 +1133,12 @@ namespace MDPlayer.form
                 openMixer();
             }
 
+            if (frmPianoRoll != null && !frmPianoRoll.isClosed)
+            {
+                openPianoRoll();
+                openPianoRoll();
+            }
+
         }
 
         private void frmMain_Shown(object sender, EventArgs e)
@@ -1180,6 +1203,11 @@ namespace MDPlayer.form
             log.ForcedWrite("終了処理開始");
             log.ForcedWrite("frmMain_FormClosing:STEP 00");
 
+            if (mdsrv != null)
+            {
+                mdsrv.disConnect();
+            }
+
             frmPlayList.Stop();
             frmPlayList.Save();
 
@@ -1225,6 +1253,8 @@ namespace MDPlayer.form
             setting.location.OMixer = false;
             setting.location.OpenYm2612MIDI = false;
             setting.location.OpenVisWave = false;
+            setting.location.OpenPianoRoll = false;
+
             for (int chipID = 0; chipID < 2; chipID++)
             {
                 setting.location.OpenAY8910[chipID] = false;
@@ -1284,15 +1314,15 @@ namespace MDPlayer.form
             }
             setting.location.Main.State = WindowState;
 
-            if (frmPlayList != null && !frmPlayList.isClosed)
+            if (frmPlayList != null)
             {
-                frmPlayList.Close();
-                setting.location.OPlayList = true;
+                if(frmPlayList.Visible) setting.location.OPlayList = true;
+                if (!frmPlayList.isClosed) frmPlayList.Close();
             }
             if (frmInfo != null && !frmInfo.isClosed)
             {
+                setting.location.OInfo = frmInfo.Visible;
                 frmInfo.Close();
-                setting.location.OInfo = true;
             }
             if (frmPic != null && !frmPic.isClosed)
             {
@@ -1313,6 +1343,11 @@ namespace MDPlayer.form
             {
                 frmVSTeffectList.Close();
                 setting.location.OpenVSTeffectList = true;
+            }
+            if (frmPianoRoll != null && !frmPianoRoll.isClosed)
+            {
+                frmPianoRoll.Close();
+                setting.location.OpenPianoRoll = true;
             }
 
             for (int chipID = 0; chipID < 2; chipID++)
@@ -4212,7 +4247,7 @@ namespace MDPlayer.form
 
             frmMIDI[chipID].Show();
             frmMIDI[chipID].update();
-            frmMIDI[chipID].Text = string.Format("MIDI ({0})", chipID == 0 ? "Primary" : (chipID==1?"Secondary" : (chipID == 2 ? "3rd":"4th")));
+            frmMIDI[chipID].Text = string.Format("MIDI ({0})", chipID == 0 ? "Primary" : (chipID == 1 ? "Secondary" : (chipID == 2 ? "3rd" : "4th")));
             oldParam.midi[chipID] = new MIDIParam();
 
             CheckAndSetForm(frmMIDI[chipID]);
@@ -4549,7 +4584,7 @@ namespace MDPlayer.form
 
             frmRegTest.Show();
             frmRegTest.update();
-            frmRegTest.changeChip(selectedChip);
+            //frmRegTest.changeChip(selectedChip);
             frmRegTest.Text = string.Format("RegTest ({0})", chipID == 0 ? "Primary" : "Secondary");
 
             CheckAndSetForm(frmRegTest);
@@ -4579,6 +4614,32 @@ namespace MDPlayer.form
             frmVisWave.Show();
 
             CheckAndSetForm(frmVisWave);
+        }
+
+        private void OpenFormPianoRoll()
+        {
+            if (frmPianoRoll != null && !frmPianoRoll.isClosed)
+            {
+                frmPianoRoll.Focus();
+                return;
+            }
+
+            frmPianoRoll = new frmPianoRoll(this, setting.other.Zoom);
+
+            if (setting.location.PosPianoRoll == System.Drawing.Point.Empty)
+            {
+                frmPianoRoll.x = this.Location.X;
+                frmPianoRoll.y = this.Location.Y + 264;
+            }
+            else
+            {
+                frmPianoRoll.x = setting.location.PosPianoRoll.X;
+                frmPianoRoll.y = setting.location.PosPianoRoll.Y;
+            }
+
+            frmPianoRoll.Show();
+
+            CheckAndSetForm(frmPianoRoll);
         }
 
         private void OpenFormN106(int chipID, bool force = false)
@@ -4696,16 +4757,17 @@ namespace MDPlayer.form
         {
             if (frmInfo != null && !frmInfo.isClosed)
             {
-                try
-                {
-                    frmInfo.Close();
-                    frmInfo.Dispose();
-                }
-                catch { }
-                finally
-                {
-                    frmInfo = null;
-                }
+                frmInfo.Visible = !frmInfo.Visible;
+                //try
+                //{
+                //    frmInfo.Close();
+                //    frmInfo.Dispose();
+                //}
+                //catch { }
+                //finally
+                //{
+                //    frmInfo = null;
+                //}
                 return;
             }
 
@@ -4728,12 +4790,17 @@ namespace MDPlayer.form
             {
                 frmInfo.x = this.Location.X + 328;
                 frmInfo.y = this.Location.Y;
+                frmInfo.Width = frmInfo.MinimumSize.Width;
+                frmInfo.Height = frmInfo.MinimumSize.Height;
             }
             else
             {
                 frmInfo.x = setting.location.PInfo.X;
                 frmInfo.y = setting.location.PInfo.Y;
+                frmInfo.Width = setting.location.SInfo.Width;
+                frmInfo.Height = setting.location.SInfo.Height;
             }
+            frmInfo.Visible = true;
 
             frmPic = new frmPic(this);
             if (setting.location.PPic == System.Drawing.Point.Empty)
@@ -4768,6 +4835,59 @@ namespace MDPlayer.form
             frmInfo.Show();
             frmInfo.UpdateInfo();
         }
+        private void openInfoLoad(bool vis)
+        {
+            frmInfo = new frmInfo(this);
+            if (setting.location.PInfo == System.Drawing.Point.Empty)
+            {
+                frmInfo.x = this.Location.X + 328;
+                frmInfo.y = this.Location.Y;
+                frmInfo.Width = frmInfo.MinimumSize.Width;
+                frmInfo.Height = frmInfo.MinimumSize.Height;
+            }
+            else
+            {
+                frmInfo.x = setting.location.PInfo.X;
+                frmInfo.y = setting.location.PInfo.Y;
+                frmInfo.Width = setting.location.SInfo.Width;
+                frmInfo.Height = setting.location.SInfo.Height;
+            }
+
+            frmPic = new frmPic(this);
+            if (setting.location.PPic == System.Drawing.Point.Empty)
+            {
+                frmPic.x = this.Location.X + 328;
+                frmPic.y = this.Location.Y;
+                frmPic.w = 320;
+                frmPic.h = 200;
+            }
+            else
+            {
+                frmPic.x = setting.location.PPic.X;
+                frmPic.y = setting.location.PPic.Y;
+                frmPic.w = setting.location.SPic.X;
+                frmPic.h = setting.location.SPic.Y;
+            }
+            //frmPic.Show();
+
+            Screen s = Screen.FromControl(frmInfo);
+            Rectangle rc = new(frmInfo.Location, frmInfo.Size);
+            if (s.WorkingArea.Contains(rc))
+            {
+                frmInfo.Location = rc.Location;
+                frmInfo.Size = rc.Size;
+            }
+            else
+            {
+                frmInfo.Location = new System.Drawing.Point(100, 100);
+            }
+
+            frmInfo.setting = setting;
+            frmInfo.Show();
+            frmInfo.Visible = vis;
+            frmInfo.UpdateInfo();
+        }
+
 
         private void openMIDIKeyboard()
         {
@@ -4830,9 +4950,12 @@ namespace MDPlayer.form
             oldParam.ym2612Midi = new MDChipParams.YM2612MIDI();
         }
 
+        public List<Tuple<string, string>> wasapicache = new List<Tuple<string, string>>();
+
         private void openSetting()
         {
-            frmSetting frm = new(setting);
+            frmSetting frm;
+            frm = new(setting, wasapicache);
             if (frm.ShowDialog() == DialogResult.OK)
             {
                 flgReinit = true;
@@ -4958,6 +5081,69 @@ namespace MDPlayer.form
             oldParam.mixer = new MDChipParams.Mixer();
         }
 
+        private void openPianoRoll()
+        {
+            if (frmPianoRoll != null && !frmPianoRoll.isClosed)
+            {
+                try
+                {
+                    frmPianoRoll.Close();
+                    frmPianoRoll.Dispose();
+                }
+                catch
+                {
+                }
+                finally
+                {
+                    frmPianoRoll = null;
+                }
+                return;
+            }
+
+            if (frmPianoRoll != null)
+            {
+                try
+                {
+                    frmPianoRoll.Close();
+                    frmPianoRoll.Dispose();
+                }
+                catch
+                {
+                }
+                finally
+                {
+                    frmPianoRoll = null;
+                }
+            }
+
+            frmPianoRoll = new frmPianoRoll(this, setting.other.Zoom);
+            if (setting.location.PosPianoRoll == System.Drawing.Point.Empty)
+            {
+                frmPianoRoll.x = this.Location.X + 328;
+                frmPianoRoll.y = this.Location.Y;
+            }
+            else
+            {
+                frmPianoRoll.x = setting.location.PosPianoRoll.X;
+                frmPianoRoll.y = setting.location.PosPianoRoll.Y;
+            }
+
+            Screen s = Screen.FromControl(frmPianoRoll);
+            Rectangle rc = new(frmPianoRoll.Location, frmPianoRoll.Size);
+            if (s.WorkingArea.Contains(rc))
+            {
+                frmPianoRoll.Location = rc.Location;
+                frmPianoRoll.Size = rc.Size;
+            }
+            else
+            {
+                frmPianoRoll.Location = new System.Drawing.Point(100, 100);
+            }
+
+            frmPianoRoll.Show();
+            frmPianoRoll.update();
+        }
+
 
 
         private void pbScreen_DragEnter(object sender, DragEventArgs e)
@@ -4968,37 +5154,7 @@ namespace MDPlayer.form
 
         private void pbScreen_DragDrop(object sender, DragEventArgs e)
         {
-            if (e.Data.GetDataPresent(DataFormats.FileDrop))
-            {
-                string filename = ((string[])e.Data.GetData(DataFormats.FileDrop))[0];
-
-                try
-                {
-
-                    //曲を停止
-                    frmPlayList.Stop();
-                    this.Stop();
-                    while (!Audio.IsStopped)
-                        Application.DoEvents();
-
-                    frmPlayList.getPlayList().AddFile(filename);
-                    //frmPlayList.AddList(filename);
-
-                    if (filename.ToLower().LastIndexOf(".zip") == -1)
-                    {
-                        loadAndPlay(0, 0, filename, null, null, null);
-                        frmPlayList.setStart(-1);
-                        oldParam = new MDChipParams();
-
-                        frmPlayList.Play();
-                    }
-                }
-                catch (Exception ex)
-                {
-                    log.ForcedWrite(ex);
-                    MessageBox.Show("ファイルの読み込みに失敗しました。");
-                }
-            }
+            frmPlayList?.dgvList_DragDrop(sender, e);
         }
 
         protected override bool ShowWithoutActivation
@@ -5413,6 +5569,8 @@ namespace MDPlayer.form
 
             if (frmRegTest != null && !frmRegTest.isClosed) frmRegTest.screenChangeParams();
             else frmRegTest = null;
+            if (frmPianoRoll != null && !frmPianoRoll.isClosed) frmPianoRoll.screenChangeParams();
+            else frmPianoRoll = null;
 
         }
 
@@ -5477,16 +5635,18 @@ namespace MDPlayer.form
             if (setting.debug.DispFrameCounter)
             {
                 long v = Audio.GetVirtualFrameCounter();
-                if (v != -1) DrawBuff.drawFont8(screen.mainScreen, 0, 0, 0, string.Format("EMU        : {0:D12} ", v));
+                if (v != -1) DrawBuff.drawFont4(screen.mainScreen, 200, 0, 0, string.Format("EMU        : {0:D12} ", v));
                 long r = Audio.GetRealFrameCounter();
-                if (r != -1) DrawBuff.drawFont8(screen.mainScreen, 0, 8, 0, string.Format("REAL CHIP  : {0:D12} ", r));
+                if (r != -1) DrawBuff.drawFont4(screen.mainScreen, 200, 8, 0, string.Format("REAL CHIP  : {0:D12} ", r));
+                long p = Audio.GetPianoFrameCounter();
+                if (p != -1) DrawBuff.drawFont4(screen.mainScreen, 200,16, 0, string.Format("PIANO ROLL : {0:D12} ", p));
                 long d = r - v;
-                if (r != -1 && v != -1) DrawBuff.drawFont8(screen.mainScreen, 0, 16, 0, string.Format("R.CHIP-EMU : {0:D12} ", d));
-                DrawBuff.drawFont8(screen.mainScreen, 0, 24, 0, string.Format("PROC TIME  : {0:D12} ", Audio.ProcTimePer1Frame));
+                if (r != -1 && v != -1) DrawBuff.drawFont4(screen.mainScreen, 200, 24, 0, string.Format("R.CHIP-EMU : {0:D12} ", d));
+                DrawBuff.drawFont4(screen.mainScreen, 200, 32, 0, string.Format("PROC TIME  : {0:D12} ", Audio.ProcTimePer1Frame));
             }
 
             DrawBuff.drawFaderH(screen.mainScreen, 23 * 8, 14
-                ,newParam.MasterDrag, newParam.MasterHover, newParam.Master, newParam.MasterVis
+                , newParam.MasterDrag, newParam.MasterHover, newParam.Master, newParam.MasterVis
                 , ref oldParam.MasterDrag, ref oldParam.MasterHover, ref oldParam.Master, ref oldParam.MasterVis);
             DrawBuff.drawFaderH(screen.mainScreen, 23 * 8, 30
                 , newParam.TimeLineDrag, newParam.TimeLineHover, newParam.TimeLine, newParam.TimeLineVis
@@ -5502,12 +5662,13 @@ namespace MDPlayer.form
             {
                 string title = Common.EscSeqFilter(gd3.TrackName);
                 string usedChips = Common.EscSeqFilter(gd3.UsedChips);
-                if(!setting.other.TappyMode)  newInfo = string.Format("MDPlayer - [{0}] {1}", usedChips, title);
+                if (!setting.other.TappyMode) newInfo = string.Format("MDPlayer - [{0}] {1}", usedChips, title);
                 else newInfo = string.Format("MDPlayer - [{0}] {1} (play speed {2:f3}x)", usedChips, title, speedRatio);
             }
             else
             {
-                newInfo = string.Format("MDPlayer - (play speed {0:f3}x)", speedRatio);
+                if (!setting.other.TappyMode) newInfo = "MDPlayer";
+                else newInfo = string.Format("MDPlayer - (play speed {0:f3}x)", speedRatio);
             }
 
             try
@@ -5634,7 +5795,7 @@ namespace MDPlayer.form
                 if (frmMIDI[chipID] != null && !frmMIDI[chipID].isClosed) { frmMIDI[chipID].screenDrawParams(); frmMIDI[chipID].update(); }
                 else frmMIDI[chipID] = null;
 
-                if (frmMIDI[chipID+2] != null && !frmMIDI[chipID + 2].isClosed) { frmMIDI[chipID + 2].screenDrawParams(); frmMIDI[chipID + 2].update(); }
+                if (frmMIDI[chipID + 2] != null && !frmMIDI[chipID + 2].isClosed) { frmMIDI[chipID + 2].screenDrawParams(); frmMIDI[chipID + 2].update(); }
                 else frmMIDI[chipID + 2] = null;
 
                 if (frmNESDMC[chipID] != null && !frmNESDMC[chipID].isClosed) { frmNESDMC[chipID].screenDrawParams(); frmNESDMC[chipID].update(); }
@@ -5662,6 +5823,7 @@ namespace MDPlayer.form
             else frmMixer2 = null;
 
             if (frmRegTest != null && !frmRegTest.isClosed) { frmRegTest.screenDrawParams(); frmRegTest.update(); } else frmRegTest = null;
+            if (frmPianoRoll != null && !frmPianoRoll.isClosed) { frmPianoRoll.screenDrawParams(); frmPianoRoll.update(); } else frmPianoRoll = null;
 
         }
 
@@ -5736,6 +5898,7 @@ namespace MDPlayer.form
             if (Audio.TrdStopped && Audio.Stopped)
             {
                 Audio.ResetTimeCounter();
+                frmPianoRoll?.Clear();
             }
 
             frmPlayList.Stop();
@@ -5800,7 +5963,7 @@ namespace MDPlayer.form
             }
 
 
-            if (loadAndPlay(playFn.Item1, playFn.Item2, playFn.Item3, playFn.Item4,playFn.Item5,playFn.Item6))
+            if (loadAndPlay(playFn.Item1, playFn.Item2, playFn.Item3, playFn.Item4, playFn.Item5, playFn.Item6, null))
             {
                 frmPlayList.Play();
             }
@@ -5949,6 +6112,17 @@ namespace MDPlayer.form
 
                 Audio.GO();
 
+                if (playingGD3 != null && Audio.DriverVirtual != null && Audio.DriverVirtual.GD3 != null)
+                {
+                    if (!string.IsNullOrEmpty(playingGD3.TrackName))
+                    {
+                        Audio.DriverVirtual.GD3.TrackName = playingGD3.TrackName;
+                    }
+                    if (!string.IsNullOrEmpty(playingGD3.TrackNameJ))
+                    {
+                        Audio.DriverVirtual.GD3.TrackNameJ = playingGD3.TrackNameJ;
+                    }
+                }
                 frmInfo?.UpdateInfo();
 
                 if (setting.other.AutoOpen)
@@ -6166,7 +6340,9 @@ namespace MDPlayer.form
         {
             if (Audio.IsPaused)
             {
-                Audio.StepPlay(4000);
+                //Audio.StepPlay(4000);
+                speedRatio = 0.01;
+                Speed();
                 Audio.Pause();
                 return;
             }
@@ -6177,6 +6353,8 @@ namespace MDPlayer.form
             }
 
             Audio.Slow();
+            speedRatio = Audio.vgmSpeed;// 0.25;
+            //Speed();
         }
 
         public void Speed()
@@ -6274,7 +6452,16 @@ namespace MDPlayer.form
 
             string ext = Path.GetExtension(filename).ToLower();
 
-            //wav/mp3/aiffはnaudioに任せるのでここの処理はスキップ
+            if (ext == "")
+            {
+                if (filename.ToLower().IndexOf("http://") >= 0 || filename.ToLower().IndexOf("https://") >= 0)
+                {
+                    format = EnmFileFormat.shoutcast;
+                    return new byte[] { (byte)'s', (byte)'h', (byte)'o', (byte)'u', (byte)'t', (byte)'c', (byte)'a', (byte)'s', (byte)'t' };
+                }
+            }
+
+            //wav/mp3/aiff/ogg/m4a/aac/wmaはnaudioに任せるのでここの処理はスキップ
             if (ext == ".wav")
             {
                 format = EnmFileFormat.WAV;
@@ -6291,6 +6478,36 @@ namespace MDPlayer.form
             {
                 format = EnmFileFormat.AIFF;
                 return new byte[] { (byte)'A', (byte)'I', (byte)'F', (byte)'F' };
+            }
+
+            if (ext == ".ogg")
+            {
+                format = EnmFileFormat.OGG;
+                return new byte[] { (byte)'O', (byte)'G', (byte)'G' };
+            }
+
+            if (ext == ".m4a")
+            {
+                format = EnmFileFormat.M4A;
+                return new byte[] { (byte)'M', (byte)'4', (byte)'A' };
+            }
+
+            if (ext == ".aac")
+            {
+                format = EnmFileFormat.AAC;
+                return new byte[] { (byte)'A', (byte)'A', (byte)'C' };
+            }
+
+            if (ext == ".wma")
+            {
+                format = EnmFileFormat.WMA;
+                return new byte[] { (byte)'W', (byte)'M', (byte)'A' };
+            }
+
+            if (ext == ".flac")
+            {
+                format = EnmFileFormat.FLAC;
+                return new byte[] { (byte)'F', (byte)'L', (byte)'A', (byte)'C' };
             }
 
             //先ずは丸ごと読み込む
@@ -6318,6 +6535,12 @@ namespace MDPlayer.form
             if (ext == ".msd")
             {
                 format = EnmFileFormat.MuSICA_src;
+                return buf;
+            }
+
+            if (ext == ".ndp")
+            {
+                format = EnmFileFormat.NDP;
                 return buf;
             }
 
@@ -6381,6 +6604,18 @@ namespace MDPlayer.form
                 return buf;
             }
 
+            if (ext == ".mus")
+            {
+                format = EnmFileFormat.MUAP_src;
+                return buf;
+            }
+
+            if (ext == ".o" || ext == ".ox" || ext == ".oy")
+            {
+                format = EnmFileFormat.MUAP;
+                return buf;
+            }
+
             if (ext == ".mml")
             {
                 format = EnmFileFormat.MML;
@@ -6415,6 +6650,12 @@ namespace MDPlayer.form
             if (ext == ".nsf")
             {
                 format = EnmFileFormat.NSF;
+                return buf;
+            }
+
+            if (ext == ".gbs")
+            {
+                format = EnmFileFormat.GBS;
                 return buf;
             }
 
@@ -6647,6 +6888,9 @@ namespace MDPlayer.form
                         case EnmInstFormat.SendMML2VGM:
                             GetInstChForSendMML2VGM(chip, ch, chipID);
                             break;
+                        case EnmInstFormat.MUAP98:
+                            GetInstChForMUAP98(chip, ch, chipID);
+                            break;
                     }
                 }
             }
@@ -6738,6 +6982,94 @@ namespace MDPlayer.form
                     , alg //AL
                     , (ym2151Register[0x20 + ch] & 0x38) >> 3//FB
                 );
+            }
+
+            if (!string.IsNullOrEmpty(n)) Clipboard.SetText(n);
+        }
+
+        private void GetInstChForMUAP98(EnmChip chip, int ch, int chipID)
+        {
+
+            string n = "";
+
+            if (chip == EnmChip.YM2612 || chip == EnmChip.YM2608 || chip == EnmChip.YM2203 || chip == EnmChip.YM2610)
+            {
+                int p = (ch > 2) ? 1 : 0;
+                int c = (ch > 2) ? ch - 3 : ch;
+                int[][] fmRegister = (chip == EnmChip.YM2612) ? Audio.GetFMRegister(chipID) : (chip == EnmChip.YM2608 ? Audio.GetYM2608Register(chipID) : (chip == EnmChip.YM2203 ? new int[][] { Audio.GetYM2203Register(chipID), null } : Audio.GetYM2610Register(chipID)));
+
+                int alg = fmRegister[p][0xb0 + c] & 0x07;
+                int[] tl = new int[]
+                {
+                        fmRegister[p][0x40 + 0x0 + c] & 0x7f//TL1
+                       ,fmRegister[p][0x40 + 0x8 + c] & 0x7f//TL2
+                       ,fmRegister[p][0x40 + 0x4 + c] & 0x7f//TL3
+                       ,fmRegister[p][0x40 + 0xc + c] & 0x7f//TL4
+                };
+                GetAdjustTLParam(alg, ref tl[0], ref tl[1], ref tl[2], ref tl[3]);
+
+                n = "    ; SRC  TRG   FB CN    From MDPlayer\r\n";
+                n += string.Format("    Z@100,@100,E,{0:D2},{1:D2},\r\n"
+                    , (fmRegister[p][0xb0 + c] & 0x38) >> 3//FB
+                    , alg//AL
+                );
+                n += "    ;    AR  DR  SR  RR  SL  TL  KR  MP  DT\r\n";
+
+                for (int i = 0; i < 4; i++)
+                {
+                    int ops = (i == 0) ? 0 : ((i == 1) ? 8 : ((i == 2) ? 4 : 12));
+                    n += string.Format("         {0:D3},{1:D3},{2:D3},{3:D3},{4:D3},{5:D3},{6:D3},{7:D3},{8:D3}, ; AM={9:D3}\r\n"
+                        , fmRegister[p][0x50 + ops + c] & 0x1f //AR
+                        , fmRegister[p][0x60 + ops + c] & 0x1f //DR
+                        , fmRegister[p][0x70 + ops + c] & 0x1f //SR
+                        , fmRegister[p][0x80 + ops + c] & 0x0f //RR
+                        , (fmRegister[p][0x80 + ops + c] & 0xf0) >> 4//SL
+                        , tl[i]//TL
+                        , (fmRegister[p][0x50 + ops + c] & 0xc0) >> 6//KS
+                        , fmRegister[p][0x30 + ops + c] & 0x0f//ML
+                        , (fmRegister[p][0x30 + ops + c] & 0x70) >> 4//DT
+                        , (fmRegister[p][0x60 + ops + c] & 0x80) >> 7//AM
+                    );
+                }
+            }
+            else if (chip == EnmChip.YM2151)
+            {
+                int[] ym2151Register = Audio.GetYM2151Register(chipID);
+
+                int alg = ym2151Register[0x20 + ch] & 0x07;
+                int[] tl = new int[]
+                {
+                        ym2151Register[0x60 + 0x00 + ch] & 0x7f//TL1
+                       ,ym2151Register[0x60 + 0x10 + ch] & 0x7f//TL1
+                       ,ym2151Register[0x60 + 0x08 + ch] & 0x7f//TL1
+                       ,ym2151Register[0x60 + 0x18 + ch] & 0x7f//TL1
+                };
+                GetAdjustTLParam(alg, ref tl[0], ref tl[1], ref tl[2], ref tl[3]);
+
+                n = "    ; SRC  TRG   FB CN    From MDPlayer\r\n";
+                n += string.Format("    Z@100,@100,E,{0:D2},{1:D2},\r\n"
+                    , (ym2151Register[0x20 + ch] & 0x38) >> 3//FB
+                    , alg //AL
+                );
+                n += "    ;    AR  DR  SR  RR  SL  TL  KR  MP  DT\r\n";
+
+                for (int i = 0; i < 4; i++)
+                {
+                    int ops = (i == 0) ? 0 : ((i == 1) ? 16 : ((i == 2) ? 8 : 24));
+                    n += string.Format("         {0:D3},{1:D3},{2:D3},{3:D3},{4:D3},{5:D3},{6:D3},{7:D3},{8:D3}, ; DT2={9:D3} AM={10:D3}\r\n"
+                        , ym2151Register[0x80 + ops + ch] & 0x1f //AR
+                        , ym2151Register[0xa0 + ops + ch] & 0x1f //DR
+                        , ym2151Register[0xc0 + ops + ch] & 0x1f //SR
+                        , ym2151Register[0xe0 + ops + ch] & 0x0f //RR
+                        , (ym2151Register[0xe0 + ops + ch] & 0xf0) >> 4 //SL
+                        , tl[i] //TL
+                        , (ym2151Register[0x80 + ops + ch] & 0xc0) >> 6 //KS
+                        , ym2151Register[0x40 + ops + ch] & 0x0f //ML
+                        , (ym2151Register[0x40 + ops + ch] & 0x70) >> 4 //DT
+                        , (ym2151Register[0xc0 + ops + ch] & 0xc0) >> 6 //DT2
+                        , (ym2151Register[0xa0 + ops + ch] & 0x80) >> 7 //AM
+                    );
+                }
             }
 
             if (!string.IsNullOrEmpty(n)) Clipboard.SetText(n);
@@ -8602,7 +8934,7 @@ namespace MDPlayer.form
                 //frmPlayList.AddList(sParam);
             }
 
-            if (!loadAndPlay(0, songNum, fname,null,null,null))
+            if (!loadAndPlay(0, songNum, fname,null,null,null,null))
             {
                 frmPlayList.Stop();
                 Request req = new(EnmRequest.Stop);
@@ -8679,7 +9011,7 @@ namespace MDPlayer.form
 
 
 
-        public bool loadAndPlay(int m, int songNo, string fn, string zfn, string[] spfn,string useCom)
+        public bool loadAndPlay(int m, int songNo, string fn, string zfn, string[] spfn, string useCom, GD3 gd3)
         {
             try
             {
@@ -8714,8 +9046,8 @@ namespace MDPlayer.form
                 {
 
                     playingArcFileName = zfn;
-
-                    if (Path.GetExtension(zfn).ToUpper() == ".ZIP")
+                    EnmFileFormat zff = Common.CheckExt(zfn);
+                    if (zff == EnmFileFormat.ZIP)
                     {
                         using ZipArchive archive = ZipFile.OpenRead(zfn);
                         ZipArchiveEntry entry = archive.GetEntry(fn);
@@ -8729,12 +9061,23 @@ namespace MDPlayer.form
                             extFile = getExtendFile(fn, null, srcBuf, format, archive);
                         }
                     }
-                    else
+                    else if (zff == EnmFileFormat.LZH)
                     {
                         format = Common.CheckExt(fn);
                         if (format != EnmFileFormat.unknown)
                         {
                             UnlhaWrap.UnlhaCmd cmd = new();
+                            srcBuf = cmd.GetFileByte(zfn, fn);
+                            playingFileName = fn;
+                            extFile = getExtendFile(fn, null, srcBuf, format, new Tuple<string, string>(zfn, fn));
+                        }
+                    }
+                    else
+                    {
+                        format = Common.CheckExt(fn);
+                        if (format != EnmFileFormat.unknown)
+                        {
+                            UnZDF cmd = new();
                             srcBuf = cmd.GetFileByte(zfn, fn);
                             playingFileName = fn;
                             extFile = getExtendFile(fn, null, srcBuf, format, new Tuple<string, string>(zfn, fn));
@@ -8760,6 +9103,7 @@ namespace MDPlayer.form
 
                 if (srcBuf != null)
                 {
+                    playingGD3 = gd3;
                     this.Invoke((Action)Playdata);
                     if (Audio.ErrMsg != "") return false;
                 }
@@ -8922,37 +9266,49 @@ namespace MDPlayer.form
         {
             try
             {
+                string trgFn;
                 if (archive == null)
                 {
-                    string trgFn =
+                    trgFn =
                         this.GetFileSearcePathList(srcFn)
-                            .Select(dirPath => System.IO.Path.Combine(dirPath, extFn).Trim())
-                            .FirstOrDefault(path => System.IO.File.Exists(path));
+                            .Select(dirPath => Path.Combine(dirPath, extFn).Trim())
+                            .FirstOrDefault(path => File.Exists(path));
                     if (trgFn == default) return null;
-                    return System.IO.File.ReadAllBytes(trgFn);
+                    return File.ReadAllBytes(trgFn);
                 }
-                else
+
+                trgFn = Path.Combine(Path.GetDirectoryName(srcFn), extFn);
+                trgFn = trgFn.Replace("\\", "/").Trim();
+
+                if (archive is ZipArchive archive1)
                 {
-                    string trgFn = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(srcFn), extFn);
-                    trgFn = trgFn.Replace("\\", "/").Trim();
-                    if (archive is ZipArchive archive1)
-                    {
-                        ZipArchiveEntry entry = archive1.GetEntry(trgFn);
-                        if (entry == null) return null;
-                        string arcFn = "";
-                        return getBytesFromZipFile(entry, out arcFn);
-                    }
-                    else
-                    {
-                        UnlhaWrap.UnlhaCmd cmd = new();
-                        return cmd.GetFileByte(((Tuple<string, string>)archive).Item1, trgFn);
-                    }
+                    ZipArchiveEntry entry = archive1.GetEntry(trgFn);
+                    if (entry == null) return null;
+                    return getBytesFromZipFile(entry, out string arcFn);
                 }
+
+                Tuple<string, string> arc = (Tuple<string, string>)archive;
+                string arcExt = Path.GetExtension(arc.Item1).ToUpper();
+                
+                if (arcExt == ".ZDF")
+                {
+                    UnZDF cmd = new();
+                    return cmd.GetFileByte(arc.Item1, trgFn);
+                }
+
+                if (arcExt == ".LZH")
+                {
+                    UnlhaWrap.UnlhaCmd cmd = new();
+                    return cmd.GetFileByte(arc.Item1, trgFn);
+                }
+
             }
             catch
             {
-                return null;
+                ;//なにもしない
             }
+
+            return null;
         }
 
         public byte[] getBytesFromZipFile(ZipArchiveEntry entry, out string arcFn)
@@ -10076,6 +10432,17 @@ namespace MDPlayer.form
                         newParam.n106[chipID].channels[ch].mask = !newParam.n106[chipID].channels[ch].mask;
                     }
                     break;
+                case EnmChip.YMZ280B:
+                    if (ch >= 0 && ch < 8)
+                    {
+                        if (newParam.ymz280b[chipID].channels[ch].mask == false || newParam.ymz280b[chipID].channels[ch].mask == null)
+                            Audio.SetYMZ280BMask(chipID, ch);
+                        else
+                            Audio.ResetYMZ280BMask(chipID, ch);
+
+                        newParam.ymz280b[chipID].channels[ch].mask = !newParam.ymz280b[chipID].channels[ch].mask;
+                    }
+                    break;
             }
         }
 
@@ -10325,6 +10692,13 @@ namespace MDPlayer.form
                 case EnmChip.N163:
                     newParam.n106[chipID].channels[ch].mask = false;
                     Audio.ResetN163Mask(chipID, ch);
+                    break;
+                case EnmChip.YMZ280B:
+                    if (ch >= 0 && ch < 8)
+                    {
+                        Audio.ResetYMZ280BMask(chipID, ch);
+                        newParam.ymz280b[chipID].channels[ch].mask = false;
+                    }
                     break;
 
             }
@@ -10734,14 +11108,9 @@ namespace MDPlayer.form
 
         private void StartMIDIInMonitoring()
         {
-
-            if (setting.midiKbd.MidiInDeviceName == "")
-            {
-                return;
-            }
-
             if (midiin != null)
             {
+                log.ForcedWrite("使用中のMIDI IN デバイスを解放");
                 try
                 {
                     midiin.Stop();
@@ -10756,6 +11125,18 @@ namespace MDPlayer.form
                 }
             }
 
+            if (!setting.midiKbd.UseMIDIKeyboard)
+            {
+                log.ForcedWrite("MIDI Keyboardを使用しない設定の為、MIDI IN デバイスを設定せず完了");
+                return;
+            }
+
+            if (setting.midiKbd.MidiInDeviceName == "")
+            {
+                log.ForcedWrite("MIDI IN デバイス未設定の為調査完了");
+                return;
+            }
+
             if (midiin == null)
             {
                 for (int i = 0; i < MidiIn.NumberOfDevices; i++)
@@ -10768,6 +11149,7 @@ namespace MDPlayer.form
                             midiin.MessageReceived += MidiIn_MessageReceived;
                             midiin.ErrorReceived += midiIn_ErrorReceived;
                             midiin.Start();
+                            log.ForcedWrite("MIDI IN 「{0}」を使用開始", setting.midiKbd.MidiInDeviceName);
                         }
                         catch
                         {
@@ -10777,6 +11159,7 @@ namespace MDPlayer.form
                 }
             }
 
+            log.ForcedWrite("MIDI IN デバイス調査完了");
         }
 
         void midiIn_ErrorReceived(object sender, MidiInMessageEventArgs e)
@@ -10997,6 +11380,10 @@ namespace MDPlayer.form
                             fn = "DriverBalance_NSF.mbc";
                             defMbc = Resources.DefaultVolumeBalance_NSF;
                             break;
+                        case EnmFileFormat.GBS:
+                            fn = "DriverBalance_GBS.mbc";
+                            defMbc = Resources.DefaultVolumeBalance_GBS;
+                            break;
                         case EnmFileFormat.NRT:
                             fn = "DriverBalance_NRT.mbc";
                             defMbc = Resources.DefaultVolumeBalance_NRT;
@@ -11051,6 +11438,10 @@ namespace MDPlayer.form
                             fn = "DriverBalance_MuSICA.mbc";
                             defMbc = Resources.DefaultVolumeBalance_MuSICA;
                             break;
+                        case EnmFileFormat.NDP:
+                            fn = "DriverBalance_NDP.mbc";
+                            defMbc = Resources.DefaultVolumeBalance_NDP;
+                            break;
                         case EnmFileFormat.FMP:
                             fn = "DriverBalance_FMP.mbc";
                             defMbc = Resources.DefaultVolumeBalance_FMP;
@@ -11058,6 +11449,11 @@ namespace MDPlayer.form
                         case EnmFileFormat.ZMS:
                         case EnmFileFormat.ZMD:
                             fn = "DriverBalance_ZMD.mbc";
+                            break;
+                        case EnmFileFormat.MUAP_src:
+                        case EnmFileFormat.MUAP:
+                            fn = "DriverBalance_MUAP.mbc";
+                            defMbc = Resources.DefaultVolumeBalance_MUAP;
                             break;
                     }
 
@@ -11069,7 +11465,8 @@ namespace MDPlayer.form
 
 
                 //存在確認。無い場合は作成。
-                if (!File.Exists(fullPath) && defMbc != "") File.WriteAllText(fullPath, defMbc);
+                if (!File.Exists(fullPath) && defMbc != "") 
+                    File.WriteAllText(fullPath, defMbc);
                 //データフォルダに存在するファイルを読み込む
                 balance = Setting.Balance.Load(fullPath);
 
@@ -11375,10 +11772,10 @@ namespace MDPlayer.form
             }
             else
             {
+                log.Write(LogLevel.Information, "{0} is location reset !", frm.Name);
                 frm.Location = new System.Drawing.Point(100, 100);
                 return;
             }
-
         }
 
         private void frmMain_FormClosed(object sender, FormClosedEventArgs e)
@@ -11412,7 +11809,7 @@ namespace MDPlayer.form
 
                 if (Common.CheckExt(fn[0]) != EnmFileFormat.M3U && Common.CheckExt(fn[0]) != EnmFileFormat.ZIP)
                 {
-                    if (!loadAndPlay(0, 0, fn[0], "",null,null)) return;
+                    if (!loadAndPlay(0, 0, fn[0], "", null, null, null)) return;
                     frmPlayList.setStart(-1);
                 }
                 oldParam = new MDChipParams();
@@ -11590,6 +11987,8 @@ namespace MDPlayer.form
             else if (sender == c352ToolStripMenuItem) OpenFormRegTest(0, EnmChip.C352);
             else if (sender == yM3812ToolStripMenuItem) OpenFormRegTest(0, EnmChip.YM3812);
             else if (sender == sIDToolStripMenuItem) OpenFormRegTest(0, EnmChip.SID);
+            else if (sender == pOKEYToolStripMenuItem) OpenFormRegTest(0, EnmChip.POKEY);
+            else if (sender == nESToolStripMenuItem) OpenFormRegTest(0, EnmChip.NES);
             else OpenFormRegTest(0);
             ActiveControl = null;
         }
@@ -11723,6 +12122,7 @@ namespace MDPlayer.form
             false
         };
         private Button[] lstOpeButtonControl;
+        private GD3 playingGD3;
 
         private void RelocateOpeButton(int zoom)
         {
@@ -11949,7 +12349,7 @@ namespace MDPlayer.form
         {
             if (pic == null)
             {
-                if(frmPic!= null  && !frmPic.isClosed)
+                if (frmPic != null && !frmPic.isClosed)
                 {
                     frmPic.Close();
                 }
@@ -11967,9 +12367,23 @@ namespace MDPlayer.form
             frmPic.BackgroundImage = pic;
             //frmPic.Size = new Size(Math.Min(pic.Size.Width, Screen.PrimaryScreen.Bounds.Width / 2),
             //    Math.Min(pic.Size.Height, Screen.PrimaryScreen.Bounds.Height / 2));
-            frmPic.Show();
+            try
+            {
+                frmPic.Show();
+            }
+            catch (System.ObjectDisposedException)
+            {
+                frmPic.Close();
+                frmPic = null;
+                return;
+            }
             frmPic.TopMost = true;
             frmPic.TopMost = false;
+        }
+
+        private void tsmiPianoRoll_Click(object sender, EventArgs e)
+        {
+            OpenFormPianoRoll();
         }
     }
 }

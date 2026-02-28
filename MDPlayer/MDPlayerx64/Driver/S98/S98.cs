@@ -569,22 +569,22 @@ namespace MDPlayer
 
         private void WriteYM2612(int chipID, byte port, byte adr, byte data)
         {
-            chipRegister.setYM2612Register(chipID, port, adr, data, model, 0);
+            chipRegister.setYM2612Register(chipID, port, adr, data, model, vgmFrameCounter);
         }
 
         private void WriteYM2608(int chipID, byte port, byte adr, byte data)
         {
-            chipRegister.setYM2608Register(chipID, port, adr, data, model);
+            chipRegister.setYM2608Register(chipID, port, adr, data, model, vgmFrameCounter);
         }
 
         private void WriteYM2151(int chipID, byte port, byte adr, byte data)
         {
-            chipRegister.setYM2151Register(chipID, port, adr, data, model, YM2151Hosei[chipID], 0);
+            chipRegister.setYM2151Register(chipID, port, adr, data, model, YM2151Hosei[chipID], vgmFrameCounter);
         }
 
         private void WriteYM2413(int chipID, byte adr, byte data)
         {
-            chipRegister.setYM2413Register(chipID, adr, data, model);
+            chipRegister.setYM2413Register(chipID, adr, data, model,vgmFrameCounter);
         }
 
         private void WriteYM3526(int chipID, byte adr, byte data)
@@ -599,12 +599,12 @@ namespace MDPlayer
 
         private void WriteAY8910(int chipID, byte adr, byte data)
         {
-            chipRegister.setAY8910Register(chipID, adr, data, model);
+            chipRegister.setAY8910Register(chipID, adr, data, model, vgmFrameCounter);
         }
 
         private void WriteSN76489(int chipID, byte data)
         {
-            chipRegister.setSN76489Register(chipID, data, model);
+            chipRegister.setSN76489Register(chipID, data, model, vgmFrameCounter);
         }
 
         private void WriteYMF262(int chipID, byte port, byte adr, byte data)

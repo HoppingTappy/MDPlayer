@@ -22,6 +22,12 @@ namespace MDPlayer.Driver.AY
         private byte CPCSw = 0;
         private int BN = 0;
         private int BP = 0;
+        private baseDriver driver;
+
+        public port(baseDriver driver)
+        {
+            this.driver = driver;
+        }
 
         public byte this[int address]
         {
@@ -71,7 +77,7 @@ namespace MDPlayer.Driver.AY
             else if ((address & 0xc002) == 0x8000)
             {
                 AYDat = value;
-                chipRegister.setAY8910Register(0, AYReg, AYDat, model);
+                chipRegister.setAY8910Register(0, AYReg, AYDat, model, driver.vgmFrameCounter);
                 AYRegMap[AYReg] = AYDat;
                 //Debug.WriteLine("AY Reg:{0:x02} Dat:{1:x02}", AYReg, AYDat);
             }
@@ -122,7 +128,7 @@ namespace MDPlayer.Driver.AY
 
             if (CPCSw == 0x80)
             {
-                if (AYReg < 14) chipRegister.setAY8910Register(0, AYReg, AYDat, model);
+                if (AYReg < 14) chipRegister.setAY8910Register(0, AYReg, AYDat, model, driver.vgmFrameCounter);
                 CPCSw = 0;
             }
         }

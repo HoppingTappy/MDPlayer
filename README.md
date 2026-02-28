@@ -3,9 +3,11 @@ VGMファイルなどのPlayer(メガドライブ音源チップなどのエミ�
   
 [概要]  
   このツールは、鍵盤表示を行いながらVGMファイルの再生を行います。  
-  (NRD,XGM,S98,MID,RCP,RCS,NSF,HES,SID,AY,MGS,MDR,MDX,MND,ZMD,ZMS,MUC,MUB,M,M2,MZ,MPI,MVI,MZI,OPI,OVI,OZI,WAV,MP3,AIFFファイルにも対応。)  
+  (NRD,NDP,XGM,S98,MID,RCP,RCS,NSF,GBS,HES,SID,AY,MGS,MDR,MDX,MND,ZMD,ZMS,MUC,MUB,M,M2,MZ,MPI,MVI,MZI,OPI,OVI,OZI,MUS,O,OX,OY,WAV,MP3,AIFF,OGG,M4A,AAC,WMA,FLACファイルにも対応。)  
   
 [注意]  
+  ・作者様よりSCCI2の同梱の許可をいただきました。但しForkなどしてバイナリを配布する際にSCCI2を同梱したい場合は別途、許可を頂くようお願いします。  
+  
   ・FileAssociationTool(ファイル関連付け設定ツール)についてはREADME_AST.md/README_AST_EN.mdを参照お願いします。  
   
   ・再生時の音量に注意してください。バグによる雑音が大音量で再生される場合もあります。  
@@ -23,6 +25,7 @@ VGMファイルなどのPlayer(メガドライブ音源チップなどのエミ�
   .VGM (所謂vgmファイル)  
   .VGZ (vgmファイルをgzipしたもの)  
   .NRD (NRTDRV X1でOPM2個とAY8910を鳴らすドライバの演奏ファイル)  
+  .NDP (NDPファイル 演奏するにはNRD.BINが必要です)  
   .XGM (MegaDrive向けファイル)  
   .ZGM (mml2vgmで生成可能なVGM拡張フォーマットファイル)  
   .S98 (主に日本製レトロPC向けファイル)  
@@ -30,6 +33,7 @@ VGMファイルなどのPlayer(メガドライブ音源チップなどのエミ�
   .RCP (レコポンファイル CM6,GSDの送信可)  
   .RCS (上記RCPを演奏しながらPCM8も発音できるファイル)  
   .NSF (NES Sound Format)  
+  .GBS (Gameboy Sound Format)  
   .HES (HESファイル)  
   .SID (コモドール向けファイル)  
   .AY  (ZX Spectrum / Amstrad CPC向けファイル)  
@@ -52,9 +56,18 @@ VGMファイルなどのPlayer(メガドライブ音源チップなどのエミ�
   .ZMS (ZMUSIC2/3 向けファイル 演奏するにはZMUSIC.X,ZMC.X,ZMSC3.Xが必要です)    
   .ZMD (ZMUSIC3 向けファイル 演奏するにはZMC.X,ZMSC3.Xが必要です)    
   .ZMD (ZMUSIC2 向けファイル 演奏するにはZMUSIC.Xが必要です)    
+  .MUS (みゅあっぷ 向けファイル)    
+  .O   (みゅあっぷ 向けファイル)    
+  .OX  (みゅあっぷ 向けファイル)    
+  .OY  (みゅあっぷ 向けファイル)    
   .WAV (音声ファイル)  
   .MP3 (音声ファイル)  
   .AIF (音声ファイル)  
+  .OGG (音声ファイル)  
+  .M4A (音声ファイル)  
+  .AAC (音声ファイル)  
+  .WMA (音声ファイル)  
+  .FLAC (音声ファイル)  
   .M3U (プレイリスト)  
   
 [機能、特徴]  
@@ -105,6 +118,8 @@ VGMファイルなどのPlayer(メガドライブ音源チップなどのエミ�
 
   ・NRTDRVのソースを参考、移植しています。  
   
+  ・NDPのソースを参考、移植しています。  
+  
   ・MoonDriverのソースを参考、移植しています。  
   
   ・MXPのソースを参考、移植しています。  
@@ -128,11 +143,13 @@ VGMファイルなどのPlayer(メガドライブ音源チップなどのエミ�
   
   ・ZMUSICv2/v3のコードを参考にしています。  
 
+  ・みゅあっぷのソースを参考、移植にしています。  
+  
   ・CVS.EXEの出力を参考に同じデータが出力されるよう調整しています。  
   
   ・SCCI2を利用して本物のYM2612(YM3438),SN76489,YM2608,YM2151,YMF262から再生が可能です。  
   またSPPCMにも対応しています。  
-  SCCI2は別途ダウンロードしMDPlayerと同じ場所に置き、scci2config.exeで設定を行っておくことが必須です。  
+  SCCI2はscci2config.exeで設定を行っておくことが必須です。  
   
   ・GIMIC(C86ctl)を利用して本物のYM2608,YM2151,YMF262から再生が可能です。  
   
@@ -222,6 +239,8 @@ VGMファイルなどのPlayer(メガドライブ音源チップなどのエミ�
   ・X68000系のファイル(.MDX .ZMS .ZMD .RCS)演奏時はPCM再生ドライバ(PCM8,PCM8PP,MPCM,MPCMPP)を適切に選択する必要があります。  
     (これらはデータから最適なドライバを自動選択させるための手段を持たない為)   
 
+  ・muapのPCMを再生させるには、TONES.DTA,PCM.DTA,PCM.TBLが必要なので本家のほうから取得し、MDPlayerをインストールしたフォルダに置いてください。  
+  又、ユーザー定義PCMを使用したい場合はMDPlayerをインストールしたフォルダにUSRDEFフォルダを作成し必要なPCMファイルを置いてください。  
   
   
 [G.I.M.I.C.関連情報]  
@@ -289,6 +308,8 @@ VGMファイルなどのPlayer(メガドライブ音源チップなどのエミ�
   
   ・LZHファイルを使用する場合はUNLHA32.DLL(Ver3.0以降)をインストールしている必要あり。  
   
+  ・ZDFファイルを使用する場合はlzz.r(Ver0.57以降?)をMDPlayerと同じ位置に置いておく必要あり。  
+  
   ・音声を再生できるオーディオデバイスが必須。  
   そこそこ性能があるものが必要です。UMX250のおまけでついてたUCA222でも十分いけます。私はこれを使ってました。  
   
@@ -329,6 +350,10 @@ VGMファイルなどのPlayer(メガドライブ音源チップなどのエミ�
   (予め同梱させていただいていますが必要であれば、公式サイトから入手してください。)
     KINROU5.DRV  
 
+  ・NDPのファイルを演奏するには、以下のファイルが必要です。  
+  (公式サイトから入手してください。)
+    NDP.BIN  
+
   ・FMPのファイルを演奏するには、以下のファイルが必要です。  
   (公式サイト,VECTORなどから入手してください。)
     FMP.COM  
@@ -343,6 +368,10 @@ VGMファイルなどのPlayer(メガドライブ音源チップなどのエミ�
   (公式サイトなどから入手してください。)
     ZMC.X  
     ZMSC3.X  
+  
+  ・みゅあっぷのファイルを演奏するには、以下のファイルが必要です。  
+  (公式サイトなどから入手してください。)
+    TONES.DTA  
   
   ・SCCI2を使用して実チップから演奏するには、以下のファイルが必要です。  
   (公式サイトなどから入手してください。)
@@ -526,6 +555,7 @@ VGMファイルなどのPlayer(メガドライブ音源チップなどのエミ�
     ・さくらエディター  
     ・VOPMex  
     ・NRTDRV  
+    ・NDP  
     ・MoonDriver  
     ・MXP  
     ・MXDRV  
@@ -550,6 +580,7 @@ VGMファイルなどのPlayer(メガドライブ音源チップなどのエミ�
     ・PPZ8  
     ・ZMUSICv2/v3    
     ・RCSMP  
+    ・みゅあっぷ  
      
     ・SMS Power!  
     ・DOBON.NET  
@@ -561,7 +592,11 @@ VGMファイルなどのPlayer(メガドライブ音源チップなどのエミ�
     ・MSX Resource Center  
     ・msxnet  
     ・Xyzさんのツイートのリンク先(https://twitter.com/XyzGonGivItToYa/status/1216942514902634496?s=20)  
-    ・がんず Work's Diary
+    ・がんず Work's Diary  
+    ・pastraider.com(https://www.pastraiser.com/cpu/gameboy/gameboy_opcodes.html)  
+    ・Pan Docs(http://bgb.bircd.org/pandocs.htm#memorymap)  
+    ・プラスウイングTV(https://youtu.be/p13EdWrQFjY?si=2L93LDE6SyvINzXX)  
+
 
 [FAQ]  
   
@@ -647,6 +682,7 @@ VGMファイルなどのPlayer(メガドライブ音源チップなどのエミ�
   ・libsidplayfp  
   ・sidplayfp  
   ・NRTDRV  
+  ・NDP  
   ・MoonDriver  
   ・MXP  
   ・MXDRV  
@@ -658,6 +694,7 @@ VGMファイルなどのPlayer(メガドライブ音源チップなどのエミ�
   ・M86(M86DotNET)  
   ・VST.NET  
   ・NAudio  
+  ・NAudio.Vorbis 
   ・SCCI  
   ・c86ctl  
   ・PMD(PMDDotNET)  
@@ -669,6 +706,7 @@ VGMファイルなどのPlayer(メガドライブ音源チップなどのエミ�
   ・PPZ8  
   ・ZMUSICv2  
   ・ZMUSICv3  
+  ・みゅあっぷ  
   
   
   

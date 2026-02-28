@@ -1,8 +1,10 @@
 ﻿using System.Text;
+using System.Text.Json.Serialization;
 using System.Xml.Serialization;
 #if X64
 using MDPlayerx64.Properties;
 using Microsoft.VisualBasic;
+using Microsoft.VisualBasic.Devices;
 #else
 using MDPlayer.Properties;
 #endif
@@ -627,6 +629,20 @@ namespace MDPlayer
             }
         }
 
+        private Network _network = new();
+        public Network network
+        {
+            get
+            {
+                return _network;
+            }
+
+            set
+            {
+                _network = value;
+            }
+        }
+
         private Other _other = new();
         public Other other
         {
@@ -801,6 +817,20 @@ namespace MDPlayer
             }
         }
 
+        private MuapDotNET _MuapDotNET = new();
+        public MuapDotNET muapDotNET
+        {
+            get
+            {
+                return _MuapDotNET;
+            }
+
+            set
+            {
+                _MuapDotNET = value;
+            }
+        }
+
         private Zmusic _Zmusic = new();
         public Zmusic zmusic
         {
@@ -875,6 +905,17 @@ namespace MDPlayer
         public bool unuseRealChip { get; set; }
 
         private KeyBoardHook _keyBoardHook = new();
+
+        private PianoRoll _pianoRoll= new();
+        
+        public PianoRoll pianoRoll
+        { get => _pianoRoll; set => _pianoRoll = value; }
+
+        private RegTest _regTest = new();
+
+        public RegTest regTest
+        { get => _regTest; set => _regTest = value; }
+
 
         [Serializable]
         public class OutputDevice
@@ -1435,6 +1476,24 @@ namespace MDPlayer
         //}
 
         [Serializable]
+        public class Network
+        {
+            public bool useMDServer { get; set; }=false;
+            public int port { get; set; } = 11000;
+
+            public Network Copy()
+            {
+                Network network = new()
+                {
+                    useMDServer = this.useMDServer,
+                    port = this.port,
+                };
+
+                return network;
+            }
+        }
+
+        [Serializable]
         public class Other
         {
             private bool _UseLoopTimes = true;
@@ -1620,6 +1679,20 @@ namespace MDPlayer
                 }
             }
 
+            private string _PlayListFilterIndex = "";
+            public string PlayListFilterIndex
+            {
+                get
+                {
+                    return _PlayListFilterIndex;
+                }
+
+                set
+                {
+                    _PlayListFilterIndex = value;
+                }
+            }
+
             private string _TextExt = "txt;doc;hed";
             public string TextExt { get => _TextExt; set => _TextExt = value; }
 
@@ -1646,7 +1719,8 @@ namespace MDPlayer
             public bool AdjustTLParam { get; set; } = false;
             public string ResourceFile { get; set; } = null;
             public bool SaveCompiledFile { get; set; } = false;
-            public bool TappyMode { get;  set; }=true;
+            public bool TappyMode { get; set; } = true;
+            public bool ToastMode { get; set; } = true;
 
             public Other Copy()
             {
@@ -1665,6 +1739,7 @@ namespace MDPlayer
                     WavSwitch = this.WavSwitch,
                     WavPath = this.WavPath,
                     FilterIndex = this.FilterIndex,
+                    PlayListFilterIndex = this.PlayListFilterIndex,
                     TextExt = this.TextExt,
                     MMLExt = this.MMLExt,
                     ImageExt = this.ImageExt,
@@ -1679,6 +1754,7 @@ namespace MDPlayer
                     ResourceFile = this.ResourceFile,
                     SaveCompiledFile = this.SaveCompiledFile,
                     TappyMode=this.TappyMode,
+                    ToastMode=this.ToastMode,
                 };
 
                 return other;
@@ -2679,6 +2755,21 @@ namespace MDPlayer
                 }
             }
 
+            private int _CS4231Volume = 0;
+            public int CS4231Volume
+            {
+                get
+                {
+                    if (_CS4231Volume > 20 || _CS4231Volume < -192) _CS4231Volume = 0;
+                    return _CS4231Volume;
+                }
+
+                set
+                {
+                    _CS4231Volume = value;
+                    if (_CS4231Volume > 20 || _CS4231Volume < -192) _CS4231Volume = 0;
+                }
+            }
 
             private int _GimicOPNVolume = 0;
             public int GimicOPNVolume
@@ -2776,6 +2867,7 @@ namespace MDPlayer
                     PCM8Volume = this.PCM8Volume,
                     PCM8PPVolume = this.PCM8PPVolume,
                     MPCMX68kVolume = this.MPCMX68kVolume,
+                    CS4231Volume = this.CS4231Volume,
 
                     GimicOPNVolume = this.GimicOPNVolume,
                     GimicOPNAVolume = this.GimicOPNAVolume
@@ -2867,6 +2959,24 @@ namespace MDPlayer
                 set
                 {
                     _PInfo = value;
+                }
+            }
+
+            private Size _SInfo = Size.Empty;
+            public Size SInfo
+            {
+                get
+                {
+                    if (_SInfo.Width < 0 || _SInfo.Height < 0)
+                    {
+                        return new Size(10, 10);
+                    }
+                    return _SInfo;
+                }
+
+                set
+                {
+                    _SInfo = value;
                 }
             }
 
@@ -4116,6 +4226,34 @@ namespace MDPlayer
                 }
             }
 
+            private Point _PosPianoRoll = Point.Empty;
+            public Point PosPianoRoll
+            {
+                get
+                {
+                    return _PosPianoRoll;
+                }
+
+                set
+                {
+                    _PosPianoRoll = value;
+                }
+            }
+
+            private bool _OpenPianoRoll = false;
+            public bool OpenPianoRoll
+            {
+                get
+                {
+                    return _OpenPianoRoll;
+                }
+
+                set
+                {
+                    _OpenPianoRoll = value;
+                }
+            }
+
             private Point[] _PosNESDMC = new Point[2] { Point.Empty, Point.Empty };
             public Point[] PosNESDMC
             {
@@ -4349,6 +4487,7 @@ namespace MDPlayer
                 {
                     Main = this.Main.Copy(),
                     PInfo = this.PInfo,
+                    SInfo= this.SInfo,
                     OInfo = this.OInfo,
                     PPic = this.PPic,
                     SPic = this.SPic,
@@ -4431,6 +4570,8 @@ namespace MDPlayer
                     OpenYm2612MIDI = this.OpenYm2612MIDI,
                     PosVSTeffectList = this.PosVSTeffectList,
                     OpenVSTeffectList = this.OpenVSTeffectList,
+                    PosPianoRoll=this.PosPianoRoll,
+                    OpenPianoRoll=this.OpenPianoRoll,
                     PosVrc7 = this.PosVrc7,
                     OpenVrc7 = this.OpenVrc7,
                     PosMIDI = this.PosMIDI,
@@ -5528,6 +5669,22 @@ namespace MDPlayer
         }
 
         [Serializable]
+        public class MuapDotNET
+        {
+            public int soundDeviceMode = 0;
+
+            public MuapDotNET Copy()
+            {
+                MuapDotNET p = new()
+                {
+                    soundDeviceMode = this.soundDeviceMode
+                };
+
+                return p;
+            }
+        }
+
+        [Serializable]
         public class Zmusic
         {
             public int compilePriority = 0;
@@ -5974,7 +6131,36 @@ namespace MDPlayer
             }
         }
 
+        [Serializable]
+        public class PianoRoll
+        {
+            public bool usePianoRoll = true;
+            public PianoRoll Copy()
+            {
+                PianoRoll p = new()
+                {
+                    usePianoRoll = this.usePianoRoll
+                };
+                return p;
+            }
+        }
 
+        [Serializable]
+        public class RegTest
+        {
+            public EnmChip latestChipPri = EnmChip.Unuse;
+            public EnmChip latestChipSec = EnmChip.Unuse;
+
+            public RegTest Copy()
+            {
+                RegTest r = new()
+                {
+                    latestChipPri = this.latestChipPri,
+                    latestChipSec = this.latestChipSec
+                };
+                return r;
+            }
+        }
 
         public Setting Copy()
         {
@@ -6092,6 +6278,7 @@ namespace MDPlayer
             setting.FileSearchPathList = this.FileSearchPathList;
 
             setting.other = this.other.Copy();
+            setting.network = this.network.Copy();
             setting.debug = this.debug.Copy();
             setting.balance = this.balance.Copy();
             setting.LatencyEmulation = this.LatencyEmulation;
@@ -6109,13 +6296,16 @@ namespace MDPlayer
             setting.nukedOPN2 = this.nukedOPN2.Copy();
             setting.autoBalance = this.autoBalance.Copy();
             setting.pmdDotNET = this.pmdDotNET.Copy();
+            setting.muapDotNET=this.muapDotNET.Copy();
             setting.zmusic = this.zmusic.Copy();
             setting.mxdrv = this.mxdrv.Copy();
             setting.mndrv = this.mndrv.Copy();
             setting.rcs = this.rcs.Copy();
             setting.playList = this.playList.Copy();
+            setting.regTest = this.regTest.Copy();
 
             setting.keyBoardHook = this.keyBoardHook.Copy();
+            setting.pianoRoll=this.pianoRoll.Copy();
 
             return setting;
         }
@@ -6135,10 +6325,10 @@ namespace MDPlayer
             try
             {
                 string fn = Resources.cntSettingFileName;
-                if (System.IO.File.Exists(System.IO.Path.Combine(System.IO.Path.GetDirectoryName(Application.ExecutablePath), fn)))
+                if (File.Exists(Path.Combine(Path.GetDirectoryName(Application.ExecutablePath), fn)))
                 {
                     //アプリケーションと同じフォルダに設定ファイルがあるならそちらを使用する
-                    Common.settingFilePath = System.IO.Path.GetDirectoryName(Application.ExecutablePath);
+                    Common.settingFilePath = Path.GetDirectoryName(Application.ExecutablePath);
                 }
                 else
                 {

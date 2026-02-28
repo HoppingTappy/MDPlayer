@@ -15,7 +15,7 @@ mkdir  .\output\FileAssociationTool\ico
 del /Q .\output\FileAssociationTool\ico\*.*
 
 xcopy   .\mdc\bin\Release\*.*          .\output\ /E /R /Y /I /K
-xcopy   .\mdpc\bin\Release\*.*         .\output\ /E /R /Y /I /K
+xcopy   .\mdpc\bin\Release\net8.0-windows7.0\*.*         .\output\ /E /R /Y /I /K
 xcopy   .\MDPlayerx64\bin\x64\Release\net8.0-windows7.0\*.*  .\output\ /E /R /Y /I /K
 xcopy   .\FileAssociationTool\bin\Release\net8.0-windows\*.* .\output\FileAssociationTool\ /E /R /Y /I /K
 xcopy   ..\licenses                       .\output\licenses\ /E /R /Y /I /K
@@ -47,18 +47,28 @@ del /Q .\output\KINROU5.DRV
 del /Q .\output\ZMC.X
 del /Q .\output\ZMSC3.X
 del /Q .\output\ZMUSIC.X
+del /Q .\output\Z*.X
+del /Q .\output\LZZ.R
 
 del /Q .\output\*.pdb
 rem del /Q .\output\*.config
 del /Q .\output\*.bat
 del /Q .\output\FileAssociationTool\*.pdb
-rem del /Q .\output\scci.ini
+
 del /Q .\output\scci.ini
 del /Q .\output\scci.dll
 del /Q .\output\scciconfig.exe
 del /Q .\output\lib\scci.ini
 del /Q .\output\lib\scci.dll
 del /Q .\output\lib\scciconfig.exe
+
+rem del /Q .\output\scci2.ini
+rem del /Q .\output\scci2.dll
+rem del /Q .\output\scci2config.exe
+rem del /Q .\output\lib\scci2.ini
+rem del /Q .\output\lib\scci2.dll
+rem del /Q .\output\lib\scci2config.exe
+
 rem del /Q .\output\MGSDRV.COM
 copy /Y .\removeZoneIdent.bat   .\output
 copy /Y .\mdp.bat   .\output
@@ -72,6 +82,15 @@ copy /Y ..\..\MDPlayerWithoutVST\MDPlayer\MDPlayerBackUp\VST\*.*               .
 copy /Y ..\..\MDPlayerWithoutVST\MDPlayer\MDPlayerBackUp\App.config            ..\..\MDPlayerWithoutVST\MDPlayer\MDPlayer
 copy /Y ..\..\MDPlayerWithoutVST\MDPlayer\MDPlayerBackUp\MDPlayer.csproj       ..\..\MDPlayerWithoutVST\MDPlayer\MDPlayer
 copy /Y ..\..\MDPlayerWithoutVST\MDPlayer\MDPlayerBackUp\MDPlayer.csproj.user  ..\..\MDPlayerWithoutVST\MDPlayer\MDPlayer
+
+del /Q .\output\scci.ini
+del /Q .\output\scci.dll
+del /Q .\output\scciconfig.exe
+del /Q .\output\lib\scci.ini
+del /Q .\output\lib\scci.dll
+del /Q .\output\lib\scciconfig.exe
+del /Q .\output\scci2.ini
+del /Q .\output\lib\scci2.ini
 
 echo ----------------------------------------
 echo     
