@@ -122,6 +122,16 @@ namespace MDPlayer.Driver.MXDRV
 
             return true;
         }
+        public bool PlayAt(uint time) {
+            Counter = 0;
+            LoopCounter = 0;
+            vgmCurLoop = 0;
+            Stopped = false;
+            MXDRV_PlayAt(time,1,depend.TRUE);
+            TerminatePlay = false;
+            FadeoutStart = true;
+            return true;
+        }
 
         public bool Init(byte[] vgmBuf, ChipRegister chipRegister, EnmModel model, EnmChip[] useChip, uint latency, uint waitTime, MDSound.ym2151_x68sound mdxPCM,PCM8PP pcm8pp)
         {
@@ -258,12 +268,15 @@ namespace MDPlayer.Driver.MXDRV
                 return 0;
             }
             int ret = 0;
-            if (model == EnmModel.VirtualModel)
-                ret = mdxPCM.x68sound[0].X68Sound_GetPcm(buffer, offset, (int)sampleCount, OneFrameProc2);
-            else
+            if (model == EnmModel.VirtualModel || model == EnmModel.RealModel)
             {
                 ret = mdxPCM.x68sound[0].X68Sound_GetPcm(buffer, offset, (int)sampleCount, OneFrameProc2);
+            }
+            else
+            {
+                //ret = mdxPCM.x68sound[0].X68Sound_GetPcm(buffer, offset, (int)sampleCount, OneFrameProc2);
                 //for(int i=0;i<sampleCount;i++) buffer[i] = 0;
+                for (int i = 0; i < sampleCount; i++) buffer[offset + i] = 0;
             }
 
             //for (int ch = 0; ch < 16; ch++) chipRegister.setMaskX68Sound(0, ch, true);
