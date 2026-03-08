@@ -19,6 +19,7 @@
         public bool isDataBlock = false;
 
         public int[] YM2151Hosei = new int[2] { 0, 0 };
+        public int[] YM2151HoseiForKb = new int[2] { 0, 0 };
 
         protected byte[] vgmBuf = null;
         protected ChipRegister chipRegister = null;
@@ -58,13 +59,16 @@
                 }
 
                 YM2151Hosei[chipID] = Common.GetYM2151Hosei(YM2151ClockValue, 3579545);
+                YM2151HoseiForKb[chipID] = Common.GetYM2151HoseiForKb(YM2151ClockValue, 3579545);
                 if (model == EnmModel.RealModel)
                 {
                     YM2151Hosei[chipID] = 0;
+                    YM2151HoseiForKb[chipID] = 0;
                     int clock = chipRegister.getYM2151Clock((byte)chipID);
                     if (clock != -1)
                     {
                         YM2151Hosei[chipID] = Common.GetYM2151Hosei(YM2151ClockValue, clock);
+                        YM2151HoseiForKb[chipID] = Common.GetYM2151HoseiForKb(YM2151ClockValue, clock);
                     }
                 }
             }

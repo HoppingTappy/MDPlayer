@@ -485,6 +485,14 @@ namespace MDPlayer
             return ret;
         }
 
+        public static int GetYM2151HoseiForKb(float YM2151ClockValue, float baseClock)
+        {
+            double delta = (double)YM2151ClockValue / baseClock;
+            double kf = Math.Pow(2, (1.0f / (12 * 256)));
+            int gapDetune = (int)Math.Round((delta - 1.0f) / (kf - 1.0f), 0, MidpointRounding.AwayFromZero);
+            return gapDetune;
+        }
+
         public static string GetApplicationFolder()
         {
             string path = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);

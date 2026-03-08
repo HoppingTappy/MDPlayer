@@ -247,7 +247,10 @@ namespace MDPlayer.form
                 int hosei = 0;
                 if (Audio.DriverVirtual != null)//is vgm)
                 {
-                    hosei = (Audio.DriverVirtual).YM2151Hosei[chipID];
+                    hosei = (Audio.DriverVirtual).YM2151HoseiForKb[chipID] + (ym2151Register[0x30 + ch] & 0xff) + 128;
+                    int kf = hosei % 256;
+                    hosei /= 256;
+                    hosei += (kf >= 128 ? 1 : 0);
                 }
                 newParam.channels[ch].note = ((fmKeyYM2151[ch] & 1) != 0) ? (oct * 12 + note + hosei) : -1;
 

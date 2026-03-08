@@ -78,13 +78,16 @@ namespace MDPlayer.Driver.MXDRV
             for (int chipID = 0; chipID < 2; chipID++)
             {
                 YM2151Hosei[chipID] = Common.GetYM2151Hosei(4000000, 3579545);
+                YM2151HoseiForKb[chipID] = Common.GetYM2151HoseiForKb(4000000, 3579545);
                 if (model == EnmModel.RealModel)
                 {
                     YM2151Hosei[chipID] = 0;
+                    YM2151HoseiForKb[chipID] = 0;
                     int clock = chipRegister.getYM2151Clock((byte)chipID);
                     if (clock != -1)
                     {
                         YM2151Hosei[chipID] = Common.GetYM2151Hosei(4000000, clock);
+                        YM2151HoseiForKb[chipID] = Common.GetYM2151HoseiForKb(4000000, clock);
                     }
                 }
             }
@@ -156,13 +159,16 @@ namespace MDPlayer.Driver.MXDRV
             for (int chipID = 0; chipID < 2; chipID++)
             {
                 YM2151Hosei[chipID] = Common.GetYM2151Hosei(4000000, 3579545);
+                YM2151HoseiForKb[chipID] = Common.GetYM2151HoseiForKb(4000000, 3579545);
                 if (model == EnmModel.RealModel)
                 {
                     YM2151Hosei[chipID] = 0;
+                    YM2151HoseiForKb[chipID] = 0;
                     int clock = chipRegister.getYM2151Clock((byte)chipID);
                     if (clock != -1)
                     {
                         YM2151Hosei[chipID] = Common.GetYM2151Hosei(4000000, clock);
+                        YM2151HoseiForKb[chipID] = Common.GetYM2151HoseiForKb(4000000, clock);
                     }
                 }
             }
