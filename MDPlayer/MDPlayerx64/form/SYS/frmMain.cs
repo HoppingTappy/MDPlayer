@@ -11601,7 +11601,7 @@ namespace MDPlayer.form
 
         private void keyboardHook1_KeyboardHooked(object sender, HongliangSoft.Utilities.Gui.KeyboardHookedEventArgs e)
         {
-            if (e.UpDown != HongliangSoft.Utilities.Gui.KeyboardUpDown.Up) return;
+            if (e.UpDown != HongliangSoft.Utilities.Gui.KeyboardUpDown.Down) return;
             ActiveControl = null;
 
             if (keyHookMeth != null)
