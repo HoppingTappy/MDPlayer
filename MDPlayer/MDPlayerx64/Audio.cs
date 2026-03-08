@@ -1882,6 +1882,8 @@ namespace MDPlayer
         {
             log.ForcedWrite("Audio:Init:Begin");
 
+            ResetReuseDriver();
+
             if (trd == null)
             {
                 trd = new Thread(TrdIF)
@@ -2527,21 +2529,29 @@ namespace MDPlayer
             playingFileName = PlayingFileName;
             playingArcFileName = PlayingArcFileName;
         }
-
-
-        public static bool Play(Setting setting)
+        private static void ResetReuseDriver()
         {
-            ErrMsg = "";
+            lastVgmBufHash = null;
+            lastFileFormat = EnmFileFormat.unknown;
+            reuseDriver = false;
+        }
 
+        private static void UpdateReuseDriver(Setting setting) {
             byte[] currentHash = CalcSHA256(vgmBuf);
-            bool canReuseDriver = IsSameVgmBuf(currentHash)
+            reuseDriver = IsSameVgmBuf(currentHash)
                 && PlayingFileFormat == lastFileFormat
                 && DriverVirtual != null
                 && !setting.other.InitAlways;
 
             lastVgmBufHash = currentHash;
             lastFileFormat = PlayingFileFormat;
-            reuseDriver = canReuseDriver;
+        }
+
+        public static bool Play(Setting setting)
+        {
+            ErrMsg = "";
+
+            UpdateReuseDriver(setting);
 
             Stop();
 
