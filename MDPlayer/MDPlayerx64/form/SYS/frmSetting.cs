@@ -3224,7 +3224,7 @@ namespace MDPlayer.form
         public static Button btOK;
         public static void KeyHookMeth(HongliangSoft.Utilities.Gui.KeyboardHookedEventArgs e)
         {
-            if (e.UpDown != HongliangSoft.Utilities.Gui.KeyboardUpDown.Up) return;
+            if (e.UpDown != HongliangSoft.Utilities.Gui.KeyboardUpDown.Down) return;
 
             lblKey.ForeColor = System.Drawing.SystemColors.ControlText;
             lblKey.Text = e.KeyCode.ToString();
